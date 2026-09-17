@@ -12,13 +12,17 @@ sám (uživatelé, přihlášení, role, seznamy s filtry, soubory, JSON:API,
 revize), se nepíše znovu.
 
 ## Kde jsme
-Viz STATE.md. 2026-09-17: prostředí postaveno (PHP 8.5, Drupal 11.4.7,
-PHPUnit kernel testy na SQLite ~0,6 s/test, PHPStan + phpstan-drupal level 5),
-harness umí PHP (`~/factory/src/factory/phplang.py`). Bench dvou kontraktů
-(C-001 TagGenerator — služba s DI a kernel testem, C-002 ZplLabel — čisté PHP
-s unit testem) přes lokální modely běží; výsledek rozhodne o coderu.
-Referenční implementace obou (operátor) prošly testy i PHPStanem a leží
-mimo repozitář, dokud bench neskončí.
+Viz STATE.md. 2026-09-17 večer: **10/10 kontraktů zelených, 63 testů,
+PHPStan čistý.** Modul ověřen v prohlížeči na lokálním Drupalu (SQLite,
+port 8888, `.claude/launch.json` v ~/factory): přehled → příjem 3 notebooků
+→ sériová čísla → štítky s QR → předání zaměstnankyni → e-mail s odkazem →
+potvrzení → protokol HP-2026-0001 (PDF, česky) → „Moje zařízení“ → vrácení
+zaměstnancem → protokol HP-2026-0002; seznam s filtry a hromadnou akcí,
+audit, nastavení, ruční založení, QR přesměrování `/a/<tag>`.
+Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
+Čeká na Michaela: nasazení na server (postup v README.md), Zebra tiskárna
+(ZPL netestováno na hardwaru), SMTP/mailer webu, překlady core UI
+(„Revisions“, „- Any -“ jsou z core; s českým překladem webu zmizí).
 
 ## Rozhodnutí
 - 2026-09-17 (Michael): Drupal 11, composer, vlastní Linux server, **stejná
@@ -70,6 +74,18 @@ mimo repozitář, dokud bench neskončí.
     JSON:API core modul nahrazuje vlastní REST.
   - Oprávnění: `administer hwdesk` (správce), `view own hwdesk assets`,
     `confirm own hwdesk handovers` (zaměstnanec, role authenticated).
+
+- 2026-09-17: poučení z ověření v prohlížeči: exposed identifier `q` je
+  v Drupalu rezervovaný (filtr se vykreslí dvakrát) → `search`;
+  `target_bundles` u entity_reference filtru pro typ bez bundlů musí být
+  `null`, `{}` = nic; `hwdesk.services.yml` odkazuje na `file.repository`,
+  proto každý kernel test zapíná `file` (a `views`, `options`, `datetime`
+  kvůli schématu instalované konfigurace); kernel testy nemají `private://`
+  → registruje ho `HwdeskFixturesTrait`; SQLite vrací decimal jako float.
+- 2026-09-17: modely napsaly 9 z 10 služeb (DashboardStats operátor —
+  model 24 iterací tápal v agregačních dotazech); operátor dopsal ručně
+  texty e-mailů, přístup zaměstnance k vrácení (`RequestHandoverForm::access`),
+  Offboarding, hook_file_download, Views.
 
 ## Pravidla projektu
 - Stack: PHP 8.5, Drupal 11.4, PHPUnit 11 (kernel + unit testy), PHPStan level 5 + phpstan-drupal.
