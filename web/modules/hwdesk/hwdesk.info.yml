@@ -1,9 +1,12 @@
 name: HW Desk
 type: module
-description: 'Správa firemního hardwaru: evidence, předávací protokoly, štítky.'
+description: 'Správa firemního hardwaru: evidence, předávací protokoly, štítky s QR, příjem zboží.'
 package: Custom
 core_version_requirement: ^11
+configure: hwdesk.settings
 dependencies:
   - drupal:user
-  - drupal:taxonomy
   - drupal:file
+  - drupal:options
+  - drupal:datetime
+  - drupal:views

@@ -1,5 +1,13 @@
+asset_types:
+  notebook: Notebook
+  desktop: Stolní počítač
+  phone: Telefon
+  monitor: Monitor
+  peripheral: Periferie
+  other: Ostatní
 tag_prefixes:
   notebook: NB
+  desktop: PC
   phone: TEL
   monitor: MON
   peripheral: PER
@@ -7,4 +15,6 @@ tag_prefixes:
 tag_pad: 4
 handover_token_hours: 72
 protocol_copy_to: ''
+company_name: ''
 label_printer_host: ''
+base_url: ''

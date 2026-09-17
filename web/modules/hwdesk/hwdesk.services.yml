@@ -4,3 +4,6 @@ services:
     arguments: ['@config.factory', '@state']
   hwdesk.zpl_label:
     class: Drupal\hwdesk\Service\ZplLabel
+  hwdesk.audit:
+    class: Drupal\hwdesk\Service\AuditLogger
+    arguments: ['@entity_type.manager', '@current_user']

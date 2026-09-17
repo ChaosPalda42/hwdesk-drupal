@@ -1,0 +1,8 @@
+administer hwdesk:
+  title: 'Spravovat HW Desk'
+  description: 'Evidence zařízení, předávání, příjem, štítky, nastavení.'
+  restrict access: true
+view own hwdesk assets:
+  title: 'Vidět svá zařízení'
+confirm own hwdesk handovers:
+  title: 'Potvrzovat vlastní předání a vrácení'

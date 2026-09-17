@@ -1,0 +1,130 @@
+<?php
+
+/**
+ * @file
+ * HW Desk: hooks that Drupal still wants in a .module file.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\hwdesk\AssetCondition;
+use Drupal\hwdesk\AssetStatus;
+use Drupal\hwdesk\HandoverKind;
+use Drupal\hwdesk\HandoverStatus;
+
+/**
+ * Allowed values for hwdesk_asset.type: keys and labels from configuration.
+ *
+ * @return array<string, string>
+ */
+function hwdesk_asset_type_options(?FieldStorageDefinitionInterface $definition = NULL, ?EntityInterface $entity = NULL): array {
+  $types = \Drupal::config('hwdesk.settings')->get('asset_types') ?? [];
+  $options = [];
+  foreach ($types as $key => $label) {
+    $options[(string) $key] = (string) $label;
+  }
+  return $options;
+}
+
+/**
+ * Allowed values for hwdesk_asset.status.
+ *
+ * @return array<string, \Drupal\Core\StringTranslation\TranslatableMarkup>
+ */
+function hwdesk_asset_status_options(): array {
+  return AssetStatus::options();
+}
+
+/**
+ * Allowed values for hwdesk_asset.condition.
+ *
+ * @return array<string, \Drupal\Core\StringTranslation\TranslatableMarkup>
+ */
+function hwdesk_asset_condition_options(): array {
+  return AssetCondition::options();
+}
+
+/**
+ * Allowed values for hwdesk_handover.kind.
+ *
+ * @return array<string, \Drupal\Core\StringTranslation\TranslatableMarkup>
+ */
+function hwdesk_handover_kind_options(): array {
+  return HandoverKind::options();
+}
+
+/**
+ * Allowed values for hwdesk_handover.status.
+ *
+ * @return array<string, \Drupal\Core\StringTranslation\TranslatableMarkup>
+ */
+function hwdesk_handover_status_options(): array {
+  return HandoverStatus::options();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hwdesk_theme(): array {
+  return [
+    'hwdesk_protocol' => [
+      'variables' => ['handover' => NULL, 'asset' => NULL, 'employee' => NULL, 'admin' => NULL, 'company' => '', 'confirmed_at' => ''],
+    ],
+    'hwdesk_label_sheet' => [
+      'variables' => ['labels' => []],
+    ],
+    'hwdesk_dashboard' => [
+      'variables' => ['tiles' => [], 'by_type' => [], 'by_location' => [], 'pending' => [], 'warranty' => []],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_mail().
+ *
+ * Every message is prepared by the handover service (subject, body lines);
+ * this hook only copies them into the mail structure.
+ */
+function hwdesk_mail(string $key, array &$message, array $params): void {
+  $message['subject'] = (string) ($params['subject'] ?? '');
+  $message['body'] = array_values((array) ($params['body'] ?? []));
+  if (!empty($params['attachment'])) {
+    $message['params']['attachment'] = $params['attachment'];
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function hwdesk_cron(): void {
+  \Drupal::service('hwdesk.handover')->expireOverdue();
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function hwdesk_entity_insert(EntityInterface $entity): void {
+  if (str_starts_with($entity->getEntityTypeId(), 'hwdesk_') && $entity->getEntityTypeId() !== 'hwdesk_audit') {
+    \Drupal::service('hwdesk.audit')->record($entity, 'insert');
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function hwdesk_entity_update(EntityInterface $entity): void {
+  if (str_starts_with($entity->getEntityTypeId(), 'hwdesk_') && $entity->getEntityTypeId() !== 'hwdesk_audit') {
+    \Drupal::service('hwdesk.audit')->record($entity, 'update');
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function hwdesk_entity_delete(EntityInterface $entity): void {
+  if (str_starts_with($entity->getEntityTypeId(), 'hwdesk_') && $entity->getEntityTypeId() !== 'hwdesk_audit') {
+    \Drupal::service('hwdesk.audit')->record($entity, 'delete');
+  }
+}

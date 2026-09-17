@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Install hooks: employee permissions and the private directories.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\user\RoleInterface;
+
+/**
+ * Implements hook_install().
+ */
+function hwdesk_install(): void {
+  user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, ['view own hwdesk assets', 'confirm own hwdesk handovers']);
+  $fs = \Drupal::service('file_system');
+  foreach (['private://hwdesk/attachments', 'private://hwdesk/invoices', 'private://hwdesk/protocols'] as $dir) {
+    $fs->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+  }
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function hwdesk_requirements(string $phase): array {
+  $requirements = [];
+  if ($phase === 'runtime' && !\Drupal::service('stream_wrapper_manager')->isValidScheme('private')) {
+    $requirements['hwdesk_private'] = [
+      'title' => t('HW Desk'),
+      'value' => t('Privátní souborový systém není nastaven'),
+      'description' => t('Přílohy a protokoly se ukládají do private://hwdesk. Nastavte $settings[\'file_private_path\'] v settings.php.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+  return $requirements;
+}

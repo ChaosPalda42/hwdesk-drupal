@@ -1,0 +1,31 @@
+hwdesk.asset.add:
+  title: 'Přidat zařízení'
+  route_name: entity.hwdesk_asset.add_form
+  appears_on:
+    - view.hwdesk_assets.page
+    - hwdesk.dashboard
+hwdesk.intake:
+  title: 'Příjem zboží'
+  route_name: hwdesk.intake
+  appears_on:
+    - view.hwdesk_assets.page
+hwdesk.import:
+  title: 'Import CSV'
+  route_name: hwdesk.import
+  appears_on:
+    - view.hwdesk_assets.page
+hwdesk.tag.add:
+  title: 'Přidat štítek'
+  route_name: entity.hwdesk_tag.add_form
+  appears_on:
+    - entity.hwdesk_tag.collection
+hwdesk.location.add:
+  title: 'Přidat lokalitu'
+  route_name: entity.hwdesk_location.add_form
+  appears_on:
+    - entity.hwdesk_location.collection
+hwdesk.invoice.add:
+  title: 'Přidat fakturu'
+  route_name: entity.hwdesk_invoice.add_form
+  appears_on:
+    - entity.hwdesk_invoice.collection

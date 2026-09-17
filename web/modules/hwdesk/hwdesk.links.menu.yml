@@ -1,0 +1,48 @@
+hwdesk.dashboard:
+  title: 'HW Desk'
+  route_name: hwdesk.dashboard
+  menu_name: main
+  weight: 10
+hwdesk.assets:
+  title: 'Zařízení'
+  route_name: view.hwdesk_assets.page
+  parent: hwdesk.dashboard
+  weight: 1
+hwdesk.intake:
+  title: 'Příjem zboží'
+  route_name: hwdesk.intake
+  parent: hwdesk.dashboard
+  weight: 2
+hwdesk.invoices:
+  title: 'Faktury'
+  route_name: entity.hwdesk_invoice.collection
+  parent: hwdesk.dashboard
+  weight: 3
+hwdesk.handovers:
+  title: 'Předání a vrácení'
+  route_name: view.hwdesk_handovers.page
+  parent: hwdesk.dashboard
+  weight: 4
+hwdesk.audit:
+  title: 'Audit'
+  route_name: view.hwdesk_audit.page
+  parent: hwdesk.dashboard
+  weight: 5
+hwdesk.my:
+  title: 'Moje zařízení'
+  route_name: hwdesk.my
+  parent: hwdesk.dashboard
+  weight: 6
+hwdesk.settings:
+  title: 'HW Desk'
+  description: 'Typy zařízení a prefixy inventárních čísel, štítky, lokality, tiskárna, protokoly.'
+  route_name: hwdesk.settings
+  parent: system.admin_config_system
+hwdesk.tags:
+  title: 'Štítky'
+  route_name: entity.hwdesk_tag.collection
+  parent: hwdesk.settings
+hwdesk.locations:
+  title: 'Lokality'
+  route_name: entity.hwdesk_location.collection
+  parent: hwdesk.settings

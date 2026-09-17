@@ -1,0 +1,38 @@
+entity.hwdesk_asset.canonical:
+  title: 'Detail'
+  route_name: entity.hwdesk_asset.canonical
+  base_route: entity.hwdesk_asset.canonical
+entity.hwdesk_asset.edit_form:
+  title: 'Upravit'
+  route_name: entity.hwdesk_asset.edit_form
+  base_route: entity.hwdesk_asset.canonical
+  weight: 10
+hwdesk.asset.handover:
+  title: 'Předat / vrátit'
+  route_name: hwdesk.asset.handover
+  base_route: entity.hwdesk_asset.canonical
+  weight: 20
+hwdesk.asset.labels:
+  title: 'Štítek'
+  route_name: hwdesk.asset.label
+  base_route: entity.hwdesk_asset.canonical
+  weight: 30
+entity.hwdesk_asset.version_history:
+  title: 'Historie'
+  route_name: entity.hwdesk_asset.version_history
+  base_route: entity.hwdesk_asset.canonical
+  weight: 40
+hwdesk.settings:
+  title: 'Nastavení'
+  route_name: hwdesk.settings
+  base_route: hwdesk.settings
+hwdesk.settings.tags:
+  title: 'Štítky'
+  route_name: entity.hwdesk_tag.collection
+  base_route: hwdesk.settings
+  weight: 10
+hwdesk.settings.locations:
+  title: 'Lokality'
+  route_name: entity.hwdesk_location.collection
+  base_route: hwdesk.settings
+  weight: 20
