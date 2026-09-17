@@ -1,0 +1,6 @@
+services:
+  hwdesk.tag_generator:
+    class: Drupal\hwdesk\Service\TagGenerator
+    arguments: ['@config.factory', '@state']
+  hwdesk.zpl_label:
+    class: Drupal\hwdesk\Service\ZplLabel

@@ -1,0 +1,10 @@
+tag_prefixes:
+  notebook: NB
+  phone: TEL
+  monitor: MON
+  peripheral: PER
+  other: HW
+tag_pad: 4
+handover_token_hours: 72
+protocol_copy_to: ''
+label_printer_host: ''

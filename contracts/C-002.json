@@ -1,0 +1,12 @@
+{
+  "id": "C-002",
+  "file": "web/modules/hwdesk/src/Service/ZplLabel.php",
+  "role": "coder",
+  "title": "ZPL label builder for 50x25 mm Zebra labels",
+  "interface": "namespace Drupal\\hwdesk\\Service; final class ZplLabel (declare(strict_types=1); plain PHP, no Drupal dependencies, no constructor arguments).\nPublic method: build(string $tag, string $model, string $url, int $copies = 1): string -- one ZPL II format for a 50x25 mm label at 203 dpi.\nRequired structure, in this order, each command on its own line, string ends with \"^XZ\\n\":\n^XA\n^CI28\n^PW400\n^LL200\n^FO16,16^BQN,2,5^FDQA,<url>^FS        (QR code, model 2, magnification 5; the url verbatim after 'QA,')\n^FO170,30^A0N,40,40^FD<tag>^FS          (inventory tag, large)\n^FO170,90^A0N,26,26^FD<model>^FS        (model text)\n^PQ<copies>\n^XZ\nText sanitising for <tag> and <model>: remove the ZPL control characters '^' and '~' and every ASCII control character (bytes < 0x20 and 0x7F) from the text, then truncate the model to 30 characters (mb_substr) — the tag is not truncated; do not alter the url.\ncopies < 1 -> \\InvalidArgumentException. Exactly one ^XA and one ^XZ in the output regardless of copies (copies go through ^PQ only).",
+  "uses": {},
+  "database": "not applicable",
+  "acceptance": "web/modules/hwdesk/tests/src/Unit/ZplLabelTest.php",
+  "depends_on": [],
+  "budget": {"iterations": 12}
+}

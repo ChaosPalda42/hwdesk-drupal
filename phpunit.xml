@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- PHPUnit for the custom modules only. Kernel tests run on SQLite; no
+<!-- PHPUnit for the hwdesk module only. Kernel tests run on SQLite; no
      site install is needed (Drupal's test bootstrap builds one per test). -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
@@ -23,12 +23,12 @@
   </php>
   <testsuites>
     <testsuite name="custom">
-      <directory>web/modules/custom/*/tests/src</directory>
+      <directory>web/modules/hwdesk/tests/src</directory>
     </testsuite>
   </testsuites>
   <source>
     <include>
-      <directory>web/modules/custom/*/src</directory>
+      <directory>web/modules/hwdesk/src</directory>
     </include>
   </source>
 </phpunit>

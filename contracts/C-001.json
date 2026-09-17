@@ -1,0 +1,12 @@
+{
+  "id": "C-001",
+  "file": "web/modules/hwdesk/src/Service/TagGenerator.php",
+  "role": "coder",
+  "title": "Inventory tag generator (Drupal service)",
+  "interface": "namespace Drupal\\hwdesk\\Service; final class TagGenerator (declare(strict_types=1)).\nConstructor: __construct(\\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, \\Drupal\\Core\\State\\StateInterface $state). Registered in hwdesk.services.yml as 'hwdesk.tag_generator' with arguments ['@config.factory', '@state'] (already written; do not touch).\nConfig 'hwdesk.settings' (already installed): 'tag_prefixes' = map type => PREFIX, e.g. {notebook: NB, phone: TEL, monitor: MON, peripheral: PER, other: HW}; 'tag_pad' = int minimum digits (default 4).\nTag format: '<PREFIX>-<NUMBER>' where PREFIX is [A-Z0-9]{1,8} and NUMBER is decimal digits; the number is zero-padded to tag_pad digits and grows beyond it (NB-9999 -> NB-10000).\nOne counter per PREFIX (not per type), persisted in State under the key 'hwdesk.tag_seq.<PREFIX>' (int, last issued number; missing = 0).\nPublic methods:\n- next(string $type): string  -- issue and return the next tag for the type's prefix (unknown type -> the 'other' prefix; if 'other' is missing too, prefix 'HW'); increments the counter.\n- peek(string $type): string  -- the tag next() would return, without consuming it.\n- reserve(string $tag): void  -- a manually chosen tag; parse it, and if its number is greater than the prefix's counter, set the counter to that number. Malformed tag -> \\InvalidArgumentException.\n- isValid(string $tag): bool  -- matches the tag format exactly (uppercase prefix, a single hyphen, at least one digit).\nRead config on every call (tests change tag_pad at runtime); no static state; no \\Drupal:: static calls (use the injected services).",
+  "uses": {},
+  "database": "not applicable (State API via the injected StateInterface)",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php",
+  "depends_on": [],
+  "budget": {"iterations": 12}
+}

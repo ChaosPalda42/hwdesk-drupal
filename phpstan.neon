@@ -4,6 +4,6 @@
 parameters:
   level: 5
   paths:
-    - web/modules/custom
+    - web/modules/hwdesk
   reportUnmatchedIgnoredErrors: false
   treatPhpDocTypesAsCertain: false
