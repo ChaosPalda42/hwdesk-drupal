@@ -10,8 +10,8 @@ context_length = 65536
 slots = 2
 
 [roles.tester]
-model = "nousresearch/hermes-4.3-36b"
-context_length = 32768
+model = "openai/gpt-oss-120b"
+context_length = 65536
 slots = 1
 
 [roles.triage]

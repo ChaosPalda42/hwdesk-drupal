@@ -92,6 +92,10 @@ Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
   si ho stáhne a připojí podle README. Před každým pushem: `git status`
   nesmí obsahovat settings.php, DB ani `private/`.
 
+- 2026-09-18: všechny role (coder, tester, triage) na openai/gpt-oss-120b,
+  context 65536 — sjednoceno s výchozími rolemi harnessu po benchmarku
+  factory-73 (4/4 zelené, 50 s/kontrakt); jiné modely nenahrávat bez benchmarku.
+
 ## Pravidla projektu
 - Stack: PHP 8.5, Drupal 11.4, PHPUnit 11 (kernel + unit testy), PHPStan level 5 + phpstan-drupal.
 - Testy: `php vendor/bin/phpunit -c phpunit.xml` (celá sada) nebo s cestou k jednomu testu.
