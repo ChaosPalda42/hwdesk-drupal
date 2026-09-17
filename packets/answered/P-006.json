@@ -1,0 +1,71 @@
+{
+  "id": "P-006",
+  "contract": "C-008",
+  "title": "CSV export and import of assets",
+  "created_at": "2026-09-17T16:01:53+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-008-1"
+  ],
+  "findings": [],
+  "failing": "PHPUnit 11.5.56 by Sebastian Bergmann and contributors.\n\nRuntime:       PHP 8.5.10\nConfiguration: /Users/AI/projects/hwdesk-drupal/phpunit.xml\n\n.FDD                                                                4 / 4 (100%)\n\nTime: 00:03.975, Memory: 14.00 MB\n\nThere was 1 failure:\n\n1) Drupal\\Tests\\hwdesk\\Kernel\\AssetCsvTest::testImportCreatesAndUpdatesByTag\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'200.00'\n+'200'\n\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/AssetCsvTest.php:92\n\nFAILURES!\nTests: 4, Assertions: 89, Failures: 1, Deprecations: 1.\n",
+  "diff": "+<?php\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Core\\Entity\\EntityTypeManagerInterface;\n+use Drupal\\Core\\Config\\ConfigFactoryInterface;\n+use Drupal\\hwdesk\\AssetStatus;\n+use Drupal\\hwdesk\\AssetCondition;\n+use Drupal\\hwdesk\\Entity\\Asset;\n+use InvalidArgumentException;\n+\n+/**\n+ * Service for CSV export and import of assets.\n+ */\n+final class AssetCsv {\n+  public const COLUMNS = [\n+    'tag',\n+    'type',\n+    'manufacturer',\n+    'model',\n+    'serial_number',\n+    'status',\n+    'condition',\n+    'holder',\n+    'location',\n+    'tags',\n+    'invoice',\n+    'price',\n+    'warranty_until',\n+    'cost_center',\n+    'notes',\n+  ];\n+\n+  public function __construct(\n+    private readonly EntityTypeManagerInterface $entityTypeManager,\n+    private readonly ConfigFactoryInterface $configFactory,\n+    private readonly TagGenerator $tagGenerator,\n+  ) {}\n+\n+  /**\n+   * Export assets to CSV string.\n+   */\n+  public function export(iterable $assets): string {\n+    $lines = [];\n+    // Header line.\n+    $lines[] = implode(';', self::COLUMNS);\n+    foreach ($assets as $asset) {\n+      if (!$asset instanceof Asset) {\n+        continue;\n+      }\n+      $row = [];\n+      $row[] = $this->escape($asset->getTag());\n+      $row[] = $this->escape($asset->getType());\n+      $row[] = $this->escape($asset->getManufacturer());\n+      $row[] = $this->escape($asset->getModel());\n+      $row[] = $this->escape($asset->getSerialNumber());\n+      $row[] = $this->escape($asset->getStatus()->value);\n+      $row[] = $this->escape($asset->getCondition()->value);\n+      $holder = $asset->getHolder();\n… (200 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "1: read_file web/modules/hwdesk/src/Service/AssetCsv.php FAILED {\"error\": \"not a file: 'web/modules/hwdesk/src/Service/AssetCsv.php'\", \"recoverable\": true}",
+    "2: write_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "3: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "4: read_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/AssetCsv.php'. Re-read the current file and copy a smaller exact literal ",
+    "7: write_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "9: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/AssetCsv.php'. Re-read the current file and copy a smaller exact literal ",
+    "11: write_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "3: read_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "7: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "9: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "11: apply_patch web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "12: read_file web/modules/hwdesk/src/Service/AssetCsv.php ok",
+    "final: budget exhausted"
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-008",
+    "file": "web/modules/hwdesk/src/Service/AssetCsv.php",
+    "role": "coder",
+    "title": "CSV export and import of assets",
+    "interface": "final class AssetCsv. Constructor: __construct(\\Drupal\\Core\\Entity\\EntityTypeManagerInterface $entityTypeManager, \\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, \\Drupal\\hwdesk\\Service\\TagGenerator $tagGenerator). Service 'hwdesk.asset_csv' (registered). public const COLUMNS = ['tag','type','manufacturer','model','serial_number','status','condition','holder','location','tags','invoice','price','warranty_until','cost_center','notes'].\nexport(iterable $assets): string -- UTF-8 BOM \"\\xEF\\xBB\\xBF\", then header (COLUMNS joined by ';'), then one line per Asset, lines end with \"\\r\\n\"; delimiter ';'; a field is wrapped in double quotes (inner quotes doubled) only when it contains ';', '\"', \"\\n\" or \"\\r\". Values: tag; type key; manufacturer; model; serial_number; status value; condition value; holder = holder's e-mail or ''; location = location name or ''; tags = tag names joined by '|' in stored order; invoice = invoice number or ''; price = stored decimal string ('' when NULL); warranty_until = 'Y-m-d' or ''; cost_center; notes. Iterate in the given order.\nimport(string $csv): array -- ['created' => int, 'updated' => int, 'errors' => list<string>]. Strip a leading BOM; split lines on \\r\\n or \\n; ignore empty lines; parse with str_getcsv($line, ';', '\"', '\\\\'); the header must equal COLUMNS exactly (after trimming cells) else \\InvalidArgumentException. Rows are numbered from 1 = header, so the first data row is 'řádek 2'. Per data row: trim cells; a row is applied only when it is fully valid, otherwise one error string 'řádek <n>: <reason>' naming the bad value is added and the row is skipped. Validation: type must be a key of config hwdesk.settings 'asset_types' (error names the type); model non-empty (error contains 'model'); status must be a \\Drupal\\hwdesk\\AssetStatus value (error names the value; empty = 'in_stock'); condition must be a \\Drupal\\hwdesk\\AssetCondition value (empty = 'new'); holder: empty = NULL, else a user with that e-mail (case-insensitive; load users by 'mail' with a case-insensitive entity query) must exist (error names the e-mail); invoice: empty = NULL, else an hwdesk_invoice with that number must exist (error names the number); location: empty = NULL, else find hwdesk_location by name or create it; tags: split on '|', trim, drop blanks, find hwdesk_tag by name or create it; price: '' = NULL else the string as given; warranty_until: '' = NULL else 'Y-m-d'. Upsert: tag non-empty -> load hwdesk_asset by tag (upper-cased); found -> update all columns and count 'updated'; not found -> create with that tag (call $tagGenerator->reserve($tag)) and count 'created'; tag empty -> create with $tagGenerator->next($type). Save each applied row; do not stop on errors.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+    "uses": {
+      "TagGenerator": "web/modules/hwdesk/src/Service/TagGenerator.php: next/reserve/isValid",
+      "Asset": "web/modules/hwdesk/src/Entity/Asset.php",
+      "AssetStatus": "web/modules/hwdesk/src/AssetStatus.php",
+      "AssetCondition": "web/modules/hwdesk/src/AssetCondition.php"
+    },
+    "database": "entity storage through the injected EntityTypeManagerInterface",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/AssetCsvTest.php",
+    "forbidden": [],
+    "depends_on": [
+      "C-001"
+    ],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

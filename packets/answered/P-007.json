@@ -1,0 +1,69 @@
+{
+  "id": "P-007",
+  "contract": "C-007",
+  "title": "Receiving goods: N assets from one form, then serial numbers",
+  "created_at": "2026-09-17T16:02:45+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-007-1"
+  ],
+  "findings": [],
+  "failing": "PHPUnit 11.5.56 by Sebastian Bergmann and contributors.\n\nRuntime:       PHP 8.5.10\nConfiguration: /Users/AI/projects/hwdesk-drupal/phpunit.xml\n\nF........                                                           9 / 9 (100%)\n\nTime: 00:07.986, Memory: 14.00 MB\n\nThere was 1 failure:\n\n1) Drupal\\Tests\\hwdesk\\Kernel\\IntakeServiceTest::testCreateBatchMakesNAssetsWithGeneratedTags\nFailed asserting that 31990.0 is identical to '31990.00'.\n\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/IntakeServiceTest.php:67\n\nFAILURES!\nTests: 9, Assertions: 169, Failures: 1.\n",
+  "diff": "+<?php\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Core\\Entity\\EntityTypeManagerInterface;\n+use Drupal\\hwdesk\\Entity\\Asset;\n+use InvalidArgumentException;\n+\n+final class IntakeService {\n+  public function __construct(\n+    private readonly EntityTypeManagerInterface $entityTypeManager,\n+    private readonly TagGenerator $tagGenerator,\n+  ) {}\n+\n+  /**\n+   * Create a batch of assets.\n+   */\n+  public function createBatch(array $values, int $count): array {\n+    if ($count < 1 || $count > 500) {\n+      throw new InvalidArgumentException('Count must be between 1 and 500.');\n+    }\n+    $type = $values['type'] ?? null;\n+    $model = $values['model'] ?? null;\n+    if (!is_string($type) || trim($type) === '' || !is_string($model) || trim($model) === '') {\n+      throw new InvalidArgumentException('Type and model are required.');\n+    }\n+    $assets = [];\n+    for ($i = 0; $i < $count; $i++) {\n+      $asset_data = [\n+        'type' => $type,\n+        'model' => $model,\n+        'tag' => $this->tagGenerator->next($type),\n+        'status' => 'in_stock',\n+        'holder' => NULL,\n+      ];\n+      if (isset($values['manufacturer'])) {\n+        $asset_data['manufacturer'] = $values['manufacturer'];\n+      }\n+      $asset_data['condition'] = $values['condition'] ?? 'new';\n+      if (array_key_exists('location', $values)) {\n+        $asset_data['location'] = $values['location'];\n+      }\n+      if (!empty($values['tags'])) {\n+        $asset_data['tags'] = $values['tags'];\n+      }\n+      if (array_key_exists('invoice', $values)) {\n+        $asset_data['invoice'] = $values['invoice'];\n+      }\n+      if (array_key_exists('price', $values) && $values['price'] !== NULL) {\n+        // Keep as string with two decimals.\n+        // Ensure price is stored as a string with exactly two decimal places.\n+        $priceStr = (string) $values['price'];\n+        $asset_data['price'] = (string) sprintf('%.2f', (float) $priceStr);\n+      }\n+      if (!empty($values['warranty_until'])) {\n+        $asset_data['warranty_until'] = $values['warranty_until'];\n+      }\n+      if (array_key_exists('cost_center', $values)) {\n+        $asset_data['cost_center'] = $values['cost_center'];\n… (69 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "1: read_file web/modules/hwdesk/src/Service/IntakeService.php FAILED {\"error\": \"not a file: 'web/modules/hwdesk/src/Service/IntakeService.php'\", \"recoverable\": true}",
+    "2: write_file web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "3: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/IntakeService.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/IntakeService.php'. Re-read the current file and copy a smaller exact lit",
+    "6: write_file web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "7: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "9: read_file web/modules/hwdesk/tests/src/Kernel/IntakeServiceTest.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "11: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: apply_patch web/modules/hwdesk/src/Service/IntakeService.php FAILED {\"error\": \"old_string is not unique in 'web/modules/hwdesk/src/Service/IntakeService.php' (4528 occurrences) — provide more surrounding cont",
+    "2: write_file web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "3: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "7: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "9: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "11: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/IntakeService.php ok",
+    "final: budget exhausted"
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-007",
+    "file": "web/modules/hwdesk/src/Service/IntakeService.php",
+    "role": "coder",
+    "title": "Receiving goods: N assets from one form, then serial numbers",
+    "interface": "final class IntakeService. Constructor: __construct(\\Drupal\\Core\\Entity\\EntityTypeManagerInterface $entityTypeManager, \\Drupal\\hwdesk\\Service\\TagGenerator $tagGenerator). Service 'hwdesk.intake' (registered).\ncreateBatch(array $values, int $count): array -- list of saved \\Drupal\\hwdesk\\Entity\\Asset, in tag order. $values keys (all optional except type and model): type (string, required), model (string, required, non-empty after trim), manufacturer (string), condition (string, default 'new'), location (int entity id or NULL), tags (list<int>), invoice (int or NULL), price (string|NULL), warranty_until (string 'Y-m-d' or NULL), cost_center (string), notes (string). $count < 1 or > 500 -> \\InvalidArgumentException; missing/empty type or model -> \\InvalidArgumentException. Each asset: 'tag' => $tagGenerator->next($type), 'status' => 'in_stock', 'holder' => NULL, serial_number empty; unknown keys ignored; create via $entityTypeManager->getStorage('hwdesk_asset')->create([...]) and save each.\nsetSerialNumbers(array $serialsByAssetId): void -- keys = asset ids (int), values = serial strings; trim each; blank values are skipped (not written). Validate everything before writing anything: unknown asset id -> \\InvalidArgumentException; the same serial (case-insensitive) twice in the input -> \\InvalidArgumentException; a serial already used (case-insensitive) by a different existing asset (entity query on hwdesk_asset, 'serial_number' with a case-insensitive comparison, accessCheck(FALSE)) -> \\InvalidArgumentException whose message contains that serial. Then set serial_number on each asset and save.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+    "uses": {
+      "TagGenerator": "web/modules/hwdesk/src/Service/TagGenerator.php: next(string $type): string",
+      "Asset": "web/modules/hwdesk/src/Entity/Asset.php"
+    },
+    "database": "entity storage through the injected EntityTypeManagerInterface",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/IntakeServiceTest.php",
+    "forbidden": [],
+    "depends_on": [
+      "C-001"
+    ],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

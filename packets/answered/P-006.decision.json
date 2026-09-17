@@ -1,0 +1,8 @@
+{
+  "packet": "P-006",
+  "kind": "retry",
+  "diff": "",
+  "contract": {},
+  "note": "test bug, not the model: SQLite hands decimals back as floats; the assertions now compare floats and C-008's export formats price with number_format(…, 2)",
+  "created_at": "2026-09-17T16:05:44+00:00"
+}
