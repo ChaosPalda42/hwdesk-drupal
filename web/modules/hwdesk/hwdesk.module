@@ -10,6 +10,8 @@ declare(strict_types=1);
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Url;
+use Drupal\file\FileInterface;
+use Drupal\user\UserInterface;
 use Drupal\hwdesk\Entity\Handover;
 use Drupal\hwdesk\AssetCondition;
 use Drupal\hwdesk\AssetStatus;
@@ -147,4 +149,45 @@ function hwdesk_entity_delete(EntityInterface $entity): void {
   if (str_starts_with($entity->getEntityTypeId(), 'hwdesk_') && $entity->getEntityTypeId() !== 'hwdesk_audit') {
     \Drupal::service('hwdesk.audit')->record($entity, 'delete');
   }
+}
+
+/**
+ * Implements hook_user_update().
+ *
+ * HR blocks the account → the administrators learn what has to come back.
+ */
+function hwdesk_user_update(UserInterface $account): void {
+  $original = $account->getOriginal();
+  if ($account->isBlocked() && $original instanceof UserInterface && $original->isActive()) {
+    \Drupal::service('hwdesk.offboarding')->userBlocked($account);
+  }
+}
+
+/**
+ * Implements hook_file_download().
+ *
+ * Private files: administrators see everything; an employee may download
+ * the protocol of their own handover and the attachments of what they hold.
+ */
+function hwdesk_file_download(string $uri): array|int|null {
+  if (!str_starts_with($uri, 'private://hwdesk/')) {
+    return NULL;
+  }
+  $account = \Drupal::currentUser();
+  $headers = ['Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri)];
+  if ($account->hasPermission('administer hwdesk')) {
+    return $headers;
+  }
+  $files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(['uri' => $uri]);
+  $file = reset($files);
+  if (!$file instanceof FileInterface) {
+    return -1;
+  }
+  $storage = \Drupal::entityTypeManager()->getStorage('hwdesk_handover');
+  $handovers = $storage->getQuery()->accessCheck(FALSE)->condition('protocol_file', $file->id())->condition('user', $account->id())->range(0, 1)->execute();
+  if ($handovers) {
+    return $headers;
+  }
+  $assets = \Drupal::entityTypeManager()->getStorage('hwdesk_asset')->getQuery()->accessCheck(FALSE)->condition('attachments', $file->id())->condition('holder', $account->id())->range(0, 1)->execute();
+  return $assets ? $headers : -1;
 }

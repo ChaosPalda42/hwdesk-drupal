@@ -33,3 +33,6 @@ services:
   hwdesk.zpl_printer:
     class: Drupal\hwdesk\Service\ZplPrinter
     arguments: ['@config.factory']
+  hwdesk.offboarding:
+    class: Drupal\hwdesk\Service\Offboarding
+    arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.mail', '@language_manager']
