@@ -89,7 +89,7 @@ final class AssetCsvTest extends KernelTestBase {
     $this->assertSame('Brno', $nb->getLocation()?->getName(), 'a missing location is created by name');
     $this->assertSame(['Firemní', 'Nové'], array_map(static fn(Tag $t): string => $t->getName(), $nb->getTags()));
     $this->assertSame('FV-1', $nb->getInvoice()?->getNumber());
-    $this->assertSame('200.00', $nb->get('price')->value);
+    $this->assertSame(200.0, (float) $nb->get('price')->value);
     $this->assertSame('2027-05-01', $nb->get('warranty_until')->value);
     $this->assertSame('pozn', $nb->get('notes')->value);
     $this->assertSame('TEL-0001', $assets['TEL-0001']->getTag(), 'an empty tag is generated from the type');

@@ -64,7 +64,7 @@ final class IntakeServiceTest extends KernelTestBase {
       $this->assertSame('Sklad', $asset->getLocation()?->getName());
       $this->assertSame('FV-2026-001', $asset->getInvoice()?->getNumber());
       $this->assertSame(['Nové'], array_map(static fn(Tag $t): string => $t->getName(), $asset->getTags()));
-      $this->assertSame('31990.00', $asset->get('price')->value);
+      $this->assertSame(31990.0, (float) $asset->get('price')->value, 'SQLite hands decimals back as floats, MySQL as strings');
       $this->assertSame('2028-01-31', $asset->get('warranty_until')->value);
       $this->assertSame('IT', $asset->get('cost_center')->value);
       $this->assertNull($asset->getHolder());

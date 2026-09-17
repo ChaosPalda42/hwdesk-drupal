@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class CancelHandoverForm extends ConfirmFormBase {
 
-  private ?Handover $handover = NULL;
+  protected ?Handover $handover = NULL;
 
   public function __construct(protected readonly HandoverService $handovers) {}
 

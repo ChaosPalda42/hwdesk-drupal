@@ -7,6 +7,7 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Url;
@@ -111,8 +112,9 @@ function hwdesk_cron(): void {
  *
  * A pending handover can be cancelled from the list.
  */
-function hwdesk_entity_operation(EntityInterface $entity): array {
+function hwdesk_entity_operation(EntityInterface $entity, CacheableMetadata $cacheability): array {
   if ($entity instanceof Handover && $entity->getStatus() === HandoverStatus::Pending) {
+    $cacheability->addCacheableDependency($entity);
     return [
       'cancel' => [
         'title' => t('Zrušit'),
