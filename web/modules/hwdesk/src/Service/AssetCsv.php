@@ -107,7 +107,7 @@ final class AssetCsv {
       return $result;
     }
     $header = array_shift($lines);
-    $headerCells = array_map('trim', str_getcsv($header, ';'));
+    $headerCells = array_map('trim', str_getcsv($header, ';', '"', '\\'));
     if ($headerCells !== self::COLUMNS) {
       throw new InvalidArgumentException('Invalid CSV header.');
     }
