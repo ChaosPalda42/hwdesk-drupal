@@ -27,9 +27,9 @@ final class SelectAssetsForLabels extends ActionBase implements ContainerFactory
     array $configuration,
     string $plugin_id,
     mixed $plugin_definition,
-    private readonly PrivateTempStoreFactory $tempStoreFactory,
-    private readonly MessengerInterface $messenger,
-    private readonly AccountProxyInterface $currentUser,
+    protected readonly PrivateTempStoreFactory $tempStoreFactory,
+    protected readonly MessengerInterface $notices,
+    protected readonly AccountProxyInterface $currentUser,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -42,7 +42,7 @@ final class SelectAssetsForLabels extends ActionBase implements ContainerFactory
     $ids = array_values(array_map(static fn($e): int => (int) $e->id(), $entities));
     $this->tempStoreFactory->get('hwdesk')->set('label_selection', $ids);
     $query = ['ids' => implode(',', $ids)];
-    $this->messenger->addStatus(new TranslatableMarkup('Vybráno @count: @labels · @zpl · @csv', [
+    $this->notices->addStatus(new TranslatableMarkup('Vybráno @count: @labels · @zpl · @csv', [
       '@count' => count($ids),
       '@labels' => Link::fromTextAndUrl(new TranslatableMarkup('štítky k tisku'), Url::fromRoute('hwdesk.labels', [], ['query' => $query]))->toString(),
       '@zpl' => Link::fromTextAndUrl(new TranslatableMarkup('tisk na Zebru'), Url::fromRoute('hwdesk.labels.zpl', [], ['query' => $query]))->toString(),

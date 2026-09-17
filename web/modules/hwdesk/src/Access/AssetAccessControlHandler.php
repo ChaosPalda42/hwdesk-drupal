@@ -16,15 +16,18 @@ use Drupal\hwdesk\Entity\Asset;
 final class AssetAccessControlHandler extends EntityAccessControlHandler {
 
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResult {
+    $admin = AccessResult::allowedIfHasPermission($account, 'administer hwdesk');
     if ($operation === 'view' && $entity instanceof Asset) {
       $holder = $entity->getHolder();
       $own = $holder !== NULL && (int) $holder->id() === (int) $account->id();
-      return AccessResult::allowedIf($own)
-        ->andIf(AccessResult::allowedIfHasPermission($account, 'view own hwdesk assets'))
-        ->addCacheableDependency($entity)
-        ->cachePerUser();
+      return $admin->orIf(
+        AccessResult::allowedIf($own)
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'view own hwdesk assets'))
+          ->addCacheableDependency($entity)
+          ->cachePerUser()
+      );
     }
-    return AccessResult::neutral();
+    return $admin;
   }
 
 }

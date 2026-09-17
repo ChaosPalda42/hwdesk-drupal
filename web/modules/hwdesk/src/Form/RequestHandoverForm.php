@@ -21,8 +21,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class RequestHandoverForm extends FormBase {
 
   public function __construct(
-    private readonly HandoverService $handovers,
-    private readonly DateFormatterInterface $dateFormatter,
+    protected readonly HandoverService $handovers,
+    protected readonly DateFormatterInterface $dateFormatter,
   ) {}
 
   public static function create(ContainerInterface $container): static {

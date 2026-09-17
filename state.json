@@ -1,0 +1,113 @@
+{
+  "contracts": {
+    "C-001": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 7,
+      "commit": "",
+      "last_finding": "acceptance failed (9 failed)",
+      "packet": "P-001",
+      "updated_at": "2026-09-17T15:37:48+00:00"
+    },
+    "C-002": {
+      "status": "green",
+      "attempts": 1,
+      "iterations": 1,
+      "commit": "b98c10ce",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": "2026-09-17T15:35:40+00:00"
+    },
+    "C-003": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 14,
+      "commit": "",
+      "last_finding": "acceptance failed (5 failed)",
+      "packet": "P-004",
+      "updated_at": "2026-09-17T15:44:37+00:00"
+    },
+    "C-004": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 11,
+      "commit": "",
+      "last_finding": "acceptance failed (4 failed)",
+      "packet": "P-003",
+      "updated_at": "2026-09-17T15:42:07+00:00"
+    },
+    "C-006": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 13,
+      "commit": "",
+      "last_finding": "acceptance failed (1 failed)",
+      "packet": "P-002",
+      "updated_at": "2026-09-17T15:38:49+00:00"
+    },
+    "C-009": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 24,
+      "commit": "",
+      "last_finding": "acceptance failed (1 failed); [ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 47: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() wi",
+      "packet": "P-005",
+      "updated_at": "2026-09-17T15:46:02+00:00"
+    },
+    "C-010": {
+      "status": "green",
+      "attempts": 1,
+      "iterations": 1,
+      "commit": "42aead66",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": "2026-09-17T15:39:15+00:00"
+    },
+    "C-005": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
+    },
+    "C-007": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
+    },
+    "C-008": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
+    }
+  },
+  "runs": [
+    {
+      "started_at": "2026-09-17T15:35:06+00:00",
+      "finished_at": "2026-09-17T15:46:02+00:00",
+      "outcome": "needs-operator",
+      "iterations": 71,
+      "green": 2,
+      "red": 0,
+      "escalated": 5,
+      "note": "5 packet(s) waiting"
+    }
+  ],
+  "open_packets": [
+    "P-001",
+    "P-002",
+    "P-003",
+    "P-004",
+    "P-005"
+  ]
+}

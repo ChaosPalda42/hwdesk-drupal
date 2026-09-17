@@ -1,0 +1,53 @@
+{
+  "id": "P-004",
+  "contract": "C-003",
+  "title": "Signed expiring tokens for confirmation links",
+  "created_at": "2026-09-17T15:44:37+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 2 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-003-1"
+  ],
+  "findings": [],
+  "failing": "rupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:39\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n\n5) Drupal\\Tests\\hwdesk\\Kernel\\HandoverTokensTest::testTokenDependsOnTheSitePrivateKey\nSymfony\\Component\\DependencyInjection\\Exception\\ServiceNotFoundException: The service \"hwdesk.protocol_pdf\" has a dependency on a non-existent service \"file.repository\". Did you mean this: \"entity.repository\"?\n\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:116\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:123\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:83\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:93\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:45\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:39\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n\nERRORS!\nTests: 5, Assertions: 0, Errors: 5.\n",
+  "diff": "+<?php\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Component\\Datetime\\TimeInterface;\n+use Drupal\\Component\\Utility\\Crypt;\n+use Drupal\\Core\\PrivateKey;\n+\n+final class HandoverTokens {\n+  public function __construct(\n+    private readonly PrivateKey $privateKey,\n+    private readonly TimeInterface $time,\n+  ) {}\n+\n+  /**\n+   * Issue a token.\n+   */\n+  public function issue(int $handoverId, int $uid, int $expires): string {\n+    $data = \"$handoverId:$uid:$expires\";\n+    // Base64url encode without padding.\n+    $payload = rtrim(strtr(base64_encode($data), '+/', '-_'), '=');\n+    // Signature using HMAC base64 with URL‑safe alphabet.\n+    $signature = Crypt::hmacBase64($payload, $this->privateKey->get());\n+    return $payload . '.' . $signature;\n+  }\n+\n+  /**\n+   * Verify a token.\n+   */\n+  public function verify(string $token): ?array {\n+    // Must contain exactly one dot.\n+    if (substr_count($token, '.') !== 1) {\n+      return NULL;\n+    }\n+    [$payload, $signature] = explode('.', $token, 2);\n+    $expectedSignature = Crypt::hmacBase64($payload, $this->privateKey->get());\n+    if (!hash_equals($expectedSignature, $signature)) {\n+      return NULL;\n+    }\n+    // Decode payload from base64url.\n+    $b64 = strtr($payload, '-_', '+/');\n+    $mod = strlen($b64) % 4;\n+    if ($mod > 0) {\n+      $b64 .= str_repeat('=', 4 - $mod);\n+    }\n+    $decoded = base64_decode($b64, true);\n+    if ($decoded === false) {\n+      return NULL;\n+    }\n+    $parts = explode(':', $decoded);\n+    if (count($parts) !== 3) {\n+      return NULL;\n+    }\n+    [$handoverId, $uid, $expires] = $parts;\n+    if (!ctype_digit($handoverId) || !ctype_digit($uid) || !ctype_digit($expires)) {\n+      return NULL;\n+    }\n+    $handoverId = (int) $handoverId;\n+    $uid = (int) $uid;\n… (11 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 2 iterations",
+    "triage: no parseable failure",
+    "1: write_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "3: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "4: read_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/HandoverTokens.php'. Re-read the current file and copy a smaller exact li",
+    "6: write_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "7: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "8: read_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "9: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/HandoverTokens.php'. Re-read the current file and copy a smaller exact li",
+    "10: read_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "11: write_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "final: I cannot provide a solution under the given constraints."
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-003",
+    "file": "web/modules/hwdesk/src/Service/HandoverTokens.php",
+    "role": "coder",
+    "title": "Signed expiring tokens for confirmation links",
+    "interface": "final class HandoverTokens. Constructor: __construct(\\Drupal\\Core\\PrivateKey $privateKey, \\Drupal\\Component\\Datetime\\TimeInterface $time). Service 'hwdesk.handover_tokens' (already registered with ['@private_key', '@datetime.time']).\nissue(int $handoverId, int $uid, int $expires): string -- token = <payload>.<signature>; payload = base64url (Drupal\\Component\\Utility\\Crypt::hmacBase64 style alphabet: RFC 4648 URL-safe, no padding) of the string \"$handoverId:$uid:$expires\"; signature = Crypt::hmacBase64(payload, $privateKey->get()). The whole token matches /^[A-Za-z0-9_.-]+$/.\nverify(string $token): ?array -- ['handover' => int, 'uid' => int, 'expires' => int] when the token has exactly one '.', the signature equals Crypt::hmacBase64(payload, key) (compare with hash_equals), the payload decodes to three non-negative integers, and expires >= $time->getRequestTime(); NULL otherwise (never throw).\nUse Drupal\\Component\\Utility\\Crypt for hmacBase64 and for base64url (Crypt::hmacBase64 output alphabet; for the payload use rtrim(strtr(base64_encode(...), '+/', '-_'), '=') and the reverse). File header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+    "uses": {},
+    "database": "not applicable",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/HandoverTokensTest.php",
+    "forbidden": [],
+    "depends_on": [],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

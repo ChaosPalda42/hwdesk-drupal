@@ -1,0 +1,245 @@
+langcode: cs
+status: true
+dependencies:
+  module:
+    - hwdesk
+    - user
+id: hwdesk_audit
+label: Audit
+module: views
+description: 'Kdo, co, kdy — každá změna v HW Desku.'
+tag: hwdesk
+base_table: hwdesk_audit
+base_field: id
+display:
+  default:
+    id: default
+    display_title: Výchozí
+    display_plugin: default
+    position: 0
+    display_options:
+      title: Audit
+      fields:
+        created:
+          id: created
+          table: hwdesk_audit
+          field: created
+          entity_type: hwdesk_audit
+          entity_field: created
+          plugin_id: field
+          label: Kdy
+          type: timestamp
+          settings:
+            date_format: short
+            custom_date_format: ''
+            timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
+        uid:
+          id: uid
+          table: hwdesk_audit
+          field: uid
+          entity_type: hwdesk_audit
+          entity_field: uid
+          plugin_id: field
+          label: Kdo
+          type: entity_reference_label
+          settings:
+            link: true
+        target_type:
+          id: target_type
+          table: hwdesk_audit
+          field: target_type
+          entity_type: hwdesk_audit
+          entity_field: target_type
+          plugin_id: field
+          label: Typ
+          type: string
+        target_label:
+          id: target_label
+          table: hwdesk_audit
+          field: target_label
+          entity_type: hwdesk_audit
+          entity_field: target_label
+          plugin_id: field
+          label: Entita
+          type: string
+        action:
+          id: action
+          table: hwdesk_audit
+          field: action
+          entity_type: hwdesk_audit
+          entity_field: action
+          plugin_id: field
+          label: Akce
+          type: string
+        message:
+          id: message
+          table: hwdesk_audit
+          field: message
+          entity_type: hwdesk_audit
+          entity_field: message
+          plugin_id: field
+          label: Co
+          type: string
+      filters:
+        target_type:
+          id: target_type
+          table: hwdesk_audit
+          field: target_type
+          entity_type: hwdesk_audit
+          entity_field: target_type
+          plugin_id: string
+          operator: '='
+          value: ''
+          exposed: true
+          expose:
+            operator_id: target_type_op
+            label: Typ
+            identifier: target_type
+            operator: target_type_op
+            operator_limit_selection: false
+            operator_list: {  }
+            required: false
+            remember: false
+            multiple: false
+            use_operator: false
+        target_id:
+          id: target_id
+          table: hwdesk_audit
+          field: target_id
+          entity_type: hwdesk_audit
+          entity_field: target_id
+          plugin_id: numeric
+          operator: '='
+          value:
+            min: ''
+            max: ''
+            value: ''
+          exposed: true
+          expose:
+            operator_id: target_id_op
+            label: 'ID entity'
+            identifier: target_id
+            operator: target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            required: false
+            remember: false
+            multiple: false
+            use_operator: false
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+        message:
+          id: message
+          table: hwdesk_audit
+          field: message
+          entity_type: hwdesk_audit
+          entity_field: message
+          plugin_id: string
+          operator: contains
+          value: ''
+          exposed: true
+          expose:
+            operator_id: message_op
+            label: Hledat
+            identifier: q
+            operator: message_op
+            operator_limit_selection: false
+            operator_list: {  }
+            required: false
+            remember: false
+            multiple: false
+            use_operator: false
+      sorts:
+        created:
+          id: created
+          table: hwdesk_audit
+          field: created
+          entity_type: hwdesk_audit
+          entity_field: created
+          plugin_id: date
+          order: DESC
+      pager:
+        type: full
+        options:
+          items_per_page: 100
+          offset: 0
+          id: 0
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Filtrovat
+          reset_button: true
+          reset_button_label: Zrušit
+      access:
+        type: perm
+        options:
+          perm: 'administer hwdesk'
+      cache:
+        type: tag
+        options: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          plugin_id: text_custom
+          empty: true
+          content: 'Žádné záznamy.'
+      style:
+        type: table
+        options:
+          columns:
+            created: created
+            uid: uid
+            target_type: target_type
+            target_label: target_label
+            action: action
+            message: message
+          default: created
+          info:
+            created:
+              sortable: true
+              default_sort_order: desc
+          override: true
+          sticky: true
+          empty_table: true
+      row:
+        type: fields
+      query:
+        type: views_query
+        options: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }
+  page:
+    id: page
+    display_title: Stránka
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: hwdesk/audit
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }

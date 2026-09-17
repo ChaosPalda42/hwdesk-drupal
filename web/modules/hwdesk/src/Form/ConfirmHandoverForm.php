@@ -21,9 +21,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class ConfirmHandoverForm extends FormBase {
 
   public function __construct(
-    private readonly HandoverService $handovers,
-    private readonly HandoverTokens $tokens,
-    private readonly DateFormatterInterface $dateFormatter,
+    protected readonly HandoverService $handovers,
+    protected readonly HandoverTokens $tokens,
+    protected readonly DateFormatterInterface $dateFormatter,
   ) {}
 
   public static function create(ContainerInterface $container): static {

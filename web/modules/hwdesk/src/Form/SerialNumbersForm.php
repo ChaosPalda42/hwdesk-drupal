@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
  */
 final class SerialNumbersForm extends FormBase {
 
-  public function __construct(private readonly IntakeService $intake) {}
+  public function __construct(protected readonly IntakeService $intake) {}
 
   public static function create(ContainerInterface $container): static {
     return new static($container->get('hwdesk.intake'));

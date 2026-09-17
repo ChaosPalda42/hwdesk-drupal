@@ -7,6 +7,7 @@ namespace Drupal\hwdesk\Entity;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Form\RevisionDeleteForm;
@@ -48,6 +49,7 @@ use Drupal\user\UserInterface;
   handlers: [
     'storage' => SqlContentEntityStorage::class,
     'access' => AssetAccessControlHandler::class,
+    'list_builder' => EntityListBuilder::class,
     'views_data' => AssetViewsData::class,
     'form' => [
       'default' => AssetForm::class,

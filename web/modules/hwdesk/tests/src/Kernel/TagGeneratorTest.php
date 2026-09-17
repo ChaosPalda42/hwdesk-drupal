@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('hwdesk')]
 final class TagGeneratorTest extends KernelTestBase {
 
-  protected static $modules = ['system', 'user', 'hwdesk'];
+  protected static $modules = ['system', 'user', 'file', 'options', 'datetime', 'views', 'hwdesk'];
 
   protected function setUp(): void {
     parent::setUp();

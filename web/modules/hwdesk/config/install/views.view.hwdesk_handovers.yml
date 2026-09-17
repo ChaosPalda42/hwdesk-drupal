@@ -1,0 +1,276 @@
+langcode: cs
+status: true
+dependencies:
+  module:
+    - hwdesk
+    - options
+    - user
+id: hwdesk_handovers
+label: 'Předání a vrácení'
+module: views
+description: 'Výzvy k převzetí a vrácení, jejich stav a protokoly.'
+tag: hwdesk
+base_table: hwdesk_handover
+base_field: id
+display:
+  default:
+    id: default
+    display_title: Výchozí
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Předání a vrácení'
+      fields:
+        created:
+          id: created
+          table: hwdesk_handover
+          field: created
+          entity_type: hwdesk_handover
+          entity_field: created
+          plugin_id: field
+          label: Vytvořeno
+          type: timestamp
+          settings:
+            date_format: short
+            custom_date_format: ''
+            timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
+        kind:
+          id: kind
+          table: hwdesk_handover
+          field: kind
+          entity_type: hwdesk_handover
+          entity_field: kind
+          plugin_id: field
+          label: Druh
+          type: list_default
+        asset:
+          id: asset
+          table: hwdesk_handover
+          field: asset
+          entity_type: hwdesk_handover
+          entity_field: asset
+          plugin_id: field
+          label: Zařízení
+          type: entity_reference_label
+          settings:
+            link: true
+        user:
+          id: user
+          table: hwdesk_handover
+          field: user
+          entity_type: hwdesk_handover
+          entity_field: user
+          plugin_id: field
+          label: Zaměstnanec
+          type: entity_reference_label
+          settings:
+            link: true
+        status:
+          id: status
+          table: hwdesk_handover
+          field: status
+          entity_type: hwdesk_handover
+          entity_field: status
+          plugin_id: field
+          label: Stav
+          type: list_default
+        expires:
+          id: expires
+          table: hwdesk_handover
+          field: expires
+          entity_type: hwdesk_handover
+          entity_field: expires
+          plugin_id: field
+          label: 'Platí do'
+          type: timestamp
+          settings:
+            date_format: short
+            custom_date_format: ''
+            timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
+        protocol_number:
+          id: protocol_number
+          table: hwdesk_handover
+          field: protocol_number
+          entity_type: hwdesk_handover
+          entity_field: protocol_number
+          plugin_id: field
+          label: Protokol
+          type: string
+        protocol_file__target_id:
+          id: protocol_file__target_id
+          table: hwdesk_handover
+          field: protocol_file__target_id
+          entity_type: hwdesk_handover
+          entity_field: protocol_file
+          plugin_id: field
+          label: PDF
+          type: file_default
+        reason:
+          id: reason
+          table: hwdesk_handover
+          field: reason
+          entity_type: hwdesk_handover
+          entity_field: reason
+          plugin_id: field
+          label: Důvod
+          type: string
+        operations:
+          id: operations
+          table: hwdesk_handover
+          field: operations
+          entity_type: hwdesk_handover
+          plugin_id: entity_operations
+          label: Operace
+          destination: true
+      filters:
+        status:
+          id: status
+          table: hwdesk_handover
+          field: status
+          entity_type: hwdesk_handover
+          entity_field: status
+          plugin_id: string
+          operator: '='
+          value: ''
+          exposed: true
+          expose:
+            operator_id: status_op
+            label: Stav
+            identifier: status
+            operator: status_op
+            operator_limit_selection: false
+            operator_list: {  }
+            required: false
+            remember: false
+            multiple: false
+            use_operator: false
+        kind:
+          id: kind
+          table: hwdesk_handover
+          field: kind
+          entity_type: hwdesk_handover
+          entity_field: kind
+          plugin_id: string
+          operator: '='
+          value: ''
+          exposed: true
+          expose:
+            operator_id: kind_op
+            label: Druh
+            identifier: kind
+            operator: kind_op
+            operator_limit_selection: false
+            operator_list: {  }
+            required: false
+            remember: false
+            multiple: false
+            use_operator: false
+      sorts:
+        created:
+          id: created
+          table: hwdesk_handover
+          field: created
+          entity_type: hwdesk_handover
+          entity_field: created
+          plugin_id: date
+          order: DESC
+      pager:
+        type: full
+        options:
+          items_per_page: 50
+          offset: 0
+          id: 0
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Filtrovat
+          reset_button: true
+          reset_button_label: Zrušit
+      access:
+        type: perm
+        options:
+          perm: 'administer hwdesk'
+      cache:
+        type: tag
+        options: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          plugin_id: text_custom
+          empty: true
+          content: 'Zatím žádné předání.'
+      style:
+        type: table
+        options:
+          columns:
+            created: created
+            kind: kind
+            asset: asset
+            user: user
+            status: status
+            expires: expires
+            protocol_number: protocol_number
+            protocol_file__target_id: protocol_file__target_id
+            reason: reason
+            operations: operations
+          default: created
+          info:
+            created:
+              sortable: true
+              default_sort_order: desc
+            status:
+              sortable: true
+              default_sort_order: asc
+          override: true
+          sticky: true
+          empty_table: true
+      row:
+        type: fields
+      query:
+        type: views_query
+        options: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }
+  page:
+    id: page
+    display_title: Stránka
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: hwdesk/handovers
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }

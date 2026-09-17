@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('hwdesk')]
 final class ProtocolNumbersTest extends KernelTestBase {
 
-  protected static $modules = ['system', 'user', 'hwdesk'];
+  protected static $modules = ['system', 'user', 'file', 'options', 'datetime', 'views', 'hwdesk'];
 
   private function numbers(): ProtocolNumbers {
     return $this->container->get('hwdesk.protocol_numbers');

@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class QrController extends ControllerBase {
 
-  public function redirect(string $tag): RedirectResponse {
+  public function go(string $tag): RedirectResponse {
     $ids = $this->entityTypeManager()->getStorage('hwdesk_asset')->getQuery()->accessCheck(FALSE)
       ->condition('tag', strtoupper($tag))->range(0, 1)->execute();
     $asset = $ids ? Asset::load(reset($ids)) : NULL;

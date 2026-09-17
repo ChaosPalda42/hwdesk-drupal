@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class ImportForm extends FormBase {
 
-  public function __construct(private readonly AssetCsv $csv) {}
+  public function __construct(protected readonly AssetCsv $csv) {}
 
   public static function create(ContainerInterface $container): static {
     return new static($container->get('hwdesk.asset_csv'));

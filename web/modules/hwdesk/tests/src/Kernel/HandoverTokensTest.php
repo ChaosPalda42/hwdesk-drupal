@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('hwdesk')]
 final class HandoverTokensTest extends KernelTestBase {
 
-  protected static $modules = ['system', 'user', 'hwdesk'];
+  protected static $modules = ['system', 'user', 'file', 'options', 'datetime', 'views', 'hwdesk'];
 
   private function tokens(): HandoverTokens {
     return $this->container->get('hwdesk.handover_tokens');

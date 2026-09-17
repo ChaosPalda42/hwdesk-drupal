@@ -33,8 +33,13 @@ final class LabelController extends ControllerBase {
 
   public function sheet(Request $request): array {
     $ids = self::idsFromRequest($request, $this->tempStoreFactory);
-    $assets = $ids ? $this->entityTypeManager()->getStorage('hwdesk_asset')->loadMultiple($ids) : [];
-    return $this->build(array_values($assets));
+    $assets = [];
+    foreach ($ids ? $this->entityTypeManager()->getStorage('hwdesk_asset')->loadMultiple($ids) : [] as $asset) {
+      if ($asset instanceof Asset) {
+        $assets[] = $asset;
+      }
+    }
+    return $this->build($assets);
   }
 
   /**

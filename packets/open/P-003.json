@@ -1,0 +1,49 @@
+{
+  "id": "P-003",
+  "contract": "C-004",
+  "title": "Protocol numbers HP-<year>-<sequence>",
+  "created_at": "2026-09-17T15:42:07+00:00",
+  "ladder": [
+    "worker: stopped after 7 iterations",
+    "retry: stopped after 4 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-004-1"
+  ],
+  "findings": [],
+  "failing": "-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:39\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n\n4) Drupal\\Tests\\hwdesk\\Kernel\\ProtocolNumbersTest::testPaddingGrowsBeyondFourDigits\nSymfony\\Component\\DependencyInjection\\Exception\\ServiceNotFoundException: The service \"hwdesk.protocol_pdf\" has a dependency on a non-existent service \"file.repository\". Did you mean this: \"entity.repository\"?\n\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:116\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:123\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:83\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:93\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:45\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:39\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n\nERRORS!\nTests: 4, Assertions: 0, Errors: 4.\n",
+  "diff": "+<?php\n+\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Component\\Datetime\\TimeInterface;\n+use Drupal\\Core\\State\\StateInterface;\n+\n+/**\n+ * Service for generating protocol numbers.\n+ */\n+final class ProtocolNumbers {\n+  public function __construct(\n+    private readonly StateInterface $state,\n+    private readonly TimeInterface $time\n+  ) {}\n+\n+  /**\n+   * Returns the next protocol number and stores it.\n+   */\n+  public function next(): string {\n+    $year = (string) date('Y', $this->time->getRequestTime());\n+    $key = 'hwdesk.protocol_seq.' . $year;\n+    $current = $this->state->get($key);\n+    if (!is_int($current)) {\n+      $current = 0;\n+    }\n+    $next = $current + 1;\n+    $this->state->set($key, $next);\n+    return $this->format($year, $next);\n+  }\n+\n+  /**\n+   * Returns the protocol number that would be returned by next(), without storing it.\n+   */\n+  public function peek(): string {\n+    $year = (string) date('Y', $this->time->getRequestTime());\n+    $key = 'hwdesk.protocol_seq.' . $year;\n+    $current = $this->state->get($key);\n+    if (!is_int($current)) {\n+      $current = 0;\n+    }\n+    return $this->format($year, $current + 1);\n+  }\n+\n+  private function format(string $year, int $seq): string {\n+    $padded = str_pad((string) $seq, 4, '0', STR_PAD_LEFT);\n+    return \"HP-{$year}-{$padded}\";\n+  }\n+}",
+  "tried": [
+    "worker: stopped after 7 iterations",
+    "retry: stopped after 4 iterations",
+    "triage: no parseable failure",
+    "1: write_file web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "3: write_file web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "6: read_file web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "final: The ProtocolNumbers service has been fully implemented according to contract C‑004, providing next() and peek() methods with proper state handling and formatting.",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "3: apply_patch web/modules/hwdesk/src/Service/ProtocolNumbers.php ok",
+    "final: I have updated the `ProtocolNumbers.php` file to ensure it contains only the required `ProtocolNumbers` class without any extra placeholders or definitions. This aligns with the contract specification"
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-004",
+    "file": "web/modules/hwdesk/src/Service/ProtocolNumbers.php",
+    "role": "coder",
+    "title": "Protocol numbers HP-<year>-<sequence>",
+    "interface": "final class ProtocolNumbers. Constructor: __construct(\\Drupal\\Core\\State\\StateInterface $state, \\Drupal\\Component\\Datetime\\TimeInterface $time). Service 'hwdesk.protocol_numbers' (registered with ['@state', '@datetime.time']).\nnext(): string -- issues the next number for the current year (year = date('Y', $time->getRequestTime())): 'HP-<year>-<n>' with n zero-padded to 4 digits and growing beyond (HP-2026-10000). One counter per year in State key 'hwdesk.protocol_seq.<year>' (int, last issued; missing = 0); next() stores the incremented value.\npeek(): string -- the number next() would return, without consuming it.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+    "uses": {},
+    "database": "not applicable (State API)",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/ProtocolNumbersTest.php",
+    "forbidden": [],
+    "depends_on": [],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

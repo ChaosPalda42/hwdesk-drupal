@@ -32,3 +32,16 @@ hwdesk.settings:
     base_url:
       type: string
       label: 'Absolute URL of the site for QR codes and e-mail links; empty = current request'
+
+action.configuration.hwdesk_asset_retire:
+  type: action_configuration_default
+  label: 'Retire assets configuration'
+action.configuration.hwdesk_asset_lost:
+  type: action_configuration_default
+  label: 'Mark assets lost configuration'
+action.configuration.hwdesk_asset_in_stock:
+  type: action_configuration_default
+  label: 'Assets back in stock configuration'
+action.configuration.hwdesk_asset_labels:
+  type: action_configuration_default
+  label: 'Select assets for labels configuration'

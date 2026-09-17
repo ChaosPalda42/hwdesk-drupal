@@ -1,0 +1,45 @@
+{
+  "id": "P-001",
+  "contract": "C-001",
+  "title": "Inventory tag generator (Drupal service)",
+  "created_at": "2026-09-17T15:37:48+00:00",
+  "ladder": [
+    "worker: stopped after 4 iterations",
+    "retry: stopped after 3 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-001-1"
+  ],
+  "findings": [],
+  "failing": "y-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php:20\n\n9) Drupal\\Tests\\hwdesk\\Kernel\\TagGeneratorTest::testIsValid\nSymfony\\Component\\DependencyInjection\\Exception\\ServiceNotFoundException: The service \"hwdesk.protocol_pdf\" has a dependency on a non-existent service \"file.repository\". Did you mean this: \"entity.repository\"?\n\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:116\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:123\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:83\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:93\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:84\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:48\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/AbstractRecursivePass.php:45\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/CheckExceptionOnInvalidReferenceBehaviorPass.php:39\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/Compiler/Compiler.php:73\n/Users/AI/projects/hwdesk-drupal/vendor/symfony/dependency-injection/ContainerBuilder.php:825\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1583\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:1040\n/Users/AI/projects/hwdesk-drupal/web/core/lib/Drupal/Core/DrupalKernel.php:524\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:355\n/Users/AI/projects/hwdesk-drupal/web/core/tests/Drupal/KernelTests/KernelTestBase.php:232\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php:20\n\nERRORS!\nTests: 9, Assertions: 0, Errors: 9.\n",
+  "diff": "+<?php\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Core\\Config\\ConfigFactoryInterface;\n+use Drupal\\Core\\State\\StateInterface;\n+use InvalidArgumentException;\n+\n+/**\n+ * Service for generating inventory tags.\n+ */\n+final class TagGenerator {\n+  private ConfigFactoryInterface $configFactory;\n+  private StateInterface $state;\n+\n+  public function __construct(ConfigFactoryInterface $configFactory, StateInterface $state) {\n+    $this->configFactory = $configFactory;\n+    $this->state = $state;\n+  }\n+\n+  /**\n+   * Get next tag for a given type.\n+   */\n+  public function next(string $type): string {\n+    $prefix = $this->resolvePrefix($type);\n+    $nextNumber = $this->incrementCounter($prefix);\n+    return $this->formatTag($prefix, $nextNumber);\n+  }\n+\n+  /**\n+   * Peek at the next tag without incrementing.\n+   */\n+  public function peek(string $type): string {\n+    $prefix = $this->resolvePrefix($type);\n+    $current = $this->getCounter($prefix);\n+    $nextNumber = $current + 1;\n+    return $this->formatTag($prefix, $nextNumber);\n+  }\n+\n+  /**\n+   * Reserve a manually chosen tag.\n+   */\n+  public function reserve(string $tag): void {\n+    if (!$this->isValid($tag)) {\n+      throw new InvalidArgumentException(\"Malformed tag: $tag\");\n+    }\n+    [$prefix, $number] = $this->parseTag($tag);\n+    $current = $this->getCounter($prefix);\n+    if ($number > $current) {\n+      $this->state->set('hwdesk.tag_seq.' . $prefix, $number);\n+    }\n+  }\n+\n+  /**\n+   * Validate tag format.\n+   */\n+  public function isValid(string $tag): bool {\n+    return (bool) preg_match('/^[A-Z0-9]{1,8}-\\d+$/', $tag);\n+  }\n… (44 more lines)",
+  "tried": [
+    "worker: stopped after 4 iterations",
+    "retry: stopped after 3 iterations",
+    "triage: no parseable failure",
+    "1: write_file web/modules/hwdesk/src/Service/TagGenerator.php ok",
+    "2: read_file web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php ok",
+    "3: report_ready_for_review  FAILED {\"accepted\": false, \"findings\": [], \"acceptance\": {\"success\": false, \"output_tail\": \"e/tests/Drupal/KernelTests/KernelTestBase.php:232\\n/Use",
+    "final: I cannot complete the task due to unresolved service dependency issues unrelated to the requested implementation.",
+    "-- retry --",
+    "1: write_file web/modules/hwdesk/src/Service/TagGenerator.php ok",
+    "2: read_file web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php ok",
+    "final: I cannot complete the task under the given constraints."
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-001",
+    "file": "web/modules/hwdesk/src/Service/TagGenerator.php",
+    "role": "coder",
+    "title": "Inventory tag generator (Drupal service)",
+    "interface": "namespace Drupal\\hwdesk\\Service; final class TagGenerator (declare(strict_types=1)).\nConstructor: __construct(\\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, \\Drupal\\Core\\State\\StateInterface $state). Registered in hwdesk.services.yml as 'hwdesk.tag_generator' with arguments ['@config.factory', '@state'] (already written; do not touch).\nConfig 'hwdesk.settings' (already installed): 'tag_prefixes' = map type => PREFIX, e.g. {notebook: NB, phone: TEL, monitor: MON, peripheral: PER, other: HW}; 'tag_pad' = int minimum digits (default 4).\nTag format: '<PREFIX>-<NUMBER>' where PREFIX is [A-Z0-9]{1,8} and NUMBER is decimal digits; the number is zero-padded to tag_pad digits and grows beyond it (NB-9999 -> NB-10000).\nOne counter per PREFIX (not per type), persisted in State under the key 'hwdesk.tag_seq.<PREFIX>' (int, last issued number; missing = 0).\nPublic methods:\n- next(string $type): string  -- issue and return the next tag for the type's prefix (unknown type -> the 'other' prefix; if 'other' is missing too, prefix 'HW'); increments the counter.\n- peek(string $type): string  -- the tag next() would return, without consuming it.\n- reserve(string $tag): void  -- a manually chosen tag; parse it, and if its number is greater than the prefix's counter, set the counter to that number. Malformed tag -> \\InvalidArgumentException.\n- isValid(string $tag): bool  -- matches the tag format exactly (uppercase prefix, a single hyphen, at least one digit).\nRead config on every call (tests change tag_pad at runtime); no static state; no \\Drupal:: static calls (use the injected services).",
+    "uses": {},
+    "database": "not applicable (State API via the injected StateInterface)",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/TagGeneratorTest.php",
+    "forbidden": [],
+    "depends_on": [],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

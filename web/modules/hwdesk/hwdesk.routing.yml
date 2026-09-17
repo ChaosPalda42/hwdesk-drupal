@@ -66,7 +66,7 @@ hwdesk.labels.zpl:
 hwdesk.qr:
   path: '/a/{tag}'
   defaults:
-    _controller: '\Drupal\hwdesk\Controller\QrController::redirect'
+    _controller: '\Drupal\hwdesk\Controller\QrController::go'
   requirements:
     _user_is_logged_in: 'TRUE'
     tag: '[A-Za-z0-9-]+'
@@ -109,3 +109,15 @@ hwdesk.settings:
     _title: 'HW Desk'
   requirements:
     _permission: 'administer hwdesk'
+
+hwdesk.handover.cancel:
+  path: '/hwdesk/handover/{hwdesk_handover}/cancel'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\CancelHandoverForm'
+    _title: 'Zrušit výzvu'
+  requirements:
+    _permission: 'administer hwdesk'
+  options:
+    parameters:
+      hwdesk_handover:
+        type: entity:hwdesk_handover

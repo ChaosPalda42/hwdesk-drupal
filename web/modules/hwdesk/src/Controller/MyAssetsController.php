@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\hwdesk\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\hwdesk\AssetStatus;
@@ -19,10 +20,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class MyAssetsController extends ControllerBase {
 
-  public function __construct(private readonly HandoverService $handovers) {}
+  public function __construct(
+    private readonly HandoverService $handovers,
+    private readonly DateFormatterInterface $dateFormatter,
+  ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('hwdesk.handover'));
+    return new static($container->get('hwdesk.handover'), $container->get('date.formatter'));
   }
 
   public function page(): array {
@@ -38,7 +42,7 @@ final class MyAssetsController extends ControllerBase {
         $handover->getKind()->label(),
         $asset ? $asset->getTag() : '',
         $asset ? $asset->getDisplayName() : '',
-        $this->dateFormatter()->format($handover->getExpires(), 'custom', 'j. n. Y H:i'),
+        $this->dateFormatter->format($handover->getExpires(), 'custom', 'j. n. Y H:i'),
         Link::fromTextAndUrl($this->t('Potvrdit / odmítnout'), Url::fromUri($this->handovers->confirmUrl($handover))),
       ];
     }

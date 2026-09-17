@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\hwdesk\Traits;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\hwdesk\AssetStatus;
 use Drupal\hwdesk\Entity\Asset;
 use Drupal\hwdesk\Entity\Handover;
@@ -16,6 +18,24 @@ use Drupal\user\UserInterface;
  * Schema setup and small factories shared by the hwdesk kernel tests.
  */
 trait HwdeskFixturesTrait {
+
+  /**
+   * Kernel tests have no private:// by default; the module stores files there.
+   */
+  public function register(ContainerBuilder $container) {
+    parent::register($container);
+    $container->register('stream_wrapper.private', PrivateStream::class)
+      ->addTag('stream_wrapper', ['scheme' => 'private']);
+  }
+
+  protected function setUpFilesystem() {
+    parent::setUpFilesystem();
+    $private = $this->siteDirectory . '/private';
+    if (!is_dir($private)) {
+      mkdir($private, 0775, TRUE);
+    }
+    $this->setSetting('file_private_path', $private);
+  }
 
   protected function installHwdesk(): void {
     $this->installEntitySchema('user');

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Url;
+use Drupal\hwdesk\Entity\Handover;
 use Drupal\hwdesk\AssetCondition;
 use Drupal\hwdesk\AssetStatus;
 use Drupal\hwdesk\HandoverKind;
@@ -100,6 +102,24 @@ function hwdesk_mail(string $key, array &$message, array $params): void {
  */
 function hwdesk_cron(): void {
   \Drupal::service('hwdesk.handover')->expireOverdue();
+}
+
+/**
+ * Implements hook_entity_operation().
+ *
+ * A pending handover can be cancelled from the list.
+ */
+function hwdesk_entity_operation(EntityInterface $entity): array {
+  if ($entity instanceof Handover && $entity->getStatus() === HandoverStatus::Pending) {
+    return [
+      'cancel' => [
+        'title' => t('Zrušit'),
+        'weight' => 10,
+        'url' => Url::fromRoute('hwdesk.handover.cancel', ['hwdesk_handover' => $entity->id()]),
+      ],
+    ];
+  }
+  return [];
 }
 
 /**

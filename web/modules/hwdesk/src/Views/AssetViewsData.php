@@ -7,7 +7,9 @@ namespace Drupal\hwdesk\Views;
 use Drupal\views\EntityViewsData;
 
 /**
- * Adds the bulk form so the asset list can run actions on selected rows.
+ * Views data for hwdesk_asset: the bulk form, and real filter widgets for
+ * the list/reference/date base fields (core maps base fields to plain
+ * string/numeric filters).
  */
 final class AssetViewsData extends EntityViewsData {
 
@@ -18,6 +20,17 @@ final class AssetViewsData extends EntityViewsData {
       'help' => $this->t('Zaškrtávací pole pro hromadné akce nad zařízeními.'),
       'field' => ['id' => 'bulk_form'],
     ];
+    foreach (['type', 'status', 'condition'] as $field) {
+      $data['hwdesk_asset'][$field]['filter'] = ['id' => 'list_field', 'field_name' => $field, 'entity_type' => 'hwdesk_asset'] + ($data['hwdesk_asset'][$field]['filter'] ?? []);
+    }
+    foreach (['holder', 'location', 'invoice'] as $field) {
+      $data['hwdesk_asset'][$field]['filter'] = ['id' => 'entity_reference', 'field_name' => $field, 'entity_type' => 'hwdesk_asset'] + ($data['hwdesk_asset'][$field]['filter'] ?? []);
+    }
+    if (isset($data['hwdesk_asset__tags']['tags_target_id'])) {
+      $data['hwdesk_asset__tags']['tags_target_id']['filter'] = ['id' => 'entity_reference', 'field_name' => 'tags', 'entity_type' => 'hwdesk_asset'] + ($data['hwdesk_asset__tags']['tags_target_id']['filter'] ?? []);
+    }
+    $data['hwdesk_asset']['warranty_until']['filter'] = ['id' => 'datetime', 'field_name' => 'warranty_until', 'entity_type' => 'hwdesk_asset'] + ($data['hwdesk_asset']['warranty_until']['filter'] ?? []);
+    $data['hwdesk_asset']['warranty_until']['sort'] = ['id' => 'datetime', 'field_name' => 'warranty_until', 'entity_type' => 'hwdesk_asset'] + ($data['hwdesk_asset']['warranty_until']['sort'] ?? []);
     return $data;
   }
 

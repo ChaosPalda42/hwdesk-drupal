@@ -1,0 +1,72 @@
+{
+  "id": "P-005",
+  "contract": "C-009",
+  "title": "Counts for the overview page",
+  "created_at": "2026-09-17T15:46:02+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "retained on factory/failed/C-009-1"
+  ],
+  "findings": [
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 47: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() with TRUE or FALSE to specify whether access should be checked. (entityQueryHasAccessCheck.noAccessCheck)",
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 79: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() with TRUE or FALSE to specify whether access should be checked. (entityQueryHasAccessCheck.noAccessCheck)",
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 111: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() with TRUE or FALSE to specify whether access should be checked. (entityQueryHasAccessCheck.noAccessCheck)",
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 124: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() with TRUE or FALSE to specify whether access should be checked. (entityQueryHasAccessCheck.noAccessCheck)",
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/DashboardStats.php: line 141: Relying on entity queries to check access by default is deprecated in drupal:9.2.0 and an error will be thrown from drupal:10.0.0. Call \\Drupal\\Core\\Entity\\Query\\QueryInterface::accessCheck() with TRUE or FALSE to specify whether access should be checked. (entityQueryHasAccessCheck.noAccessCheck)"
+  ],
+  "failing": "PHPUnit 11.5.56 by Sebastian Bergmann and contributors.\n\nRuntime:       PHP 8.5.10\nConfiguration: /Users/AI/projects/hwdesk-drupal/phpunit.xml\n\n.F                                                                  2 / 2 (100%)\n\nTime: 00:01.997, Memory: 14.00 MB\n\nThere was 1 failure:\n\n1) Drupal\\Tests\\hwdesk\\Kernel\\DashboardStatsTest::testCountsFollowTheData\nFailed asserting that two arrays are identical.\n--- Expected\n+++ Actual\n@@ @@\n-Array &0 [\n-    'notebook' => 3,\n-    'phone' => 2,\n-    'monitor' => 1,\n-]\n+Array &0 []\n\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/DashboardStatsTest.php:65\n\nFAILURES!\nTests: 2, Assertions: 40, Failures: 1.\n",
+  "diff": "+<?php\n+\n+declare(strict_types=1);\n+\n+namespace Drupal\\hwdesk\\Service;\n+\n+use Drupal\\Core\\Entity\\EntityTypeManagerInterface;\n+use Drupal\\hwdesk\\AssetStatus;\n+use Drupal\\hwdesk\\HandoverStatus;\n+\n+/**\n+ * Provides statistics for the dashboard overview.\n+ */\n+final class DashboardStats {\n+  public function __construct(\n+    private readonly EntityTypeManagerInterface $entityTypeManager,\n+  ) {}\n+\n+  /**\n+   * Counts assets by status in the order defined by AssetStatus::cases().\n+   */\n+  public function byStatus(): array {\n+    $result = [];\n+    foreach (AssetStatus::cases() as $case) {\n+      $result[$case->value] = 0;\n+    }\n+    $storage = $this->entityTypeManager->getStorage('hwdesk_asset');\n+    foreach (array_keys($result) as $status) {\n+      $count = $storage->getQuery()\n+        ->accessCheck(FALSE)\n+        ->condition('status', $status)\n+        ->count()\n+        ->execute();\n+      $result[$status] = (int) $count;\n+    }\n+    return $result;\n+  }\n+\n+  /**\n+   * Counts assets by type, only types that occur.\n+   */\n+  public function byType(): array {\n+    $query = $this->entityTypeManager->getStorage('hwdesk_asset')->getAggregateQuery();\n+    $query->accessCheck(FALSE)\n+      ->groupBy('type')\n+      ->aggregate('id', 'COUNT');\n+    $rows = $query->execute();\n+    $counts = [];\n+    foreach ($rows as $row) {\n+      /** @var \\stdClass $row */\n+      $type = (string) ($row->type ?? '');\n+      $cnt = (int) ($row->COUNT ?? 0);\n+      if ($type !== '') {\n+        $counts[$type] = $cnt;\n+      }\n+    }\n+    if (!$counts) {\n+      return [];\n+    }\n+    // Sort by count descending then type ascending.\n… (84 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: budget after 12 iterations",
+    "triage: no parseable failure",
+    "1: read_file web/modules/hwdesk/src/Service/DashboardStats.php FAILED {\"error\": \"not a file: 'web/modules/hwdesk/src/Service/DashboardStats.php'\", \"recoverable\": true}",
+    "2: list_files web/modules/hwdesk ok",
+    "3: read_file web/modules/hwdesk/tests/src/Kernel/DashboardStatsTest.php ok",
+    "4: write_file web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "7: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "9: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "11: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php FAILED {\"error\": \"old_string not found in 'web/modules/hwdesk/src/Service/DashboardStats.php'. Re-read the current file and copy a smaller exact li",
+    "3: write_file web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "7: write_file web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "9: write_file web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "10: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "11: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "12: apply_patch web/modules/hwdesk/src/Service/DashboardStats.php ok",
+    "final: budget exhausted"
+  ],
+  "ask": "patch | contract | skip | question",
+  "contract_snapshot": {
+    "id": "C-009",
+    "file": "web/modules/hwdesk/src/Service/DashboardStats.php",
+    "role": "coder",
+    "title": "Counts for the overview page",
+    "interface": "final class DashboardStats. Constructor: __construct(\\Drupal\\Core\\Entity\\EntityTypeManagerInterface $entityTypeManager, \\Drupal\\Core\\Database\\Connection $database). Service 'hwdesk.dashboard_stats' (registered). All queries: entity queries with accessCheck(FALSE) or aggregate entity queries (getAggregateQuery()->groupBy(...)->aggregate('id', 'COUNT')); never load all assets.\nbyStatus(): array -- ['in_stock' => n, 'pending_handover' => n, 'assigned' => n, 'pending_return' => n, 'retired' => n, 'lost' => n] in exactly this order, zero-filled from \\Drupal\\hwdesk\\AssetStatus::cases().\nbyType(): array -- type key => count, only types that occur, sorted by count descending then key ascending. Empty database -> [].\nbyLocation(): array -- location id (int) => count for assets with a location, sorted by count descending then id ascending, and finally key 0 => count of assets without a location, only when that count is > 0. Empty database -> [].\npendingHandovers(): int -- hwdesk_handover rows with status 'pending'.\nwarrantyExpiring(int $days = 90): int -- assets whose status is neither 'retired' nor 'lost' and whose warranty_until is between today (inclusive, 'Y-m-d' of the current date) and today + $days (inclusive).\nholders(): int -- number of distinct users referenced by holder on assets with status 'assigned', 'pending_handover' or 'pending_return'.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+    "uses": {
+      "AssetStatus": "web/modules/hwdesk/src/AssetStatus.php"
+    },
+    "database": "entity queries through the injected EntityTypeManagerInterface",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/DashboardStatsTest.php",
+    "forbidden": [],
+    "depends_on": [],
+    "budget": {
+      "iterations": 12
+    },
+    "notes": ""
+  }
+}

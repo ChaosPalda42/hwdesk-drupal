@@ -7,6 +7,7 @@ namespace Drupal\hwdesk\Entity;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -32,9 +33,7 @@ use Drupal\views\EntityViewsData;
   handlers: [
     'access' => HandoverAccessControlHandler::class,
     'views_data' => EntityViewsData::class,
-  ],
-  links: [
-    'canonical' => '/hwdesk/handover/{hwdesk_handover}',
+    'list_builder' => EntityListBuilder::class,
   ],
   admin_permission: 'administer hwdesk',
   base_table: 'hwdesk_handover',

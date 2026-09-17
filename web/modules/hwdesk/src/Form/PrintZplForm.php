@@ -19,9 +19,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class PrintZplForm extends FormBase {
 
   public function __construct(
-    private readonly ZplLabel $zpl,
-    private readonly ZplPrinter $printer,
-    private readonly PrivateTempStoreFactory $tempStoreFactory,
+    protected readonly ZplLabel $zpl,
+    protected readonly ZplPrinter $printer,
+    protected readonly PrivateTempStoreFactory $tempStoreFactory,
   ) {}
 
   public static function create(ContainerInterface $container): static {

@@ -16,15 +16,18 @@ use Drupal\hwdesk\Entity\Handover;
 final class HandoverAccessControlHandler extends EntityAccessControlHandler {
 
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResult {
+    $admin = AccessResult::allowedIfHasPermission($account, 'administer hwdesk');
     if ($operation === 'view' && $entity instanceof Handover) {
       $user = $entity->getUser();
       $own = $user !== NULL && (int) $user->id() === (int) $account->id();
-      return AccessResult::allowedIf($own)
-        ->andIf(AccessResult::allowedIfHasPermission($account, 'confirm own hwdesk handovers'))
-        ->addCacheableDependency($entity)
-        ->cachePerUser();
+      return $admin->orIf(
+        AccessResult::allowedIf($own)
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'confirm own hwdesk handovers'))
+          ->addCacheableDependency($entity)
+          ->cachePerUser()
+      );
     }
-    return AccessResult::neutral();
+    return $admin;
   }
 
 }

@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 abstract class SetAssetStatusBase extends ActionBase implements ContainerFactoryPluginInterface {
 
-  public function __construct(
+  final public function __construct(
     array $configuration,
     string $plugin_id,
     mixed $plugin_definition,
