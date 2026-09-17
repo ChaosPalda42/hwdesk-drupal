@@ -1,0 +1,16 @@
+{
+  "id": "C-009",
+  "file": "web/modules/hwdesk/src/Service/DashboardStats.php",
+  "role": "coder",
+  "title": "Counts for the overview page",
+  "interface": "final class DashboardStats. Constructor: __construct(\\Drupal\\Core\\Entity\\EntityTypeManagerInterface $entityTypeManager, \\Drupal\\Core\\Database\\Connection $database). Service 'hwdesk.dashboard_stats' (registered). All queries: entity queries with accessCheck(FALSE) or aggregate entity queries (getAggregateQuery()->groupBy(...)->aggregate('id', 'COUNT')); never load all assets.\nbyStatus(): array -- ['in_stock' => n, 'pending_handover' => n, 'assigned' => n, 'pending_return' => n, 'retired' => n, 'lost' => n] in exactly this order, zero-filled from \\Drupal\\hwdesk\\AssetStatus::cases().\nbyType(): array -- type key => count, only types that occur, sorted by count descending then key ascending. Empty database -> [].\nbyLocation(): array -- location id (int) => count for assets with a location, sorted by count descending then id ascending, and finally key 0 => count of assets without a location, only when that count is > 0. Empty database -> [].\npendingHandovers(): int -- hwdesk_handover rows with status 'pending'.\nwarrantyExpiring(int $days = 90): int -- assets whose status is neither 'retired' nor 'lost' and whose warranty_until is between today (inclusive, 'Y-m-d' of the current date) and today + $days (inclusive).\nholders(): int -- number of distinct users referenced by holder on assets with status 'assigned', 'pending_handover' or 'pending_return'.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {
+    "AssetStatus": "web/modules/hwdesk/src/AssetStatus.php"
+  },
+  "database": "entity queries through the injected EntityTypeManagerInterface",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/DashboardStatsTest.php",
+  "depends_on": [],
+  "budget": {
+    "iterations": 12
+  }
+}

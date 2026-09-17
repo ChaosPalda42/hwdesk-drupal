@@ -1,0 +1,14 @@
+{
+  "id": "C-003",
+  "file": "web/modules/hwdesk/src/Service/HandoverTokens.php",
+  "role": "coder",
+  "title": "Signed expiring tokens for confirmation links",
+  "interface": "final class HandoverTokens. Constructor: __construct(\\Drupal\\Core\\PrivateKey $privateKey, \\Drupal\\Component\\Datetime\\TimeInterface $time). Service 'hwdesk.handover_tokens' (already registered with ['@private_key', '@datetime.time']).\nissue(int $handoverId, int $uid, int $expires): string -- token = <payload>.<signature>; payload = base64url (Drupal\\Component\\Utility\\Crypt::hmacBase64 style alphabet: RFC 4648 URL-safe, no padding) of the string \"$handoverId:$uid:$expires\"; signature = Crypt::hmacBase64(payload, $privateKey->get()). The whole token matches /^[A-Za-z0-9_.-]+$/.\nverify(string $token): ?array -- ['handover' => int, 'uid' => int, 'expires' => int] when the token has exactly one '.', the signature equals Crypt::hmacBase64(payload, key) (compare with hash_equals), the payload decodes to three non-negative integers, and expires >= $time->getRequestTime(); NULL otherwise (never throw).\nUse Drupal\\Component\\Utility\\Crypt for hmacBase64 and for base64url (Crypt::hmacBase64 output alphabet; for the payload use rtrim(strtr(base64_encode(...), '+/', '-_'), '=') and the reverse). File header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {},
+  "database": "not applicable",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/HandoverTokensTest.php",
+  "depends_on": [],
+  "budget": {
+    "iterations": 12
+  }
+}

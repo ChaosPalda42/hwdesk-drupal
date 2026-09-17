@@ -1,0 +1,14 @@
+{
+  "id": "C-004",
+  "file": "web/modules/hwdesk/src/Service/ProtocolNumbers.php",
+  "role": "coder",
+  "title": "Protocol numbers HP-<year>-<sequence>",
+  "interface": "final class ProtocolNumbers. Constructor: __construct(\\Drupal\\Core\\State\\StateInterface $state, \\Drupal\\Component\\Datetime\\TimeInterface $time). Service 'hwdesk.protocol_numbers' (registered with ['@state', '@datetime.time']).\nnext(): string -- issues the next number for the current year (year = date('Y', $time->getRequestTime())): 'HP-<year>-<n>' with n zero-padded to 4 digits and growing beyond (HP-2026-10000). One counter per year in State key 'hwdesk.protocol_seq.<year>' (int, last issued; missing = 0); next() stores the incremented value.\npeek(): string -- the number next() would return, without consuming it.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {},
+  "database": "not applicable (State API)",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/ProtocolNumbersTest.php",
+  "depends_on": [],
+  "budget": {
+    "iterations": 12
+  }
+}

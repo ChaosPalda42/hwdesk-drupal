@@ -1,0 +1,111 @@
+hwdesk.dashboard:
+  path: '/hwdesk'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\DashboardController::page'
+    _title: 'HW Desk'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.my:
+  path: '/hwdesk/my'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\MyAssetsController::page'
+    _title: 'Moje zařízení'
+  requirements:
+    _permission: 'view own hwdesk assets'
+
+hwdesk.handover.confirm:
+  path: '/hwdesk/confirm/{token}'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\ConfirmHandoverForm'
+    _title: 'Potvrzení převzetí'
+  requirements:
+    _permission: 'confirm own hwdesk handovers'
+    token: '[A-Za-z0-9_.-]+'
+
+hwdesk.asset.handover:
+  path: '/hwdesk/asset/{hwdesk_asset}/handover'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\RequestHandoverForm'
+    _title: 'Předat / vrátit'
+  requirements:
+    _permission: 'administer hwdesk'
+  options:
+    parameters:
+      hwdesk_asset:
+        type: entity:hwdesk_asset
+
+hwdesk.asset.label:
+  path: '/hwdesk/asset/{hwdesk_asset}/label'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\LabelController::single'
+    _title: 'Štítek'
+  requirements:
+    _permission: 'administer hwdesk'
+  options:
+    parameters:
+      hwdesk_asset:
+        type: entity:hwdesk_asset
+
+hwdesk.labels:
+  path: '/hwdesk/labels'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\LabelController::sheet'
+    _title: 'Štítky'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.labels.zpl:
+  path: '/hwdesk/labels/zpl'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\PrintZplForm'
+    _title: 'Tisk na Zebru'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.qr:
+  path: '/a/{tag}'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\QrController::redirect'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    tag: '[A-Za-z0-9-]+'
+
+hwdesk.intake:
+  path: '/hwdesk/intake'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\IntakeForm'
+    _title: 'Příjem zboží'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.intake.serials:
+  path: '/hwdesk/intake/serials'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\SerialNumbersForm'
+    _title: 'Sériová čísla'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.import:
+  path: '/hwdesk/import'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\ImportForm'
+    _title: 'Import CSV'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.export:
+  path: '/hwdesk/export'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\ExportController::csv'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.settings:
+  path: '/admin/config/hwdesk'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\SettingsForm'
+    _title: 'HW Desk'
+  requirements:
+    _permission: 'administer hwdesk'

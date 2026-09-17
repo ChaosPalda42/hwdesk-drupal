@@ -1,0 +1,59 @@
+{#
+/**
+ * @file
+ * Handover / return protocol rendered to PDF by dompdf.
+ *
+ * Variables: handover (Handover), asset (Asset), employee (User), admin (User|null),
+ * company (string), confirmed_at (string, formatted date-time).
+ */
+#}
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: DejaVu Sans, sans-serif; font-size: 11pt; color: #111; }
+  h1 { font-size: 18pt; margin: 0 0 4pt; }
+  .meta { color: #555; margin-bottom: 16pt; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 16pt; }
+  th, td { text-align: left; padding: 4pt 6pt; border-bottom: 1px solid #ccc; vertical-align: top; }
+  th { width: 32%; color: #555; font-weight: normal; }
+  .sign { margin-top: 32pt; width: 100%; }
+  .sign td { border: 0; padding-top: 28pt; }
+  .line { border-top: 1px solid #111; padding-top: 4pt; }
+</style>
+</head>
+<body>
+  <h1>{{ handover.getKind().value == 'return' ? 'Protokol o vrácení zařízení' : 'Předávací protokol' }}</h1>
+  <div class="meta">
+    {{ company }}{% if company %} · {% endif %}č. {{ handover.getProtocolNumber() }} · potvrzeno {{ confirmed_at }}
+  </div>
+
+  <table>
+    <tr><th>Zařízení</th><td>{{ asset.getDisplayName() }}</td></tr>
+    <tr><th>Inventární číslo</th><td>{{ asset.getTag() }}</td></tr>
+    <tr><th>Sériové číslo</th><td>{{ asset.getSerialNumber() ?: '–' }}</td></tr>
+    <tr><th>Stav kusu</th><td>{{ asset.getCondition().label() }}</td></tr>
+    <tr><th>{{ handover.getKind().value == 'return' ? 'Vrací' : 'Přebírá' }}</th><td>{{ employee.getDisplayName() }} ({{ employee.getEmail() }})</td></tr>
+    <tr><th>{{ handover.getKind().value == 'return' ? 'Přebírá' : 'Předává' }}</th><td>{{ admin ? admin.getDisplayName() ~ ' (' ~ admin.getEmail() ~ ')' : company }}</td></tr>
+  </table>
+
+  <p>
+    {% if handover.getKind().value == 'return' %}
+      Zaměstnanec vrací výše uvedené zařízení. Převzetí bylo potvrzeno elektronicky
+      přihlášeným účtem zaměstnance dne {{ confirmed_at }}.
+    {% else %}
+      Zaměstnanec přebírá výše uvedené zařízení do užívání a zavazuje se je chránit
+      před poškozením a ztrátou a vrátit je na výzvu nebo při ukončení pracovního poměru.
+      Převzetí bylo potvrzeno elektronicky přihlášeným účtem zaměstnance dne {{ confirmed_at }}.
+    {% endif %}
+  </p>
+
+  <table class="sign">
+    <tr>
+      <td><div class="line">{{ employee.getDisplayName() }}</div></td>
+      <td><div class="line">{{ admin ? admin.getDisplayName() : company }}</div></td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "id": "C-007",
+  "file": "web/modules/hwdesk/src/Service/IntakeService.php",
+  "role": "coder",
+  "title": "Receiving goods: N assets from one form, then serial numbers",
+  "interface": "final class IntakeService. Constructor: __construct(\\Drupal\\Core\\Entity\\EntityTypeManagerInterface $entityTypeManager, \\Drupal\\hwdesk\\Service\\TagGenerator $tagGenerator). Service 'hwdesk.intake' (registered).\ncreateBatch(array $values, int $count): array -- list of saved \\Drupal\\hwdesk\\Entity\\Asset, in tag order. $values keys (all optional except type and model): type (string, required), model (string, required, non-empty after trim), manufacturer (string), condition (string, default 'new'), location (int entity id or NULL), tags (list<int>), invoice (int or NULL), price (string|NULL), warranty_until (string 'Y-m-d' or NULL), cost_center (string), notes (string). $count < 1 or > 500 -> \\InvalidArgumentException; missing/empty type or model -> \\InvalidArgumentException. Each asset: 'tag' => $tagGenerator->next($type), 'status' => 'in_stock', 'holder' => NULL, serial_number empty; unknown keys ignored; create via $entityTypeManager->getStorage('hwdesk_asset')->create([...]) and save each.\nsetSerialNumbers(array $serialsByAssetId): void -- keys = asset ids (int), values = serial strings; trim each; blank values are skipped (not written). Validate everything before writing anything: unknown asset id -> \\InvalidArgumentException; the same serial (case-insensitive) twice in the input -> \\InvalidArgumentException; a serial already used (case-insensitive) by a different existing asset (entity query on hwdesk_asset, 'serial_number' with a case-insensitive comparison, accessCheck(FALSE)) -> \\InvalidArgumentException whose message contains that serial. Then set serial_number on each asset and save.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {
+    "TagGenerator": "web/modules/hwdesk/src/Service/TagGenerator.php: next(string $type): string",
+    "Asset": "web/modules/hwdesk/src/Entity/Asset.php"
+  },
+  "database": "entity storage through the injected EntityTypeManagerInterface",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/IntakeServiceTest.php",
+  "depends_on": [
+    "C-001"
+  ],
+  "budget": {
+    "iterations": 12
+  }
+}

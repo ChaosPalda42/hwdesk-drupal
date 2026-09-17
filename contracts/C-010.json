@@ -1,0 +1,16 @@
+{
+  "id": "C-010",
+  "file": "web/modules/hwdesk/src/Service/LabelSheet.php",
+  "role": "coder",
+  "title": "Label data with inline SVG QR codes",
+  "interface": "final class LabelSheet, no constructor arguments. Service 'hwdesk.label_sheet' (registered).\nlabels(iterable $assets, string $baseUrl): array -- list, one entry per \\Drupal\\hwdesk\\Entity\\Asset in the given order: ['tag' => $asset->getTag(), 'name' => $asset->getDisplayName(), 'url' => rtrim($baseUrl, '/') . '/a/' . $asset->getTag(), 'qr' => <inline SVG markup>]. Empty iterable -> [].\nQR: chillerlan/php-qrcode v6 (installed): $options = new \\chillerlan\\QRCode\\QROptions(['outputBase64' => FALSE, 'outputInterface' => \\chillerlan\\QRCode\\Output\\QRMarkupSVG::class, 'svgAddXmlHeader' => FALSE, 'addQuietzone' => TRUE, 'quietzoneSize' => 1, 'eccLevel' => \\chillerlan\\QRCode\\Common\\EccLevel::M]); $svg = (new \\chillerlan\\QRCode\\QRCode($options))->render($url); the result starts with '<svg'.\nFile header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {
+    "Asset": "web/modules/hwdesk/src/Entity/Asset.php: getTag(), getDisplayName()"
+  },
+  "database": "not applicable",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/LabelSheetTest.php",
+  "depends_on": [],
+  "budget": {
+    "iterations": 12
+  }
+}

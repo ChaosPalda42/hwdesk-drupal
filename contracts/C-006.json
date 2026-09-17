@@ -1,0 +1,17 @@
+{
+  "id": "C-006",
+  "file": "web/modules/hwdesk/src/Service/ProtocolPdf.php",
+  "role": "coder",
+  "title": "Protocol PDF: render the hwdesk_protocol template with dompdf, store under private://hwdesk/protocols",
+  "interface": "final class ProtocolPdf. Constructor: __construct(\\Drupal\\Core\\Render\\RendererInterface $renderer, \\Drupal\\file\\FileRepositoryInterface $fileRepository, \\Drupal\\Core\\File\\FileSystemInterface $fileSystem, \\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, \\Drupal\\Core\\Datetime\\DateFormatterInterface $dateFormatter). Service 'hwdesk.protocol_pdf' (registered).\nrender(\\Drupal\\hwdesk\\Entity\\Handover $handover): string -- PDF bytes. Build the render array ['#theme' => 'hwdesk_protocol', '#handover' => $handover, '#asset' => $handover->getAsset(), '#employee' => $handover->getUser(), '#admin' => $handover->getRequestedBy(), '#company' => (string) config('hwdesk.settings')->get('company_name'), '#confirmed_at' => $dateFormatter->format($handover->getDecided() ?? time(), 'custom', 'j. n. Y H:i')], render it with $renderer->renderInIsolation($build) (cast to string), then Dompdf: $dompdf = new \\Dompdf\\Dompdf(new \\Dompdf\\Options(['isRemoteEnabled' => FALSE, 'defaultFont' => 'DejaVu Sans'])); $dompdf->loadHtml($html, 'UTF-8'); $dompdf->setPaper('A4'); $dompdf->render(); return (string) $dompdf->output(). Asset or user missing -> \\InvalidArgumentException.\nstore(Handover $handover): \\Drupal\\file\\FileInterface -- protocol number empty -> \\InvalidArgumentException. Destination 'private://hwdesk/protocols/<protocol_number>.pdf'; $fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS) first; $file = $fileRepository->writeData($this->render($handover), $destination, \\Drupal\\Core\\File\\FileExists::Replace); $file->setPermanent(); $file->setMimeType('application/pdf'); $file->save(); return $file. Storing twice for the same number must not create a second file entity for the same URI (FileExists::Replace reuses it).\nThe template hwdesk-protocol.html.twig and hook_theme already exist; do not create templates. File header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.",
+  "uses": {
+    "Handover": "web/modules/hwdesk/src/Entity/Handover.php: getAsset/getUser/getRequestedBy/getKind/getDecided/getProtocolNumber",
+    "Asset": "web/modules/hwdesk/src/Entity/Asset.php"
+  },
+  "database": "entities through the injected services only",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/ProtocolPdfTest.php",
+  "depends_on": [],
+  "budget": {
+    "iterations": 12
+  }
+}

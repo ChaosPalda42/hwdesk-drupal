@@ -7,3 +7,26 @@ services:
   hwdesk.audit:
     class: Drupal\hwdesk\Service\AuditLogger
     arguments: ['@entity_type.manager', '@current_user']
+  hwdesk.handover_tokens:
+    class: Drupal\hwdesk\Service\HandoverTokens
+    arguments: ['@private_key', '@datetime.time']
+  hwdesk.protocol_numbers:
+    class: Drupal\hwdesk\Service\ProtocolNumbers
+    arguments: ['@state', '@datetime.time']
+  hwdesk.protocol_pdf:
+    class: Drupal\hwdesk\Service\ProtocolPdf
+    arguments: ['@renderer', '@file.repository', '@file_system', '@config.factory', '@date.formatter']
+  hwdesk.handover:
+    class: Drupal\hwdesk\Service\HandoverService
+    arguments: ['@entity_type.manager', '@config.factory', '@datetime.time', '@hwdesk.handover_tokens', '@hwdesk.protocol_numbers', '@hwdesk.protocol_pdf', '@plugin.manager.mail', '@language_manager', '@date.formatter']
+  hwdesk.intake:
+    class: Drupal\hwdesk\Service\IntakeService
+    arguments: ['@entity_type.manager', '@hwdesk.tag_generator']
+  hwdesk.asset_csv:
+    class: Drupal\hwdesk\Service\AssetCsv
+    arguments: ['@entity_type.manager', '@config.factory', '@hwdesk.tag_generator']
+  hwdesk.dashboard_stats:
+    class: Drupal\hwdesk\Service\DashboardStats
+    arguments: ['@entity_type.manager', '@database']
+  hwdesk.label_sheet:
+    class: Drupal\hwdesk\Service\LabelSheet
