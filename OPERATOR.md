@@ -87,6 +87,11 @@ Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
   texty e-mailů, přístup zaměstnance k vrácení (`RequestHandoverForm::access`),
   Offboarding, hook_file_download, Views.
 
+- 2026-09-17 (Michael): veřejný repozitář github.com/ChaosPalda42/hwdesk-drupal
+  (celý composer projekt; modul v `web/modules/hwdesk`); firemní specialista
+  si ho stáhne a připojí podle README. Před každým pushem: `git status`
+  nesmí obsahovat settings.php, DB ani `private/`.
+
 ## Pravidla projektu
 - Stack: PHP 8.5, Drupal 11.4, PHPUnit 11 (kernel + unit testy), PHPStan level 5 + phpstan-drupal.
 - Testy: `php vendor/bin/phpunit -c phpunit.xml` (celá sada) nebo s cestou k jednomu testu.
