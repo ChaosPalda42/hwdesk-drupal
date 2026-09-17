@@ -98,14 +98,39 @@ final class HandoverService {
 
     // Send mail.
     $key = $kind === HandoverKind::Handover ? 'handover_request' : 'return_request';
-    $subject = sprintf('Požadavek na %s: %s', $kind->label()->render(), $asset->getTag());
     $url = $this->confirmUrl($handover);
     $expiryFormatted = $this->dateFormatter->format($expires, 'custom', 'j. n. Y H:i');
-    $bodyLines = [
-      sprintf('Potvrďte pomocí odkazu: %s', $url),
-      sprintf('Zařízení: %s (%s)', $asset->getDisplayName(), $asset->getTag()),
-      sprintf('Platnost do: %s', $expiryFormatted),
-    ];
+    $company = (string) $this->configFactory->get('hwdesk.settings')->get('company_name');
+    if ($kind === HandoverKind::Handover) {
+      $subject = sprintf('[HW Desk] Převzetí zařízení %s – potvrďte prosím', $asset->getTag());
+      $bodyLines = [
+        sprintf('Dobrý den, %s,', $user->getDisplayName()),
+        '',
+        sprintf('bylo vám přiděleno zařízení %s (inventární číslo %s%s).', $asset->getDisplayName(), $asset->getTag(), $asset->getSerialNumber() !== '' ? ', S/N ' . $asset->getSerialNumber() : ''),
+        'Převzetí prosím potvrďte kliknutím na odkaz (po přihlášení svým účtem):',
+        $url,
+        '',
+        sprintf('Odkaz platí do %s. Pokud zařízení nepřebíráte, můžete na stejné stránce převzetí odmítnout a uvést důvod.', $expiryFormatted),
+        '',
+        sprintf('Zadal: %s', $requestedBy->getDisplayName()),
+        $company !== '' ? $company : 'HW Desk',
+      ];
+    }
+    else {
+      $subject = sprintf('[HW Desk] Vrácení zařízení %s – potvrďte prosím', $asset->getTag());
+      $bodyLines = [
+        sprintf('Dobrý den, %s,', $user->getDisplayName()),
+        '',
+        sprintf('zařízení %s (inventární číslo %s) se vrací do skladu.', $asset->getDisplayName(), $asset->getTag()),
+        'Vrácení prosím potvrďte kliknutím na odkaz (po přihlášení svým účtem):',
+        $url,
+        '',
+        sprintf('Odkaz platí do %s. Pokud zařízení nevracíte, můžete na stejné stránce vrácení odmítnout a uvést důvod.', $expiryFormatted),
+        '',
+        sprintf('Zadal: %s', $requestedBy->getDisplayName()),
+        $company !== '' ? $company : 'HW Desk',
+      ];
+    }
     $this->mailManager->mail(
       'hwdesk',
       $key,
@@ -180,11 +205,12 @@ final class HandoverService {
     $copyTo = (string) $this->configFactory->get('hwdesk.settings')->get('protocol_copy_to');
     if ($copyTo !== '') { $recipients[$copyTo] = TRUE; }
 
-    $subject = sprintf('Protokol %s', $handover->getProtocolNumber());
+    $isReturn = $handover->getKind() === HandoverKind::ReturnItem;
+    $subject = sprintf('[HW Desk] %s %s – protokol %s', $isReturn ? 'Vrácení' : 'Předání', $asset?->getTag() ?? '', $handover->getProtocolNumber());
     $bodyLines = [
-      sprintf('Zařízení: %s (%s)', $asset?->getDisplayName() ?? '', $asset?->getTag() ?? ''),
-      sprintf('Uživatel: %s', $handover->getUser()?->getDisplayName() ?? ''),
-      sprintf('PDF: %s', $file->createFileUrl(FALSE)),
+      sprintf('%s zařízení %s (inventární číslo %s) bylo potvrzeno %s.', $isReturn ? 'Vrácení' : 'Převzetí', $asset?->getDisplayName() ?? '', $asset?->getTag() ?? '', $this->dateFormatter->format($now, 'custom', 'j. n. Y H:i')),
+      sprintf('Zaměstnanec: %s (%s)', $handover->getUser()?->getDisplayName() ?? '', $handover->getUser()?->getEmail() ?? ''),
+      sprintf('Protokol č. %s (PDF, po přihlášení): %s', $handover->getProtocolNumber(), $file->createFileUrl(FALSE)),
     ];
 
     foreach (array_keys($recipients) as $to) {
@@ -223,11 +249,11 @@ final class HandoverService {
     // Mail to requester.
     $requester = $handover->getRequestedBy();
     if ($requester && $requester->getEmail()) {
-      $subject = sprintf('Požadavek na %s odmítnut', $handover->getKind()->label()->render());
+      $subject = sprintf('[HW Desk] %s zařízení %s odmítnuto', $handover->getKind() === HandoverKind::ReturnItem ? 'Vrácení' : 'Převzetí', $handover->getAsset()?->getTag() ?? '');
       $bodyLines = [
-        sprintf('Zařízení: %s (%s)', $handover->getAsset()?->getDisplayName() ?? '', $handover->getAsset()?->getTag() ?? ''),
-        'Důvod:',
-        $trimmed,
+        sprintf('%s odmítl(a) %s zařízení %s (inventární číslo %s).', $handover->getUser()?->getDisplayName() ?? '', $handover->getKind() === HandoverKind::ReturnItem ? 'vrácení' : 'převzetí', $handover->getAsset()?->getDisplayName() ?? '', $handover->getAsset()?->getTag() ?? ''),
+        sprintf('Důvod: %s', $trimmed),
+        'Zařízení je zpět v původním stavu.',
       ];
       $this->mailManager->mail(
         'hwdesk',

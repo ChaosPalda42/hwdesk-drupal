@@ -29,7 +29,7 @@ hwdesk.asset.handover:
     _form: '\Drupal\hwdesk\Form\RequestHandoverForm'
     _title: 'Předat / vrátit'
   requirements:
-    _permission: 'administer hwdesk'
+    _custom_access: '\Drupal\hwdesk\Form\RequestHandoverForm::access'
   options:
     parameters:
       hwdesk_asset:

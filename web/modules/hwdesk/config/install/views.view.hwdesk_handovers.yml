@@ -147,9 +147,9 @@ display:
           field: status
           entity_type: hwdesk_handover
           entity_field: status
-          plugin_id: string
-          operator: '='
-          value: ''
+          plugin_id: list_field
+          operator: or
+          value: {  }
           exposed: true
           expose:
             operator_id: status_op
@@ -161,6 +161,7 @@ display:
             required: false
             remember: false
             multiple: false
+            reduce: false
             use_operator: false
         kind:
           id: kind
@@ -168,9 +169,9 @@ display:
           field: kind
           entity_type: hwdesk_handover
           entity_field: kind
-          plugin_id: string
-          operator: '='
-          value: ''
+          plugin_id: list_field
+          operator: or
+          value: {  }
           exposed: true
           expose:
             operator_id: kind_op
@@ -182,6 +183,7 @@ display:
             required: false
             remember: false
             multiple: false
+            reduce: false
             use_operator: false
       sorts:
         created:

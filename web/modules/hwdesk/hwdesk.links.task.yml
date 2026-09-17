@@ -17,11 +17,6 @@ hwdesk.asset.labels:
   route_name: hwdesk.asset.label
   base_route: entity.hwdesk_asset.canonical
   weight: 30
-entity.hwdesk_asset.version_history:
-  title: 'Historie'
-  route_name: entity.hwdesk_asset.version_history
-  base_route: entity.hwdesk_asset.canonical
-  weight: 40
 hwdesk.settings:
   title: 'Nastavení'
   route_name: hwdesk.settings

@@ -146,8 +146,8 @@ display:
           label: Operace
           destination: true
       filters:
-        combine:
-          id: combine
+        search:
+          id: search
           table: views
           field: combine
           plugin_id: combine
@@ -155,10 +155,10 @@ display:
           value: ''
           exposed: true
           expose:
-            operator_id: combine_op
+            operator_id: search_op
             label: Hledat
-            identifier: q
-            operator: combine_op
+            identifier: search
+            operator: search_op
             operator_limit_selection: false
             operator_list: {  }
             required: false
@@ -189,7 +189,7 @@ display:
             operator_list: {  }
             required: false
             remember: false
-            multiple: true
+            multiple: false
             reduce: false
             use_operator: false
         type:
@@ -211,7 +211,7 @@ display:
             operator_list: {  }
             required: false
             remember: false
-            multiple: true
+            multiple: false
             reduce: false
             use_operator: false
         location:
@@ -233,9 +233,9 @@ display:
             operator_list: {  }
             required: false
             remember: false
-            multiple: true
+            multiple: false
             reduce: false
-            use_operator: true
+            use_operator: false
           sub_handler: 'default:hwdesk_location'
           widget: select
           sub_handler_settings:
@@ -264,7 +264,7 @@ display:
             operator_list: {  }
             required: false
             remember: false
-            multiple: true
+            multiple: false
             reduce: false
             use_operator: false
           sub_handler: 'default:hwdesk_tag'
@@ -333,7 +333,7 @@ display:
             required: false
             remember: false
             multiple: false
-            use_operator: true
+            use_operator: false
             min_placeholder: ''
             max_placeholder: ''
             placeholder: ''

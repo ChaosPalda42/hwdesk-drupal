@@ -151,7 +151,7 @@ display:
           expose:
             operator_id: message_op
             label: Hledat
-            identifier: q
+            identifier: search
             operator: message_op
             operator_limit_selection: false
             operator_list: {  }

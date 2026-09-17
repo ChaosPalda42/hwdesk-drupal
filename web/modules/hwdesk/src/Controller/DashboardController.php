@@ -32,7 +32,7 @@ final class DashboardController extends ControllerBase {
       $tiles[] = ['label' => AssetStatus::from($status)->label(), 'count' => $count, 'url' => $list(['status' => $status]), 'key' => $status];
     }
     $tiles[] = ['label' => $this->t('Čeká na potvrzení'), 'count' => $this->stats->pendingHandovers(), 'url' => Url::fromRoute('view.hwdesk_handovers.page', [], ['query' => ['status' => HandoverStatus::Pending->value]]), 'key' => 'pending'];
-    $tiles[] = ['label' => $this->t('Záruka končí do 90 dnů'), 'count' => $this->stats->warrantyExpiring(), 'url' => $list(['warranty' => '90']), 'key' => 'warranty'];
+    $tiles[] = ['label' => $this->t('Záruka končí do 90 dnů'), 'count' => $this->stats->warrantyExpiring(), 'url' => $list(['warranty_until' => ['min' => date('Y-m-d'), 'max' => date('Y-m-d', strtotime('+90 days'))]]), 'key' => 'warranty'];
     $tiles[] = ['label' => $this->t('Držitelů'), 'count' => $this->stats->holders(), 'url' => $list(['status' => AssetStatus::Assigned->value]), 'key' => 'holders'];
 
     $byType = [];
@@ -43,7 +43,7 @@ final class DashboardController extends ControllerBase {
     $locations = Location::loadMultiple(array_filter(array_keys($this->stats->byLocation())));
     foreach ($this->stats->byLocation() as $id => $count) {
       $label = $id === 0 ? $this->t('Bez lokality') : ($locations[$id] ?? NULL)?->getName() ?? (string) $id;
-      $byLocation[] = ['label' => $label, 'count' => $count, 'url' => $list(['location' => $id === 0 ? 'none' : $id])];
+      $byLocation[] = ['label' => $label, 'count' => $count, 'url' => $id === 0 ? $list([]) : $list(['location' => $id])];
     }
 
     return [

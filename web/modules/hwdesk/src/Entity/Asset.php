@@ -187,7 +187,8 @@ final class Asset extends RevisionableContentEntityBase implements RevisionLogIn
       ->setRevisionable(TRUE)
       ->addConstraint('UniqueField')
       ->setDisplayOptions('form', ['type' => 'string_textfield', 'weight' => 0])
-      ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'string', 'weight' => 0]);
+      // The label field doubles as the page title; no "Inventární číslo:" prefix there.
+      ->setDisplayOptions('view', ['label' => 'hidden', 'type' => 'string', 'weight' => 0]);
 
     $fields['type'] = BaseFieldDefinition::create('list_string')
       ->setLabel(new TranslatableMarkup('Typ'))

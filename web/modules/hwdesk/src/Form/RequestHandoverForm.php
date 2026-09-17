@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\hwdesk\Form;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\hwdesk\AssetStatus;
 use Drupal\hwdesk\Entity\Asset;
 use Drupal\hwdesk\HandoverKind;
@@ -33,6 +35,18 @@ final class RequestHandoverForm extends FormBase {
     return 'hwdesk_request_handover';
   }
 
+  /**
+   * Administrators always; the holder may start a return of their own piece.
+   */
+  public static function access(Asset $hwdesk_asset, AccountInterface $account): AccessResult {
+    $admin = AccessResult::allowedIfHasPermission($account, 'administer hwdesk');
+    $holder = $hwdesk_asset->getHolder();
+    $own = $holder !== NULL && (int) $holder->id() === (int) $account->id() && $hwdesk_asset->getStatus() === AssetStatus::Assigned;
+    return $admin->orIf(
+      AccessResult::allowedIf($own)->andIf(AccessResult::allowedIfHasPermission($account, 'confirm own hwdesk handovers'))
+    )->addCacheableDependency($hwdesk_asset)->cachePerUser();
+  }
+
   public function buildForm(array $form, FormStateInterface $form_state, ?Asset $hwdesk_asset = NULL): array {
     if ($hwdesk_asset === NULL) {
       return $form;
@@ -47,7 +61,8 @@ final class RequestHandoverForm extends FormBase {
       return $form;
     }
     $status = $hwdesk_asset->getStatus();
-    if ($status === AssetStatus::InStock) {
+    $isAdmin = $this->currentUser()->hasPermission('administer hwdesk');
+    if ($status === AssetStatus::InStock && $isAdmin) {
       $form_state->set('kind', HandoverKind::Handover->value);
       $form['user'] = [
         '#type' => 'entity_autocomplete',
@@ -62,7 +77,7 @@ final class RequestHandoverForm extends FormBase {
       $form_state->set('kind', HandoverKind::ReturnItem->value);
       $form_state->set('user_id', $hwdesk_asset->getHolder()->id());
       $form['holder'] = ['#markup' => '<p>' . $this->t('Držitel: @name', ['@name' => $hwdesk_asset->getHolder()->getDisplayName()]) . '</p>'];
-      $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Odeslat výzvu k vrácení')];
+      $form['actions']['submit'] = ['#type' => 'submit', '#value' => $isAdmin ? $this->t('Odeslat výzvu k vrácení') : $this->t('Chci zařízení vrátit')];
     }
     else {
       $form['none'] = ['#markup' => '<p>' . $this->t('V tomto stavu nelze zařízení předat ani vrátit.') . '</p>'];

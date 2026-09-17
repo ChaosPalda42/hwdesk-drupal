@@ -53,9 +53,9 @@ final class ViewsTest extends KernelTestBase {
       [['type' => ['phone']], 1],
       [['location' => [(string) $brno->id()]], 1],
       [['tags' => [(string) $tag->id()]], 1],
-      [['q' => 'pixel'], 1],
-      [['q' => 'NB-'], 2],
-      [['warranty_until_op' => 'between', 'warranty_until' => ['min' => date('Y-m-d'), 'max' => date('Y-m-d', strtotime('+90 days'))]], 1],
+      [['search' => 'pixel'], 1],
+      [['search' => 'NB-'], 2],
+      [['warranty_until' => ['min' => date('Y-m-d'), 'max' => date('Y-m-d', strtotime('+90 days'))]], 1],
     ];
     foreach ($cases as [$input, $expected]) {
       $view = Views::getView('hwdesk_assets');

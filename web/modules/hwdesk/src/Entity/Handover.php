@@ -16,7 +16,7 @@ use Drupal\hwdesk\Access\HandoverAccessControlHandler;
 use Drupal\hwdesk\HandoverKind;
 use Drupal\hwdesk\HandoverStatus;
 use Drupal\user\UserInterface;
-use Drupal\views\EntityViewsData;
+use Drupal\hwdesk\Views\HandoverViewsData;
 
 /**
  * A handover or return request: asset, employee, confirmation, protocol.
@@ -32,7 +32,7 @@ use Drupal\views\EntityViewsData;
   entity_keys: ['id' => 'id', 'label' => 'protocol_number', 'uuid' => 'uuid'],
   handlers: [
     'access' => HandoverAccessControlHandler::class,
-    'views_data' => EntityViewsData::class,
+    'views_data' => HandoverViewsData::class,
     'list_builder' => EntityListBuilder::class,
   ],
   admin_permission: 'administer hwdesk',
