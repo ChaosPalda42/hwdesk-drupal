@@ -1,0 +1,10 @@
+langcode: cs
+status: true
+dependencies:
+  module:
+    - hwdesk
+id: hwdesk_asset_in_stock
+label: 'Vrátit vybraná zařízení na sklad'
+type: hwdesk_asset
+plugin: hwdesk_asset_in_stock
+configuration: {  }

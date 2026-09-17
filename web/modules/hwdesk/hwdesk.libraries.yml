@@ -1,0 +1,14 @@
+ui:
+  version: 1.0
+  css:
+    theme:
+      css/ui.css: {}
+  js:
+    js/serials.js: {}
+  dependencies:
+    - core/drupal
+labels:
+  version: 1.0
+  css:
+    theme:
+      css/labels.css: {}

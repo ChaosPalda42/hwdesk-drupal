@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Overview: tiles (status counts, pending, warranty), then by type and by location.
+ * Every number links to the asset list with that filter.
+ */
+#}
+<div class="hwdesk-dashboard">
+  <div class="hwdesk-tiles">
+    {% for tile in tiles %}
+      <a class="hwdesk-tile hwdesk-tile--{{ tile.key }}" href="{{ tile.url.toString() }}">
+        <span class="hwdesk-tile__count">{{ tile.count }}</span>
+        <span class="hwdesk-tile__label">{{ tile.label }}</span>
+      </a>
+    {% endfor %}
+  </div>
+  <div class="hwdesk-columns">
+    <section>
+      <h2>{{ 'Podle typu'|t }}</h2>
+      <table class="hwdesk-mini">
+        {% for row in by_type %}
+          <tr><td>{{ row.label }}</td><td class="num"><a href="{{ row.url.toString() }}">{{ row.count }}</a></td></tr>
+        {% else %}
+          <tr><td colspan="2">{{ 'Zatím žádná zařízení.'|t }}</td></tr>
+        {% endfor %}
+      </table>
+    </section>
+    <section>
+      <h2>{{ 'Podle lokality'|t }}</h2>
+      <table class="hwdesk-mini">
+        {% for row in by_location %}
+          <tr><td>{{ row.label }}</td><td class="num"><a href="{{ row.url.toString() }}">{{ row.count }}</a></td></tr>
+        {% else %}
+          <tr><td colspan="2">{{ 'Zatím žádná zařízení.'|t }}</td></tr>
+        {% endfor %}
+      </table>
+    </section>
+  </div>
+</div>

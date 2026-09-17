@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Printable labels, 50×25 mm each: QR on the left, tag and name on the right.
+ * Print with 100 % scale and no margins; @page in hwdesk/labels.
+ */
+#}
+<div class="hwdesk-labels-toolbar">
+  <button type="button" onclick="window.print()">{{ 'Tisknout'|t }}</button>
+  <span>{{ labels|length }} {{ 'štítků'|t }} · 50 × 25 mm</span>
+</div>
+<div class="hwdesk-labels">
+  {% for label in labels %}
+    <div class="hwdesk-label">
+      <div class="hwdesk-label__qr">{{ label.qr|raw }}</div>
+      <div class="hwdesk-label__text">
+        <div class="hwdesk-label__tag">{{ label.tag }}</div>
+        <div class="hwdesk-label__name">{{ label.name }}</div>
+      </div>
+    </div>
+  {% else %}
+    <p>{{ 'Nic k tisku.'|t }}</p>
+  {% endfor %}
+</div>

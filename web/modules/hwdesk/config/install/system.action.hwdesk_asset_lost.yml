@@ -1,0 +1,10 @@
+langcode: cs
+status: true
+dependencies:
+  module:
+    - hwdesk
+id: hwdesk_asset_lost
+label: 'Označit vybraná zařízení jako ztracená'
+type: hwdesk_asset
+plugin: hwdesk_asset_lost
+configuration: {  }

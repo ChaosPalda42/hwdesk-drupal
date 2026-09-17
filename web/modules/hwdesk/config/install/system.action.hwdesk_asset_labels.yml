@@ -1,0 +1,10 @@
+langcode: cs
+status: true
+dependencies:
+  module:
+    - hwdesk
+id: hwdesk_asset_labels
+label: 'Štítky / export vybraných zařízení'
+type: hwdesk_asset
+plugin: hwdesk_asset_labels
+configuration: {  }

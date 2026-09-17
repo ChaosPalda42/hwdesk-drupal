@@ -30,3 +30,6 @@ services:
     arguments: ['@entity_type.manager', '@database']
   hwdesk.label_sheet:
     class: Drupal\hwdesk\Service\LabelSheet
+  hwdesk.zpl_printer:
+    class: Drupal\hwdesk\Service\ZplPrinter
+    arguments: ['@config.factory']

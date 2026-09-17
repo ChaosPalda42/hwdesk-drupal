@@ -1,0 +1,16 @@
+/* Dashboard tiles and small tables. */
+.hwdesk-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; margin: 0 0 1.5rem; }
+.hwdesk-tile { display: flex; flex-direction: column; padding: 0.9rem 1rem; border-radius: 0.5rem; background: #f3f4f6; color: inherit; text-decoration: none; border-left: 4px solid #9ca3af; }
+.hwdesk-tile:hover { background: #e5e7eb; }
+.hwdesk-tile__count { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+.hwdesk-tile__label { font-size: 0.85rem; color: #4b5563; }
+.hwdesk-tile--in_stock { border-color: #2563eb; }
+.hwdesk-tile--assigned { border-color: #16a34a; }
+.hwdesk-tile--pending_handover, .hwdesk-tile--pending_return, .hwdesk-tile--pending { border-color: #f59e0b; }
+.hwdesk-tile--retired, .hwdesk-tile--lost { border-color: #6b7280; }
+.hwdesk-tile--warranty { border-color: #dc2626; }
+.hwdesk-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.5rem; }
+.hwdesk-mini { width: 100%; border-collapse: collapse; }
+.hwdesk-mini td { padding: 0.3rem 0.5rem; border-bottom: 1px solid #e5e7eb; }
+.hwdesk-mini td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.hwdesk-tag-chip { display: inline-block; padding: 0 0.5em; border-radius: 1em; color: #fff; font-size: 0.8em; }

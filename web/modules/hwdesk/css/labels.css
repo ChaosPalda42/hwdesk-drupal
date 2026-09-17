@@ -1,0 +1,16 @@
+/* Label sheet: one 50×25 mm label per page when printed. */
+.hwdesk-labels-toolbar { display: flex; gap: 1rem; align-items: center; margin: 0 0 1rem; }
+.hwdesk-labels { display: flex; flex-wrap: wrap; gap: 4mm; }
+.hwdesk-label { box-sizing: border-box; width: 50mm; height: 25mm; padding: 1.5mm; display: flex; gap: 1.5mm; border: 1px dashed #bbb; background: #fff; color: #000; overflow: hidden; break-inside: avoid; }
+.hwdesk-label__qr { width: 22mm; height: 22mm; flex: 0 0 22mm; }
+.hwdesk-label__qr svg { width: 22mm; height: 22mm; display: block; }
+.hwdesk-label__text { display: flex; flex-direction: column; justify-content: center; min-width: 0; font-family: Helvetica, Arial, sans-serif; }
+.hwdesk-label__tag { font-size: 14pt; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+.hwdesk-label__name { font-size: 7.5pt; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+@media print {
+  @page { size: 50mm 25mm; margin: 0; }
+  body, .hwdesk-labels { margin: 0; padding: 0; background: #fff; }
+  .hwdesk-labels-toolbar, .toolbar, header, footer, nav, .region-header, .messages, h1 { display: none !important; }
+  .hwdesk-labels { display: block; }
+  .hwdesk-label { border: 0; page-break-after: always; margin: 0; }
+}
