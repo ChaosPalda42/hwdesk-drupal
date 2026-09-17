@@ -1,0 +1,9 @@
+name: HW Desk
+type: module
+description: 'Správa firemního hardwaru: evidence, předávací protokoly, štítky.'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - drupal:user
+  - drupal:taxonomy
+  - drupal:file

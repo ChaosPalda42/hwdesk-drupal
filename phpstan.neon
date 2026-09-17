@@ -1,0 +1,9 @@
+# Static gate for the harness: unknown classes/methods on Drupal APIs are the
+# PHP counterpart of pyflakes' undefined names. Extensions come in through
+# phpstan/extension-installer (already a dev dependency).
+parameters:
+  level: 5
+  paths:
+    - web/modules/custom
+  reportUnmatchedIgnoredErrors: false
+  treatPhpDocTypesAsCertain: false
