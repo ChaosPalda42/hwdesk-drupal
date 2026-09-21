@@ -1,20 +1,7 @@
-# Factory v2 project configuration. Roles map to local LM Studio models.
+# Factory v2 project configuration. Roles come from the harness defaults
+# (~/factory/src/factory/config.py): llama-server on :8080, qwen3.8-flash-next.
+# Add [roles.<name>] here only after a `factory bench` says another model is better.
 [run]
 test_command = ['php', 'vendor/bin/phpunit', '-c', 'phpunit.xml']
 iterations_per_contract = 12
 max_run_iterations = 400
-
-[roles.coder]
-model = "openai/gpt-oss-120b"
-context_length = 65536
-slots = 2
-
-[roles.tester]
-model = "openai/gpt-oss-120b"
-context_length = 65536
-slots = 1
-
-[roles.triage]
-model = "openai/gpt-oss-120b"
-context_length = 65536
-slots = 1

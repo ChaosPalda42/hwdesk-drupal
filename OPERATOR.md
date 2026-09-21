@@ -96,6 +96,12 @@ Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
   context 65536 — sjednoceno s výchozími rolemi harnessu po benchmarku
   factory-73 (4/4 zelené, 50 s/kontrakt); jiné modely nenahrávat bez benchmarku.
 
+- 2026-09-21: LM Studio odstraněno; továrna běží na llama-serveru
+  (http://127.0.0.1:8080/v1, jediný model `qwen3.8-flash-next`). factory.toml
+  už nemá [roles.*] — platí výchozí role harnessu. Příští běh (pokud bude)
+  je tedy s jiným coderem než ten, který modul napsal; před větší dávkou
+  kontraktů udělat `factory bench` na C-001/C-002.
+
 ## Pravidla projektu
 - Stack: PHP 8.5, Drupal 11.4, PHPUnit 11 (kernel + unit testy), PHPStan level 5 + phpstan-drupal.
 - Testy: `php vendor/bin/phpunit -c phpunit.xml` (celá sada) nebo s cestou k jednomu testu.
