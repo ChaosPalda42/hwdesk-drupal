@@ -281,7 +281,5 @@
       "note": "1 packet(s) waiting"
     }
   ],
-  "open_packets": [
-    "P-010"
-  ]
+  "open_packets": []
 }

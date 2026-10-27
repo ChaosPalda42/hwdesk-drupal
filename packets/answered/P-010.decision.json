@@ -1,0 +1,8 @@
+{
+  "packet": "P-010",
+  "kind": "skip",
+  "diff": "",
+  "contract": {},
+  "note": "Tri pokusy, dve rodiny modelu, pokazde stejne dno: klice $modes jsou v PHP int, takze $call->queue === $queue neplatilo a vetev LOGIKA se nedelala (calls 5 misto 7). Kontrakt tu past jmenuje u kroku 1 i 3 a model ji presto neobesel. Referencni implementace je overena rucne: DayRunTest 16/16, cela skupina csobrec 150 zelenych a 17 cervenych jen na chybejicim C-022. Soubor v repozitari (b08af50a) je ten overeny; dalsi pokus by ho jen prepsal a spalil budget.",
+  "created_at": "2026-10-27T19:23:11+00:00"
+}
