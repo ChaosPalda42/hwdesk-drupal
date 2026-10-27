@@ -105,5 +105,34 @@ function csobrec_requirements(string $phase): array {
     ];
   }
 
+  $nastaveni = \Drupal::config('csobrec.settings');
+
+  if ((array) $nastaveni->get('fronty') === []) {
+    $pozadavky['csobrec_fronty'] = [
+      'title' => t('Předávka ČSOB: fronty'),
+      'value' => t('žádná fronta není nastavená'),
+      'description' => t('Bez front se Daktely nikdo neptá a každé ráno projde naprázdno. Doplňte je v nastavení modulu.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+
+  if ((string) $nastaveni->get('sftp_cil') === '') {
+    $pozadavky['csobrec_cil'] = [
+      'title' => t('Předávka ČSOB: cílová cesta na jejich SFTP'),
+      'value' => t('není vyplněná'),
+      'description' => t('Cestu, do které se dávka ukládá, musí určit ČSOB. Dokud tu není, ostrý běh skončí chybou a nic neodejde — zkouška s --bez-nahrani funguje.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+
+  if (!$nastaveni->get('sftp_overit_klic')) {
+    $pozadavky['csobrec_klic'] = [
+      'title' => t('Předávka ČSOB: klíč jejich serveru'),
+      'value' => t('neověřuje se'),
+      'description' => t('Otisk klíče serveru si každý běh zapisuje do logu. Nechte si ho potvrdit od ČSOB (ne z našeho logu, ten by potvrdil i podvodníka), vyplňte ho v nastavení a zapněte ověřování.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+
   return $pozadavky;
 }

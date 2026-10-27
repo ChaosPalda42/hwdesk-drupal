@@ -1,0 +1,10 @@
+csobrec.settings:
+  title: 'Předávka nahrávek ČSOB'
+  description: 'Fronty a režimy, hodina ranní předávky, přístup na jejich SFTP. Token a heslo se zadávají v settings.php.'
+  route_name: csobrec.settings
+  parent: system.admin_config_services
+csobrec.batches:
+  title: 'Odeslané dávky nahrávek ČSOB'
+  description: 'Kdy co odešlo, kolik hovorů a co se nepovedlo.'
+  route_name: csobrec.batches
+  parent: system.admin_reports

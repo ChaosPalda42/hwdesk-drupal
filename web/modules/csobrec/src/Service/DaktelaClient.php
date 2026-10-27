@@ -109,11 +109,13 @@ final class DaktelaClient {
     }
     $digits = preg_replace('/\D/', '', $phone) ?? '';
     if (strlen($digits) < 9) {
-      throw new \InvalidArgumentException(sprintf('The number %s has fewer than nine digits; a shorter match would hit other people.', $phone));
+      // The number itself must not travel into the message: it ends up in the
+      // log and on the operator's terminal, and it is a customer's.
+      throw new \InvalidArgumentException(sprintf('A number of %d digits is too short to ask about; a shorter match would hit other people.', strlen($digits)));
     }
     $prefix = substr($digits, 0, -9);
     if (!in_array($prefix, ['', '420', '00420'], TRUE)) {
-      throw new \InvalidArgumentException(sprintf('The number %s does not look Czech: the digits before the last nine must be empty, 420 or 00420.', $phone));
+      throw new \InvalidArgumentException(sprintf('A number with %d digits before the last nine does not look Czech: that part must be empty, 420 or 00420.', strlen($prefix)));
     }
     $token = $this->token();
     $calls = $this->activities($token, [

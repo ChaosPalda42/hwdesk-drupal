@@ -161,24 +161,34 @@ začíná `csobrec_`, soubory v `private://csobrec/`.
 
 ### Mapa: co se přepisuje z čeho
 
-| Python (C-0NN) | PHP v modulu |
+| Python | PHP v modulu (kontrakt) |
 |---|---|
-| C-001 `jmena.py` | `Service\Naming` — jména souborů v dávce |
-| C-002 `index_xml.py` | `Service\IndexXml` — indexové XML bajtově stejně |
-| C-003 `vyber.py` | `Service\Selection` — pravidla ČSOB (VSE / LOGIKA) |
-| C-004 `davka.py` | `Service\Batch` — dávka na disku (MP3 + XML + `.don`) |
-| C-005 `daktela.py` | `Service\DaktelaClient` — Guzzle (`http_client`) |
-| C-006 `prevod.py` | `Service\Mp3Converter` — ffmpeg přes symfony/process |
-| C-007 `sftp.py` | `Service\SftpUploader` — phpseclib3, `.don` naposled |
-| C-008 `prevodnik.py` | `Service\CallMapper` — aktivita → hovor → řádek XML |
-| C-009 `beh.py` | `Service\DayRun` — jeden den od hovorů k dávce |
-| C-010 `sftp_server.py` | v PHP ekvivalent nemá; nahrávání se testuje proti zkušebnímu serveru z Python verze (test se přeskočí, když není po ruce) |
-| C-011 `evidence.py` | `Service\SentLedger` — tabulky výš |
-| C-012 `nastaveni.py` | `csobrec.settings` + `Form\SettingsForm` + settings.php |
-| C-013 `aplikace.py` | `Service\Application` — složení služeb |
-| C-014 `cli.py` | drush příkazy `csobrec:den|vcera|stav` |
+| `jmena.py` | `Service\Naming` — jména souborů v dávce (C-011) |
+| `index_xml.py` | `Service\IndexXml` — indexové XML bajtově stejně (C-012) |
+| `vyber.py` | `Service\Selection` — pravidla ČSOB (VSE / LOGIKA) (C-013) |
+| `prevodnik.py` | `Service\CallMapper` — aktivita → hovor → řádek XML (C-014) |
+| (v Pythonu v `sftp.py`) | `Service\HostKeyCheck` — otisk klíče serveru (C-015) |
+| `sftp.py` | `Service\SftpUploader` — `.don` naposled (C-016); spojení otevírá `Sftp\PhpseclibSessionFactory` |
+| `prevod.py` | `Service\Mp3Converter` — ffmpeg přes symfony/process (C-017) |
+| `daktela.py` | `Service\DaktelaClient` — Guzzle (`http_client`) (C-018) |
+| `evidence.py` | `Service\SentLedger` — tabulky výš (C-019) |
+| `davka.py` | `Service\BatchBuilder` — dávka na disku (MP3 + XML + `.don`) (C-020) |
+| `beh.py` | `Service\DayRun` — jeden den od hovorů k dávce (C-021) |
+| `aplikace.py` | `Service\Application` — postav, nahraj, zapiš, ukliď (C-022) |
+| `nastaveni.py` | `csobrec.settings` + `Form\SettingsForm` + settings.php |
+| `cli.py` | drush `csobrec:den|vcera|stav|ukliz` (`src/Drush/Commands`) |
+| `sftp_server.py` | v PHP ekvivalent nemá; `Sftp\PhpseclibSession` se neověřuje testem, ale ručně proti zkušebnímu serveru z Python verze |
 
-Dvě pravidla z Python verze platí i tady a patří do kontraktů, ne do hlav:
+Co v Pythonu nebylo a tady je: přehled dávek na `/admin/reports/csobrec`,
+nastavení na `/admin/config/services/csobrec` a tři kontroly na
+`/admin/reports/status` (privátní cesta, ffmpeg, token, cíl na SFTP, ověřování
+klíče).
+
+Ranní běh **nevisí na `hook_cron`** — jeden den jsou stovky nahrávek a stovky
+megabajtů přes ffmpeg, to nemá co dělat ve webovém požadavku. Pouští to
+systémový cron: `drush csobrec:vcera`.
+
+Tři pravidla o tom, co nesmí odejít, patří do kontraktů, ne do hlav:
 
 - **Otisk klíče serveru se kontroluje PŘED přihlášením.** V paramiku to byla
   skrytá past (`Transport.connect()` se přihlašuje sám), v phpseclib je
@@ -187,6 +197,11 @@ Dvě pravidla z Python verze platí i tady a patří do kontraktů, ne do hlav:
 - **Token nesmí do výjimky ani do logu.** Je v adrese dotazu, takže chyba smí
   jmenovat jen cestu a návratový kód (v Pythonu kvůli tomu nepoužíváme
   `raise_for_status`; v Guzzle platí totéž o `RequestException::getMessage()`).
+- **Telefonní číslo nesmí do textu výjimky.** Dílna napsala do `DaktelaClient`
+  hlášku „The number %s has fewer than nine digits" — jmenuje se v ní číslo
+  zákazníka a ta hláška jde do logu a na terminál. Opraveno na počet číslic;
+  stejné pravidlo platí všude, kde se chyba týká konkrétního hovoru: ven smí
+  identifikátor aktivity a počty, ne číslo ani jméno.
 
 Otevřené: po `composer require phpseclib/phpseclib symfony/process` hlásí
 PHPStan jeden nález ve **starém** testu hwdesku

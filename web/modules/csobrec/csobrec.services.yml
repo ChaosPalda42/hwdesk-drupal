@@ -28,3 +28,36 @@ services:
   csobrec.batch_builder:
     class: Drupal\csobrec\Service\BatchBuilder
     arguments: ['@file_system', '@csobrec.naming', '@csobrec.index_xml']
+
+  # The day and the whole morning. Both get the logger: the only thing an
+  # operator has after a failed 5 a.m. run is the log.
+  csobrec.day_run:
+    class: Drupal\csobrec\Service\DayRun
+    arguments:
+      - '@csobrec.daktela'
+      - '@csobrec.call_mapper'
+      - '@csobrec.selection'
+      - '@csobrec.naming'
+      - '@csobrec.mp3_converter'
+      - '@csobrec.sent_ledger'
+      - '@csobrec.batch_builder'
+      - '@config.factory'
+      - '@logger.factory'
+
+  # The password is in settings.php, not in config; the host key is checked
+  # before the login, inside the factory.
+  csobrec.sftp_sessions:
+    class: Drupal\csobrec\Sftp\PhpseclibSessionFactory
+    arguments: ['@config.factory', '@settings', '@csobrec.host_key', '@logger.factory']
+
+  csobrec.application:
+    class: Drupal\csobrec\Service\Application
+    arguments:
+      - '@csobrec.day_run'
+      - '@csobrec.sftp_uploader'
+      - '@csobrec.sent_ledger'
+      - '@csobrec.naming'
+      - '@csobrec.sftp_sessions'
+      - '@file_system'
+      - '@config.factory'
+      - '@logger.factory'
