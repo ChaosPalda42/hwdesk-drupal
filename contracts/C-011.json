@@ -1,0 +1,12 @@
+{
+ "id": "C-011",
+ "file": "web/modules/csobrec/src/Service/Naming.php",
+ "role": "coder",
+ "title": "jména souborů v dávce pro ČSOB",
+ "interface": "final class Drupal\\csobrec\\Service\\Naming, no constructor arguments, no service needed. Methods: mp3(\\DateTimeImmutable $time, string $activity): string returns 'DA_<YmdHis>_<activity>.mp3'; batch(\\DateTimeImmutable $time): string returns 'DA_<Y><n><j><His>' — year four digits, month and day WITHOUT a leading zero, time always six digits; xml(\\DateTimeImmutable $time): string is batch() plus '.xml'; don(\\DateTimeImmutable $time): string is batch() plus '.don'. The formats are copied from samples ČSOB accepts; the asymmetry between mp3() and batch() is deliberate and must stay. Use the DateTimeImmutable's own timezone — never convert to UTC or to the site timezone, or a late-evening call would be renamed to the day before.",
+ "uses": {},
+ "acceptance": "web/modules/csobrec/tests/src/Unit/NamingTest.php",
+ "budget": {
+  "iterations": 8
+ }
+}
