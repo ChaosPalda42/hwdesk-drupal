@@ -109,8 +109,8 @@ final class Application {
     // in the overview, and a test run must claim nothing was handed over.
     if ($run['batch'] === NULL || !$upload) {
       $why = $run['batch'] === NULL
-        ? sprintf('Nic k odeslání: %d hovorů ve dávce.', (int) $run['inBatch'])
-        : sprintf('Testový běh: dávka sestavena, %d souborů neodesíláno.', (int) $run['inBatch']);
+        ? sprintf('Nic k odeslání: v dávce je %d hovorů.', (int) $run['inBatch'])
+        : sprintf('Testový běh: dávka je sestavená, %d hovorů se neodesílalo.', (int) $run['inBatch']);
       $this->ledger->skipBatch($id, $why);
       $logger->info('The day @day was not sent: @why', [
         '@day' => $date,
