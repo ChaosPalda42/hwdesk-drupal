@@ -179,6 +179,24 @@
       "last_finding": "",
       "packet": "",
       "updated_at": "2026-10-27T17:59:22+00:00"
+    },
+    "C-021": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 20,
+      "commit": "",
+      "last_finding": "acceptance failed (10 failed); [SUSPECT_ACCEPTANCE] web/modules/csobrec/tests/src/Kernel/DayRunTest.php: suspect: acceptance — dva různé modely skončily na téže množině padajících uzlů (10): Drupal\\Tests\\csobrec\\Kernel\\DayRunTest::testAFailedDownloadIsCountedAndTheRestOfTheDayGoesOut, Drupal\\Tests\\c",
+      "packet": "P-008",
+      "updated_at": "2026-10-27T18:21:34+00:00"
+    },
+    "C-022": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
     }
   },
   "runs": [
@@ -231,7 +249,19 @@
       "red": 0,
       "escalated": 0,
       "note": "test_command passed (197 tests)"
+    },
+    {
+      "started_at": "2026-10-27T18:04:09+00:00",
+      "finished_at": "2026-10-27T18:21:34+00:00",
+      "outcome": "needs-operator",
+      "iterations": 20,
+      "green": 20,
+      "red": 0,
+      "escalated": 1,
+      "note": "1 packet(s) waiting"
     }
   ],
-  "open_packets": []
+  "open_packets": [
+    "P-008"
+  ]
 }

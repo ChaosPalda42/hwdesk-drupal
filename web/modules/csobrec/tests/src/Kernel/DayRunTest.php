@@ -96,8 +96,10 @@ final class DayRunTest extends KernelTestBase {
     ]);
     // No recording: ČSOB gets a line for nothing, so the call drops out.
     $this->daktela->addCall('5003', 'a3', '2026-10-26 10:00:00', '420777333333', audio: NULL);
-    // Something the mapper cannot read; a live instance has those.
-    $this->daktela->addRawCall('5003', ['name' => 'a4', 'queue' => ['name' => '5003']]);
+    // Something the mapper cannot read; a live instance has those. The time is
+    // there (Daktela always sends it, and the day filter needs it); the queue is
+    // missing, and that is what the mapper refuses.
+    $this->daktela->addRawCall('5003', ['name' => 'a4', 'time' => '2026-10-26 12:00:00']);
 
     // Queue 5004, mode LOGIKA: only a trigger and the history behind it.
     $this->daktela->addCall('5004', 'b1', '2026-10-26 08:30:00', '420777444444');
@@ -120,7 +122,7 @@ final class DayRunTest extends KernelTestBase {
 
     // a1, a2, a3, b1, b2 from the day plus b0 and b9 from the history.
     $this->assertSame(7, $result['calls']);
-    $this->assertSame(1, $result['unmappable'], 'a4 has no time.');
+    $this->assertSame(1, $result['unmappable'], 'a4 has no queue.');
     // VSE takes a1, a2, a3; LOGIKA takes the trigger b2 and the earlier b0.
     $this->assertSame(5, $result['selected']);
     $this->assertSame(1, $result['xsellCopies']);
