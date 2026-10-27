@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\api_csobrec\Service;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Site\Settings;
 use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -40,8 +38,7 @@ final class DaktelaClient {
 
   public function __construct(
     private readonly ClientInterface $http,
-    private readonly ConfigFactoryInterface $configFactory,
-    private readonly Settings $settings,
+    private readonly CredentialsInterface $credentials,
   ) {
   }
 
@@ -285,23 +282,23 @@ final class DaktelaClient {
   }
 
   /**
-   * The configured base URL without a trailing slash.
+   * The base URL of the instance, without a trailing slash.
    */
   private function base(): string {
-    $url = (string) $this->configFactory->get('api_csobrec.settings')->get('daktela_url');
-    return rtrim($url, '/');
+    return $this->credentials->daktelaUrl();
   }
 
   /**
-   * The access token from settings.php, refusing an empty one.
+   * The access token out of the key, refusing an empty one.
    *
    * @throws \RuntimeException
-   *   When no token is configured; nothing may be sent without it.
+   *   When the key has no token; nothing may be sent without it. The message
+   *   names the field, never what is or is not in it.
    */
   private function token(): string {
-    $token = (string) $this->settings->get('api_csobrec_daktela_token');
+    $token = $this->credentials->daktelaToken();
     if ($token === '') {
-      throw new \RuntimeException('The Daktela access token (api_csobrec_daktela_token) is not configured; refusing to send a request without it.');
+      throw new \RuntimeException('The key has no daktela_token; refusing to send a request without it.');
     }
     return $token;
   }

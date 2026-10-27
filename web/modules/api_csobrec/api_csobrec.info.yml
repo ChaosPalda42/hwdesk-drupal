@@ -6,3 +6,4 @@ core_version_requirement: ^11
 configure: api_csobrec.settings
 dependencies:
   - drupal:file
+  - key:key

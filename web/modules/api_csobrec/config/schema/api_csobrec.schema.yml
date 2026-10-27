@@ -2,9 +2,9 @@ api_csobrec.settings:
   type: config_object
   label: 'Předávka nahrávek ČSOB'
   mapping:
-    daktela_url:
-      type: uri
-      label: 'Adresa Daktely'
+    klic:
+      type: string
+      label: 'Klíč modulu Key s přístupy'
     fronty:
       type: sequence
       label: 'Fronty a jejich režim'
@@ -14,21 +14,9 @@ api_csobrec.settings:
     hodina:
       type: integer
       label: 'Hodina ranní předávky'
-    sftp_host:
-      type: string
-      label: 'Adresa SFTP ČSOB'
-    sftp_port:
-      type: integer
-      label: 'Port SFTP'
-    sftp_uzivatel:
-      type: string
-      label: 'Přihlašovací jméno'
     sftp_cil:
       type: string
       label: 'Cílová cesta na jejich serveru'
-    sftp_klic:
-      type: string
-      label: 'Cesta k privátnímu klíči'
     sftp_otisk:
       type: string
       label: 'Očekávaný otisk klíče serveru'

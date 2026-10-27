@@ -1,18 +1,16 @@
-# Nastavení předávky. Tajemství tu NEJSOU: token k Datele ani heslo k SFTP se
-# do configu nepíšou, protože config se exportuje do yml a koluje po discích.
-# Čtou se ze settings.php ($settings['api_csobrec_daktela_token'],
-# $settings['api_csobrec_sftp_heslo']), případně z prostředí.
-daktela_url: 'https://conectart.daktela.com'
+# Nastavení předávky. Tajemství tu NEJSOU a ani adresy a přihlašovací jméno:
+# config se exportuje do yml a koluje po discích. Všechno tohle leží v jednom
+# klíči modulu Key (typ „Authentication (Multivalue)“, JSON) a tady je jen jeho
+# id. Pole toho klíče: daktela_url, daktela_token, sftp_host, sftp_port,
+# sftp_uzivatel, sftp_heslo, sftp_klic.
+klic: ''
 # Fronty: číslo fronty => režim. VSE = předá se každý hovor, LOGIKA = hovor
 # s dispozicí [CSOB] Nový prodej / Nový prodej TZ a k němu starší historie
 # téhož telefonního čísla z téže fronty.
 fronty: {}
 hodina: 5
-sftp_host: ''
-sftp_port: 22
-sftp_uzivatel: ''
+# Co určuje ČSOB, ne my: cílová cesta a otisk klíče jejich serveru.
 sftp_cil: ''
-sftp_klic: ''
 sftp_otisk: ''
 sftp_overit_klic: false
 # Cesta k ffmpegu; prázdné = hledá se v PATH.

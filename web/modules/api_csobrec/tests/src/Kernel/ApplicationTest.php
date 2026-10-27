@@ -8,6 +8,7 @@ use Drupal\api_csobrec\Service\Application;
 use Drupal\api_csobrec\Service\Mp3Converter;
 use Drupal\api_csobrec\Service\Naming;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\api_csobrec\Fake\FakeCredentials;
 use Drupal\Tests\api_csobrec\Fake\FakeDaktela;
 use Drupal\Tests\api_csobrec\Fake\FakeSftp;
 use Drupal\Tests\api_csobrec\Traits\ApiCsobrecFixturesTrait;
@@ -27,7 +28,7 @@ final class ApplicationTest extends KernelTestBase {
 
   use ApiCsobrecFixturesTrait;
 
-  protected static $modules = ['system', 'user', 'file', 'api_csobrec'];
+  protected static $modules = ['system', 'user', 'file', 'key', 'api_csobrec'];
 
   private FakeDaktela $daktela;
 
@@ -36,9 +37,10 @@ final class ApplicationTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installApiCsobrec();
-    $this->setSetting('api_csobrec_daktela_token', 'TOKEN-DAKTELY');
+    // What the module reads the token and the addresses from is
+    // KeyCredentialsTest's business; here they are simply handed over.
+    $this->container->set('api_csobrec.credentials', new FakeCredentials());
     $this->config('api_csobrec.settings')
-      ->set('daktela_url', 'https://conectart.daktela.com')
       ->set('fronty', ['5003' => 'VSE'])
       ->set('sftp_cil', '/upload/nahravky')
       ->set('davky_dni', 30)

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\api_csobrec\Unit;
 
-use Drupal\Core\Site\Settings;
 use Drupal\api_csobrec\Service\DaktelaClient;
+use Drupal\Tests\api_csobrec\Fake\FakeCredentials;
 use Drupal\Tests\UnitTestCase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -69,8 +69,7 @@ final class DaktelaClientTest extends UnitTestCase {
     $stack->push(Middleware::history($this->history));
     return new DaktelaClient(
       new Client(['handler' => $stack]),
-      $this->getConfigFactoryStub(['api_csobrec.settings' => ['daktela_url' => $base]]),
-      new Settings(['api_csobrec_daktela_token' => $token]),
+      new FakeCredentials(daktelaUrl: $base, daktelaToken: $token),
     );
   }
 

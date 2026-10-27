@@ -4,21 +4,32 @@ declare(strict_types=1);
 
 namespace Drupal\api_csobrec\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\api_csobrec\QueueMode;
+use Drupal\api_csobrec\Service\CredentialsInterface;
 
 /**
  * Queues, the hour of the morning run and the access to ČSOB's SFTP.
  *
- * The two secrets are deliberately missing from this form: config is exported
- * to yml and travels between machines, so the Daktela token and the SFTP
- * password are read from settings.php. The form only says whether they are
- * there, never what they are.
+ * Addresses, the login name and both secrets are deliberately missing from
+ * this form: config is exported to yml and travels between machines, so all
+ * of it lives in one key of the Key module and this form only points at that
+ * key. What it says about the key is which FIELDS are missing from it, never
+ * what is in them.
  */
 final class SettingsForm extends ConfigFormBase {
+
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typedConfigManager,
+    private readonly CredentialsInterface $credentials,
+  ) {
+    parent::__construct($config_factory, $typedConfigManager);
+  }
 
   public function getFormId(): string {
     return 'api_csobrec_settings';
@@ -36,16 +47,33 @@ final class SettingsForm extends ConfigFormBase {
       $lines[] = $queue . '|' . $mode;
     }
 
+    $missing = $this->credentials->missing();
+    $form['pristupy'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Přístupy'),
+      '#open' => TRUE,
+    ];
+    $form['pristupy']['klic'] = [
+      '#type' => 'key_select',
+      '#title' => $this->t('Klíč s přístupy'),
+      '#key_filters' => ['type' => 'authentication_multivalue'],
+      '#key_description' => FALSE,
+      '#empty_option' => $this->t('– žádný –'),
+      '#default_value' => $config->get('klic'),
+      '#description' => $this->t('Jeden klíč modulu Key typu „Authentication (Multivalue)“ s poli <code>daktela_url</code>, <code>daktela_token</code>, <code>sftp_host</code>, <code>sftp_port</code>, <code>sftp_uzivatel</code> a <code>sftp_heslo</code> nebo <code>sftp_klic</code> (privátní klíč v PEM). Zakládejte ho s poskytovatelem <em>File</em> nebo <em>Environment</em>, <strong>ne <em>Configuration</em></strong>: config se exportuje do yml a cestuje po discích. Hodnoty se tady nikdy nezobrazí.'),
+    ];
+    $form['pristupy']['stav'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Co v klíči chybí'),
+      '#markup' => $missing === []
+        ? $this->t('Nic: klíč má všechno, co předávka potřebuje.')
+        : $this->t('Chybí: @pole.', ['@pole' => implode(', ', $missing)]),
+    ];
+
     $form['daktela'] = [
       '#type' => 'details',
       '#title' => $this->t('Daktela'),
       '#open' => TRUE,
-    ];
-    $form['daktela']['daktela_url'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Adresa Daktely'),
-      '#default_value' => $config->get('daktela_url'),
-      '#required' => TRUE,
     ];
     $form['daktela']['fronty'] = [
       '#type' => 'textarea',
@@ -54,54 +82,17 @@ final class SettingsForm extends ConfigFormBase {
       '#default_value' => implode("\n", $lines),
       '#rows' => 8,
     ];
-    $form['daktela']['token'] = [
-      '#type' => 'item',
-      '#title' => $this->t('Token k API'),
-      '#markup' => Settings::get('api_csobrec_daktela_token', '') === ''
-        ? $this->t('Není nastavený. Doplňte v settings.php: <code>$settings[\'api_csobrec_daktela_token\'] = \'…\';</code>')
-        : $this->t('Nastavený v settings.php.'),
-    ];
-
     $form['sftp'] = [
       '#type' => 'details',
       '#title' => $this->t('SFTP ČSOB'),
       '#open' => TRUE,
-    ];
-    $form['sftp']['sftp_host'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Adresa serveru'),
-      '#default_value' => $config->get('sftp_host'),
-    ];
-    $form['sftp']['sftp_port'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Port'),
-      '#min' => 1,
-      '#max' => 65535,
-      '#default_value' => $config->get('sftp_port') ?: 22,
-    ];
-    $form['sftp']['sftp_uzivatel'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Přihlašovací jméno'),
-      '#default_value' => $config->get('sftp_uzivatel'),
+      '#description' => $this->t('Adresa, port a přihlašovací jméno jsou v klíči výš. Tady je jen to, co určuje ČSOB.'),
     ];
     $form['sftp']['sftp_cil'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Cílová cesta na jejich serveru'),
       '#description' => $this->t('Například /upload/nahravky. Složku na jejich straně modul nezakládá: překlep by dávku poslal tam, kam se nikdo nekouká, a evidence by tvrdila, že ji ČSOB má. Když běh tu cestu jmenuje, je v ní překlep, nebo ji musí založit ČSOB.'),
       '#default_value' => $config->get('sftp_cil'),
-    ];
-    $form['sftp']['sftp_klic'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Cesta k privátnímu klíči'),
-      '#description' => $this->t('Prázdné = přihlašuje se heslem ze settings.php.'),
-      '#default_value' => $config->get('sftp_klic'),
-    ];
-    $form['sftp']['heslo'] = [
-      '#type' => 'item',
-      '#title' => $this->t('Heslo'),
-      '#markup' => Settings::get('api_csobrec_sftp_heslo', '') === ''
-        ? $this->t('Není nastavené. Doplňte v settings.php: <code>$settings[\'api_csobrec_sftp_heslo\'] = \'…\';</code>, nebo vyplňte cestu ke klíči.')
-        : $this->t('Nastavené v settings.php.'),
     ];
     $form['sftp']['sftp_otisk'] = [
       '#type' => 'textfield',
@@ -170,23 +161,14 @@ final class SettingsForm extends ConfigFormBase {
     if ((bool) $form_state->getValue('sftp_overit_klic') && $fingerprint === '') {
       $form_state->setErrorByName('sftp_otisk', $this->t('Ověřovat klíč nejde proti ničemu: buď doplňte otisk, nebo ověřování vypněte.'));
     }
-
-    $key = trim((string) $form_state->getValue('sftp_klic'));
-    if ($key !== '' && !is_readable($key)) {
-      $form_state->setErrorByName('sftp_klic', $this->t('Soubor s klíčem se nedá přečíst. Zkontrolujte cestu a práva (vlastník má být uživatel webserveru, práva 0400).'));
-    }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('api_csobrec.settings')
-      ->set('daktela_url', rtrim(trim((string) $form_state->getValue('daktela_url')), '/'))
+      ->set('klic', trim((string) $form_state->getValue('klic')))
       ->set('fronty', $form_state->get('parsed_queues'))
       ->set('hodina', (int) $form_state->getValue('hodina'))
-      ->set('sftp_host', trim((string) $form_state->getValue('sftp_host')))
-      ->set('sftp_port', (int) $form_state->getValue('sftp_port'))
-      ->set('sftp_uzivatel', trim((string) $form_state->getValue('sftp_uzivatel')))
       ->set('sftp_cil', rtrim(trim((string) $form_state->getValue('sftp_cil')), '/'))
-      ->set('sftp_klic', trim((string) $form_state->getValue('sftp_klic')))
       ->set('sftp_otisk', trim((string) $form_state->getValue('sftp_otisk')))
       ->set('sftp_overit_klic', (bool) $form_state->getValue('sftp_overit_klic'))
       ->set('ffmpeg', trim((string) $form_state->getValue('ffmpeg')))

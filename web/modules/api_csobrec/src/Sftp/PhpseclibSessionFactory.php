@@ -6,7 +6,7 @@ namespace Drupal\api_csobrec\Sftp;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Site\Settings;
+use Drupal\api_csobrec\Service\CredentialsInterface;
 use Drupal\api_csobrec\Service\HostKeyCheck;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SFTP;
@@ -25,19 +25,19 @@ use phpseclib3\Net\SFTP;
 final class PhpseclibSessionFactory implements SftpSessionFactoryInterface {
 
   public function __construct(
+    private readonly CredentialsInterface $credentials,
     private readonly ConfigFactoryInterface $configFactory,
-    private readonly Settings $settings,
     private readonly HostKeyCheck $hostKey,
     private readonly LoggerChannelFactoryInterface $loggerFactory,
   ) {}
 
   public function open(): SftpSessionInterface {
     $config = $this->configFactory->get('api_csobrec.settings');
-    $host = (string) $config->get('sftp_host');
-    $port = (int) ($config->get('sftp_port') ?: 22);
-    $user = (string) $config->get('sftp_uzivatel');
+    $host = $this->credentials->sftpHost();
+    $port = $this->credentials->sftpPort();
+    $user = $this->credentials->sftpUser();
     if ($host === '' || $user === '') {
-      throw new \RuntimeException('SFTP ČSOB není nastavené: chybí adresa nebo přihlašovací jméno.');
+      throw new \RuntimeException('SFTP ČSOB není nastavené: v klíči chybí sftp_host nebo sftp_uzivatel.');
     }
 
     $sftp = new SFTP($host, $port, 60);
@@ -57,18 +57,17 @@ final class PhpseclibSessionFactory implements SftpSessionFactoryInterface {
       '@otisk' => $fingerprint,
     ]);
 
-    $keyPath = (string) $config->get('sftp_klic');
-    if ($keyPath !== '') {
-      $contents = @file_get_contents($keyPath);
-      if ($contents === FALSE) {
-        throw new \RuntimeException(sprintf('Privátní klíč %s se nedá přečíst.', $keyPath));
-      }
-      $credential = PublicKeyLoader::load($contents);
+    // The private key itself is in the key, not a path to a file on our disk.
+    // PublicKeyLoader::load() throws when it cannot read it, and its message
+    // says only that — nothing of the key's contents.
+    $pem = $this->credentials->sftpPrivateKey();
+    if ($pem !== '') {
+      $credential = PublicKeyLoader::load($pem);
     }
     else {
-      $credential = (string) $this->settings->get('api_csobrec_sftp_heslo', '');
+      $credential = $this->credentials->sftpPassword();
       if ($credential === '') {
-        throw new \RuntimeException("Není čím se přihlásit: nastavte cestu ke klíči, nebo \$settings['api_csobrec_sftp_heslo'] v settings.php.");
+        throw new \RuntimeException('Není čím se přihlásit: v klíči musí být sftp_heslo, nebo sftp_klic.');
       }
     }
 

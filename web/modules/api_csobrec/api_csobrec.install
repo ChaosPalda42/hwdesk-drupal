@@ -96,12 +96,32 @@ function api_csobrec_requirements(string $phase): array {
       'severity' => REQUIREMENT_ERROR,
     ];
 
-  if (!\Drupal::service('settings')->get('api_csobrec_daktela_token')) {
-    $pozadavky['api_csobrec_token'] = [
-      'title' => t('Předávka ČSOB: token k Datele'),
-      'value' => t('není v settings.php'),
-      'description' => t('Token se do configu nepíše (config se exportuje). Patří do $settings[\'api_csobrec_daktela_token\'] v settings.php.'),
-      'severity' => REQUIREMENT_WARNING,
+  // Přístupy: jeden klíč modulu Key. Hlášení jmenuje POLE, která v něm chybí,
+  // nikdy jejich obsah — stavová stránka je vidět a jde do podpory.
+  $pristupy = \Drupal::service('api_csobrec.credentials');
+  $klic = $pristupy->keyId();
+  $chybi = $pristupy->missing();
+  if ($klic === '') {
+    $pozadavky['api_csobrec_klic'] = [
+      'title' => t('Předávka ČSOB: klíč s přístupy'),
+      'value' => t('není vybraný'),
+      'description' => t('Adresy, přihlašovací jméno, token a heslo leží v jednom klíči modulu Key (typ „Authentication (Multivalue)“). Založte ho s poskytovatelem File nebo Environment a vyberte ho v nastavení modulu.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+  elseif ($chybi !== []) {
+    $pozadavky['api_csobrec_klic'] = [
+      'title' => t('Předávka ČSOB: klíč s přístupy'),
+      'value' => t('klíč @klic: chybí @pole', ['@klic' => $klic, '@pole' => implode(', ', $chybi)]),
+      'description' => t('Dokud ta pole v klíči nejsou, ranní běh skončí chybou a nic neodejde.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+  else {
+    $pozadavky['api_csobrec_klic'] = [
+      'title' => t('Předávka ČSOB: klíč s přístupy'),
+      'value' => t('klíč @klic má všechno', ['@klic' => $klic]),
+      'severity' => REQUIREMENT_OK,
     ];
   }
 

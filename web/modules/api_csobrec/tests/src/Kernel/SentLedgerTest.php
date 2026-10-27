@@ -21,7 +21,7 @@ final class SentLedgerTest extends KernelTestBase {
 
   use ApiCsobrecFixturesTrait;
 
-  protected static $modules = ['system', 'user', 'file', 'api_csobrec'];
+  protected static $modules = ['system', 'user', 'file', 'key', 'api_csobrec'];
 
   protected function setUp(): void {
     parent::setUp();

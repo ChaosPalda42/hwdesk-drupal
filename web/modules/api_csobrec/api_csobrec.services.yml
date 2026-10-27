@@ -12,11 +12,17 @@ services:
   api_csobrec.host_key:
     class: Drupal\api_csobrec\Service\HostKeyCheck
 
-  # The token lives in settings.php, never in config: config is exported to
-  # yml and travels between machines.
+  # Every secret and every address comes out of ONE key of the Key module.
+  # Nothing is in this module's config: config is exported to yml and travels
+  # between machines and disks.
+  api_csobrec.credentials:
+    class: Drupal\api_csobrec\Service\KeyCredentials
+    arguments: ['@key.repository', '@config.factory']
+  Drupal\api_csobrec\Service\CredentialsInterface: '@api_csobrec.credentials'
+
   api_csobrec.daktela:
     class: Drupal\api_csobrec\Service\DaktelaClient
-    arguments: ['@http_client', '@config.factory', '@settings']
+    arguments: ['@http_client', '@api_csobrec.credentials']
   api_csobrec.mp3_converter:
     class: Drupal\api_csobrec\Service\Mp3Converter
     arguments: ['@config.factory']
@@ -44,11 +50,12 @@ services:
       - '@config.factory'
       - '@logger.factory'
 
-  # The password is in settings.php, not in config; the host key is checked
-  # before the login, inside the factory.
+  # The address, the login and the password come from the key; what is in
+  # config is only what ČSOB decides — the target path and their fingerprint.
+  # The host key is checked before the login, inside the factory.
   api_csobrec.sftp_sessions:
     class: Drupal\api_csobrec\Sftp\PhpseclibSessionFactory
-    arguments: ['@config.factory', '@settings', '@api_csobrec.host_key', '@logger.factory']
+    arguments: ['@api_csobrec.credentials', '@config.factory', '@api_csobrec.host_key', '@logger.factory']
 
   api_csobrec.application:
     class: Drupal\api_csobrec\Service\Application

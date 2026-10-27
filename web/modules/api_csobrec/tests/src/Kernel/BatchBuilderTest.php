@@ -23,7 +23,7 @@ final class BatchBuilderTest extends KernelTestBase {
 
   use ApiCsobrecFixturesTrait;
 
-  protected static $modules = ['system', 'user', 'file', 'api_csobrec'];
+  protected static $modules = ['system', 'user', 'file', 'key', 'api_csobrec'];
 
   private string $work;
 
