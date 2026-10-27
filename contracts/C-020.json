@@ -1,0 +1,15 @@
+{
+ "id": "C-020",
+ "file": "web/modules/csobrec/src/Service/BatchBuilder.php",
+ "role": "coder",
+ "title": "složení dávky na disku, .don jako poslední",
+ "interface": "final class Drupal\\csobrec\\Service\\BatchBuilder. Constructor (\\Drupal\\Core\\File\\FileSystemInterface $fileSystem, Naming $naming, IndexXml $indexXml). build(string $directoryUri, \\DateTimeImmutable $time, array $items): array — $directoryUri is a stream URI such as private://csobrec/davky/DA_2026102680903 and each item is ['source' => <plain filesystem path of the converted mp3>, 'line' => <array<string,string> index line>]. The sources are plain paths because ffmpeg writes real files, the target is a URI because it is customer data under private://. Order: refuse an empty $items (\\InvalidArgumentException); check EVERY item first — a 'line' without a non-empty 'soubor', a 'soubor' that is not a plain file name (basename() must return it unchanged, so no '/', no '..'), two items with the same 'soubor' (one recording would be silently lost while the index claims two lines) are all \\InvalidArgumentException, and a 'source' that is not an existing file is \\RuntimeException naming it — nothing may be written when any of these fails, because half a batch on disk with no marker is a folder somebody has to clean up by hand. Then prepareDirectory($directoryUri, CREATE_DIRECTORY | MODIFY_PERMISSIONS), copy each source to $directoryUri . '/' . $line['soubor'] replacing what is there, write the index to $naming->xml($time) with the bytes $indexXml->build() returns (an exception from there propagates), and write the EMPTY .don from $naming->don($time) LAST — it is ČSOB's marker that the batch is complete. Use the file system service (copy / saveData) so the stream wrapper is honoured; with Drupal 11 pass \\Drupal\\Core\\File\\FileExists::Replace. Returns ['directory' => $directoryUri, 'recordings' => count($items), 'xml' => <uri of the xml>, 'don' => <uri of the don>, 'bytes' => <sum of the sizes of every file in the directory>]. Running it twice over the same inputs must leave the same bytes.",
+ "uses": {
+  "Naming": "web/modules/csobrec/src/Service/Naming.php",
+  "IndexXml": "web/modules/csobrec/src/Service/IndexXml.php"
+ },
+ "acceptance": "web/modules/csobrec/tests/src/Kernel/BatchBuilderTest.php",
+ "budget": {
+  "iterations": 12
+ }
+}

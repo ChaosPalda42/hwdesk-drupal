@@ -1,0 +1,30 @@
+services:
+  # Pure logic, no dependencies: names, the index, the selection rules and the
+  # translation of Daktela's field shapes.
+  csobrec.naming:
+    class: Drupal\csobrec\Service\Naming
+  csobrec.index_xml:
+    class: Drupal\csobrec\Service\IndexXml
+  csobrec.selection:
+    class: Drupal\csobrec\Service\Selection
+  csobrec.call_mapper:
+    class: Drupal\csobrec\Service\CallMapper
+  csobrec.host_key:
+    class: Drupal\csobrec\Service\HostKeyCheck
+
+  # The token lives in settings.php, never in config: config is exported to
+  # yml and travels between machines.
+  csobrec.daktela:
+    class: Drupal\csobrec\Service\DaktelaClient
+    arguments: ['@http_client', '@config.factory', '@settings']
+  csobrec.mp3_converter:
+    class: Drupal\csobrec\Service\Mp3Converter
+    arguments: ['@config.factory']
+  csobrec.sftp_uploader:
+    class: Drupal\csobrec\Service\SftpUploader
+  csobrec.sent_ledger:
+    class: Drupal\csobrec\Service\SentLedger
+    arguments: ['@database', '@datetime.time']
+  csobrec.batch_builder:
+    class: Drupal\csobrec\Service\BatchBuilder
+    arguments: ['@file_system', '@csobrec.naming', '@csobrec.index_xml']

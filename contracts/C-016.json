@@ -1,0 +1,14 @@
+{
+ "id": "C-016",
+ "file": "web/modules/csobrec/src/Service/SftpUploader.php",
+ "role": "coder",
+ "title": "nahrání hotové dávky, .don jako poslední",
+ "interface": "final class Drupal\\csobrec\\Service\\SftpUploader, no constructor arguments. upload(SftpSessionInterface $session, string $localDir, string $remoteDir): array — the session is already logged in; this service never opens a connection. It takes the plain files directly in $localDir: exactly one *.xml, exactly one *.don and at least one *.mp3; anything else in the directory (other extensions, subdirectories) is ignored. An incomplete set is \\InvalidArgumentException whose message carries COUNTS, not file names — the names hold activity ids. A $localDir that is not a readable directory is \\InvalidArgumentException too. Nothing is uploaded and the remote directory is not even listed when the set is incomplete. Then it lists $remoteDir once: a session error there becomes \\RuntimeException naming that path, and nothing is uploaded — the module never creates the folder on their side, because a typo would ship the batch where nobody looks while the ledger claims ČSOB has it. Upload order: the mp3 files sorted by name, then the xml, and the .don LAST — it is ČSOB's marker that the batch is complete, so a failure part way through must leave no marker. Returns the remote paths in upload order, joined with a single '/' even when $remoteDir ends with one.",
+ "uses": {
+  "SftpSessionInterface": "web/modules/csobrec/src/Sftp/SftpSessionInterface.php"
+ },
+ "acceptance": "web/modules/csobrec/tests/src/Unit/SftpUploaderTest.php",
+ "budget": {
+  "iterations": 10
+ }
+}

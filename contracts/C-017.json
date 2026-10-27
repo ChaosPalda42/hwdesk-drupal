@@ -1,0 +1,12 @@
+{
+ "id": "C-017",
+ "file": "web/modules/csobrec/src/Service/Mp3Converter.php",
+ "role": "coder",
+ "title": "převod opus → MP3 v parametrech, které ČSOB přijímá",
+ "interface": "final class Drupal\\csobrec\\Service\\Mp3Converter. Constructor (\\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, ?\\Closure $runner = NULL). The binary is csobrec.settings:ffmpeg, falling back to 'ffmpeg' when the setting is NULL or empty. $runner is for tests: \\Closure(list<string> $command): array{0: int, 1: string} returning [exit code, stderr]; when it is NULL the service runs the command with \\Symfony\\Component\\Process\\Process (no shell, so no quoting worries) and reads getExitCode()/getErrorOutput() — give the process no timeout or a generous one, a long recording takes a while. command(string $source, string $target): array returns exactly [<binary>, '-y', '-loglevel', 'error', '-i', $source, '-codec:a', 'libmp3lame', '-ar', '8000', '-ac', '2', '-b:a', '32k', $target]. These are not preferences: they were measured with ffprobe on a recording ČSOB already accepts (mp3, 8000 Hz, 2 channels, 32 kb/s). convert(string $source, string $target): string checks the source is an existing file FIRST and throws \\RuntimeException naming it without running anything; then runs command() once; a non-zero exit is \\RuntimeException carrying the code and ffmpeg's stderr; on success returns $target.",
+ "uses": {},
+ "acceptance": "web/modules/csobrec/tests/src/Unit/Mp3ConverterTest.php",
+ "budget": {
+  "iterations": 8
+ }
+}
