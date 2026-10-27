@@ -1,6 +1,6 @@
 api_csobrec.settings:
   title: 'Předávka nahrávek ČSOB'
-  description: 'Fronty a režimy, hodina ranní předávky, přístup na jejich SFTP. Token a heslo se zadávají v settings.php.'
+  description: 'Fronty a režimy, hodina ranní předávky, cíl na jejich SFTP. Adresy a tajemství leží v jednom klíči modulu Key.'
   route_name: api_csobrec.settings
   parent: system.admin_config_services
 api_csobrec.batches:
