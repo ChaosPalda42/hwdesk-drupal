@@ -26,7 +26,9 @@ final class SettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     TypedConfigManagerInterface $typedConfigManager,
-    private readonly CredentialsInterface $credentials,
+    // Protected, not private: formuláře se serializují do cache a
+    // DependencySerializationTrait v FormBase private vlastnosti neobnoví.
+    protected readonly CredentialsInterface $credentials,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
   }

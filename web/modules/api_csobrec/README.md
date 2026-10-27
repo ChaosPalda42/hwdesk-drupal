@@ -16,7 +16,7 @@ přepisování zbytku: o Daktele ví jedna služba.
 | --- | --- |
 | PHP 8.3+ s `gmp` **nebo** `bcmath`, dál `mbstring` a `openssl` | phpseclib je bez gmp/bcmath o řád pomalejší |
 | `ffmpeg` v PATH (nebo cesta v nastavení) | převod na MP3 8 kHz / 32 kb/s — ten tvar ČSOB přijímá, není to naše preference |
-| composer: `phpseclib/phpseclib:^3.0`, `symfony/process:^7.4` | SFTP a spouštění ffmpegu |
+| composer: `phpseclib/phpseclib:^3.0`, `symfony/process:^7.4`, `drupal/key:^1.22` | SFTP, spouštění ffmpegu a přístupy v modulu Key |
 | `$settings['file_private_path']` | nahrávky zákazníků nesmí ležet pod `web/` |
 | ~10 GB místa | jeden den je kolem 300 MB, drží se 30 dní, uklízí si samo |
 | odchozí 443 na `conectart.daktela.com` a **2222** na `ext.csobpoj.cz` | SFTP ČSOB neběží na obvyklé 22 — tohle prosím projít na firewallu |
@@ -27,39 +27,62 @@ přepisování zbytku: o Daktele ví jedna služba.
 ## 2. Instalace
 
 ```bash
-composer require phpseclib/phpseclib:^3.0 symfony/process:^7.4
+composer require phpseclib/phpseclib:^3.0 symfony/process:^7.4 drupal/key:^1.22
 # modul do web/modules/custom/api_csobrec (nebo přes váš deploy)
-drush en api_csobrec
+drush en key api_csobrec
 drush cr
 ```
 
-Do `settings.php` dvě tajemství. **Do configu nepatří** — config se exportuje
-do yml a koluje mezi stroji a disky:
+### Přístupy: jeden klíč modulu Key
 
-```php
-$settings['api_csobrec_daktela_token'] = '…';   // API token Daktely
-$settings['api_csobrec_sftp_heslo']    = '…';   // heslo k SFTP ČSOB
+Modul nečte žádné tajemství ze `settings.php` ani z configu. Adresy,
+přihlašovací jméno, token i heslo leží v **jednom klíči** modulu Key:
+
+- **/admin/config/system/keys/add**
+- typ klíče: **Authentication (Multivalue)** — bezpečnostní údaje jako JSON
+- poskytovatel: **File** nebo **Environment**, **ne Configuration** — config se
+  exportuje do yml a koluje mezi stroji a disky
+- hodnota klíče je JSON s těmito poli:
+
+```json
+{
+  "daktela_url": "https://conectart.daktela.com",
+  "daktela_token": "…",
+  "sftp_host": "ext.csobpoj.cz",
+  "sftp_port": "2222",
+  "sftp_uzivatel": "Conectart",
+  "sftp_heslo": "…"
+}
 ```
 
-Obě hodnoty dostanete jiným kanálem, ne v repozitáři a ne v tomhle souboru.
-Místo hesla lze použít privátní klíč — pak se do nastavení vyplní cesta ke
-klíči a heslo se neuvádí.
+Místo `sftp_heslo` může být `sftp_klic` — **privátní klíč v PEM**, ne cesta
+k němu; když jsou tam oba, přihlašuje se klíčem. `sftp_port` je nepovinný, bez
+něj se bere 22. Jiná pole modul ignoruje, takže si tam můžete přidat vlastní.
+
+Hotový klíč pak vyberte v nastavení modulu (**Přístupy → Klíč s přístupy**).
+
+Hodnoty dostanete jiným kanálem, ne v repozitáři a ne v tomhle souboru. Modul
+je nikde nezobrazuje: formulář i stavové hlášení jmenují jen **chybějící pole**,
+nikdy jejich obsah. U poskytovatele *File* patří soubor s JSONem mimo docroot
+a čitelný jen pro uživatele webserveru (0400); u *Environment* je to jedna
+proměnná prostředí s tím JSONem.
 
 Práva: kdo to nastavuje, potřebuje `administer api_csobrec`; kdo se jen kouká na
 přehled dávek, `view api_csobrec batches`.
 
 Kontrola, že nic nechybí: **/admin/reports/status**, sekce „Předávka ČSOB" —
-vypíše chybějící privátní cestu, nenalezený ffmpeg, nenastavený token, prázdný
-seznam front, prázdnou cílovou cestu a vypnuté ověřování klíče serveru.
+vypíše chybějící privátní cestu, nenalezený ffmpeg, nevybraný klíč (nebo pole,
+která v něm chybí), prázdný seznam front, prázdnou cílovou cestu a vypnuté
+ověřování klíče serveru.
 
 ---
 
 ## 3. Nastavení — /admin/config/services/api_csobrec
 
-**Daktela**
+**Přístupy**
 
-- `URL` — `https://conectart.daktela.com`
-- token je v `settings.php`; formulář jen řekne, jestli ho vidí
+- `Klíč s přístupy` — klíč modulu Key podle části 2. Pod ním řádek „Co v klíči
+  chybí": prázdno znamená, že má všechno, co předávka potřebuje.
 
 **Fronty a jejich režim** — jedna fronta na řádek ve tvaru `číslo|režim`:
 
@@ -76,9 +99,9 @@ seznam front, prázdnou cílovou cestu a vypnuté ověřování klíče serveru.
 Fronta, která v seznamu není, se Daktely vůbec neptá. Překlep v režimu
 formulář odmítne — nesmí tiše znamenat „posílej všechno".
 
-**SFTP ČSOB**
+**SFTP ČSOB** — adresa, port i uživatel jsou v klíči; tady je jen to, co určuje
+ČSOB:
 
-- adresa `ext.csobpoj.cz`, port `2222`, uživatel `Conectart`
 - **cílová cesta** na jejich serveru — zbývá doplnit, viz část 8
 - **otisk klíče serveru** + „bez ověřeného klíče nic neposílat" — viz část 8
 
@@ -191,6 +214,7 @@ Každá služba umí jednu věc a je na ni test. Vrstvy odspodu:
 
 | služba | co dělá |
 | --- | --- |
+| `api_csobrec.credentials` | přístupy z jednoho klíče modulu Key (chybějící pole hlásí jmény) |
 | `api_csobrec.call_mapper` | přeloží aktivitu z Daktely na `Call` (co nejde přečíst, odmítne) |
 | `api_csobrec.selection` | pravidla ČSOB: co se předává a co dostane druhou kopii (X-sell) |
 | `api_csobrec.naming` | jména souborů v dávce |
@@ -205,7 +229,7 @@ Každá služba umí jednu věc a je na ni test. Vrstvy odspodu:
 | `api_csobrec.day_run` | jeden den: z Daktely do hotové dávky na disku |
 | `api_csobrec.application` | celé ráno: den + nahrání + evidence + úklid |
 
-Tři pravidla o tom, co nesmí odejít — platí i pro další úpravy:
+Čtyři pravidla o tom, co nesmí odejít — platí i pro další úpravy:
 
 1. **Klíč serveru se ověřuje před přihlášením.** phpseclib se přihlašuje sám
    při `login()`, takže ověření musí být nad ním, ne za ním.
@@ -214,6 +238,10 @@ Tři pravidla o tom, co nesmí odejít — platí i pro další úpravy:
    jmenovat cestu a návratový kód.
 3. **Telefonní číslo nesmí být v textu výjimky ani v logu.** Chyby o příliš
    krátkém čísle mluví o **počtu číslic**, ne o čísle.
+4. **Co v přístupech chybí, se hlásí jmény polí.** `missing()` vrací názvy
+   (`daktela_token`, `sftp_heslo nebo sftp_klic`), nikdy hodnoty — ten seznam
+   jde do formuláře, do stavového hlášení i do logu. Proto se ani výjimka
+   z poskytovatele klíče nepřeposílá a neloguje: může nést hodnotu.
 
 ### Testy
 
@@ -221,8 +249,9 @@ Tři pravidla o tom, co nesmí odejít — platí i pro další úpravy:
 ./vendor/bin/phpunit -c phpunit.xml --group api_csobrec
 ```
 
-167 testů: jednotkové nad pravidly a jmény, kernelové nad celým denním během
-i nad celým ránem (nahrání, evidence, úklid, mazání starých dávek).
+178 testů: jednotkové nad pravidly a jmény, kernelové nad čtením přístupů
+z klíče, nad celým denním během i nad celým ránem (nahrání, evidence, úklid,
+mazání starých dávek).
 
 Falšují se jen okraje: Daktela (odpovědi podle adresy), ffmpeg (closure) a SFTP
 (fake sezení). Výběr, jména, XML, mapper, evidence i práce se soubory se testují

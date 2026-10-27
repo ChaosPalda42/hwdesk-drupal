@@ -17,7 +17,7 @@ services:
   # between machines and disks.
   api_csobrec.credentials:
     class: Drupal\api_csobrec\Service\KeyCredentials
-    arguments: ['@key.repository', '@config.factory']
+    arguments: ['@key.repository', '@config.factory', '@logger.factory']
   Drupal\api_csobrec\Service\CredentialsInterface: '@api_csobrec.credentials'
 
   api_csobrec.daktela:

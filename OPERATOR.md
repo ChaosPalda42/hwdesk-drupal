@@ -153,11 +153,18 @@ začíná `api_csobrec_`, soubory v `private://api_csobrec/`.
 - `api_csobrec_davka` je přehled pro lidi: den, jméno dávky, kolik hovorů, kolik
   nahráno, bajty, stav, chyba. Žádná telefonní čísla ani jména — platí pravidlo
   „na obrazovku jen počty a cesty".
-- **Tajemství nejdou do configu.** Config se exportuje do yml a koluje po
-  discích, takže token k Datele a heslo k SFTP se čtou ze `settings.php`
-  (`$settings['api_csobrec_daktela_token']`, `$settings['api_csobrec_sftp_heslo']`).
-  V `api_csobrec.settings` je jen to, co smí být v exportu: adresa, fronty, hodina,
-  host/port/uživatel/cíl, otisk klíče a lhůta na mazání dávek.
+- **Tajemství nejdou do configu ani do settings.php.** Config se exportuje do
+  yml a koluje po discích, a programátor Drupalu, který modul nasazuje, na to má
+  modul Key. Všechno — adresa Daktely, token, adresa/port/uživatel SFTP a heslo
+  nebo privátní klíč — je v **jednom klíči** typu „Authentication (Multivalue)“
+  (JSON), čtou ho `Service\CredentialsInterface` / `Service\KeyCredentials`
+  (C-023). V `api_csobrec.settings` je jen to, co smí být v exportu: **id toho
+  klíče**, fronty, hodina, cílová cesta, otisk klíče serveru, ffmpeg a lhůta na
+  mazání dávek.
+- **Co v klíči chybí, se hlásí jmény polí.** `missing()` vrací názvy
+  (`daktela_token`, `sftp_heslo nebo sftp_klic`), nikdy hodnoty: ten seznam jde
+  do formuláře, do `/admin/reports/status` i do logu. Výjimka z poskytovatele
+  klíče se proto ani nepřeposílá, ani neloguje — může nést hodnotu.
 
 ### Mapa: co se přepisuje z čeho
 
@@ -175,14 +182,14 @@ začíná `api_csobrec_`, soubory v `private://api_csobrec/`.
 | `davka.py` | `Service\BatchBuilder` — dávka na disku (MP3 + XML + `.don`) (C-020) |
 | `beh.py` | `Service\DayRun` — jeden den od hovorů k dávce (C-021) |
 | `aplikace.py` | `Service\Application` — postav, nahraj, zapiš, ukliď (C-022) |
-| `nastaveni.py` | `api_csobrec.settings` + `Form\SettingsForm` + settings.php |
+| `nastaveni.py` | `api_csobrec.settings` + `Form\SettingsForm` + klíč modulu Key (C-023) |
 | `cli.py` | drush `api-csobrec:den|vcera|stav|ukliz` (`src/Drush/Commands`) |
 | `sftp_server.py` | v PHP ekvivalent nemá; `Sftp\PhpseclibSession` se neověřuje testem, ale ručně proti zkušebnímu serveru z Python verze |
 
 Co v Pythonu nebylo a tady je: přehled dávek na `/admin/reports/api_csobrec`,
 nastavení na `/admin/config/services/api_csobrec` a tři kontroly na
-`/admin/reports/status` (privátní cesta, ffmpeg, token, cíl na SFTP, ověřování
-klíče).
+`/admin/reports/status` (privátní cesta, ffmpeg, klíč s přístupy a chybějící
+pole v něm, cíl na SFTP, ověřování klíče serveru).
 
 Ranní běh **nevisí na `hook_cron`** — jeden den jsou stovky nahrávek a stovky
 megabajtů přes ffmpeg, to nemá co dělat ve webovém požadavku. Pouští to

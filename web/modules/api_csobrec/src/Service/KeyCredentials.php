@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\api_csobrec\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\key\KeyInterface;
 use Drupal\key\KeyRepositoryInterface;
 
@@ -36,6 +37,7 @@ final class KeyCredentials implements CredentialsInterface {
   public function __construct(
     private readonly KeyRepositoryInterface $keys,
     private readonly ConfigFactoryInterface $configFactory,
+    private readonly LoggerChannelFactoryInterface $loggerFactory,
   ) {
   }
 
@@ -151,9 +153,10 @@ final class KeyCredentials implements CredentialsInterface {
    *   out of every getter;
    * - anything that is not an array;
    * - a \Throwable from the Key module (a provider whose file cannot be read
-   *   throws). It is dropped, not rethrown and not logged: a provider's
-   *   exception message can carry the value or the path it was read from,
-   *   and the only safe thing to do with it is to drop it.
+   *   throws). It is not rethrown — nothing of it may reach the morning run —
+   *   and what goes into the log is the key's id and the exception's CLASS.
+   *   Its message is deliberately dropped: a provider's message can carry
+   *   the value or the path it was read from.
    *
    * @return array<string, mixed>
    */
@@ -170,9 +173,10 @@ final class KeyCredentials implements CredentialsInterface {
       }
     }
     catch (\Throwable $e) {
-      if (isset($_ENV['PHPUNIT_RUNNING']) && $_ENV['PHPUNIT_RUNNING'] === '1') {
-        throw $e;
-      }
+      $this->loggerFactory->get('api_csobrec')->error('Klíč @klic se nedá přečíst (@trida). Text té chyby se vědomě nezapisuje, mohl by nést hodnotu; co z přístupů chybí, je v hlášení o stavu.', [
+        '@klic' => $id,
+        '@trida' => $e::class,
+      ]);
       return [];
     }
     if (!is_array($values) || array_is_list($values)) {
