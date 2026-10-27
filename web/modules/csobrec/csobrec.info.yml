@@ -1,0 +1,8 @@
+name: Předávka nahrávek ČSOB
+type: module
+description: 'Ranní předávka nahrávek hovorů ČSOB: výběr hovorů z Daktely, MP3 + indexové XML, nahrání na jejich SFTP.'
+package: Custom
+core_version_requirement: ^11
+configure: csobrec.settings
+dependencies:
+  - drupal:file

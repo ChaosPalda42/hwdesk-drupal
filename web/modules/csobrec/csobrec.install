@@ -1,0 +1,109 @@
+<?php
+
+/**
+ * @file
+ * Tabulky evidence a složky pro dávky.
+ *
+ * Evidence je jediná pojistka proti druhému odeslání téhož hovoru, takže se
+ * při odinstalaci modulu NEMAŽE sama — viz csobrec_uninstall().
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\File\FileSystemInterface;
+
+/**
+ * Implements hook_schema().
+ */
+function csobrec_schema(): array {
+  $schema['csobrec_odeslano'] = [
+    'description' => 'Hovory, které už ČSOB dostal. Vede se po hovorech, aby se jedna nahrávka neodeslala dvakrát.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'not null' => TRUE],
+      'hovor' => ['type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'description' => 'Identifikátor aktivity v Datele.'],
+      'fronta' => ['type' => 'varchar', 'length' => 32, 'not null' => TRUE],
+      'davka' => ['type' => 'varchar', 'length' => 64, 'not null' => TRUE, 'description' => 'Jméno dávky, ve které hovor odešel.'],
+      'odeslano' => ['type' => 'int', 'not null' => TRUE, 'description' => 'Kdy dávka odešla (timestamp).'],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => ['hovor' => ['hovor']],
+    'indexes' => ['davka' => ['davka'], 'odeslano' => ['odeslano']],
+  ];
+  $schema['csobrec_davka'] = [
+    'description' => 'Co se v který den stalo: jedna řádka na jeden běh. Žádná telefonní čísla ani jména.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'not null' => TRUE],
+      'den' => ['type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'description' => 'Den, za který se předávalo (YYYY-MM-DD).'],
+      'jmeno' => ['type' => 'varchar', 'length' => 64, 'not null' => TRUE, 'description' => 'Jméno dávky, např. DA_2026102605.'],
+      'hovoru' => ['type' => 'int', 'not null' => TRUE, 'default' => 0],
+      'nahrano' => ['type' => 'int', 'not null' => TRUE, 'default' => 0],
+      'bajtu' => ['type' => 'int', 'size' => 'big', 'not null' => TRUE, 'default' => 0],
+      'zalozeno' => ['type' => 'int', 'not null' => TRUE],
+      'stav' => ['type' => 'varchar', 'length' => 16, 'not null' => TRUE, 'description' => 'bezi | odeslano | chyba | preskoceno'],
+      'chyba' => ['type' => 'text', 'not null' => FALSE, 'description' => 'Hlášení chyby bez tajemství a bez osobních údajů.'],
+    ],
+    'primary key' => ['id'],
+    'indexes' => ['den' => ['den'], 'zalozeno' => ['zalozeno']],
+  ];
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function csobrec_install(): void {
+  $fs = \Drupal::service('file_system');
+  assert($fs instanceof FileSystemInterface);
+  foreach (['private://csobrec/prac', 'private://csobrec/davky'] as $dir) {
+    $fs->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function csobrec_uninstall(): void {
+  \Drupal::logger('csobrec')->warning('Modul odinstalován. Tabulka csobrec_odeslano zůstává: je to jediný doklad o tom, co už ČSOB dostal. Smazat ji může jen člověk, který ví, co dělá.');
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function csobrec_requirements(string $phase): array {
+  $pozadavky = [];
+  if ($phase !== 'runtime') {
+    return $pozadavky;
+  }
+
+  if (!\Drupal::service('stream_wrapper_manager')->isValidScheme('private')) {
+    $pozadavky['csobrec_private'] = [
+      'title' => t('Předávka ČSOB'),
+      'value' => t('Privátní souborový systém není nastaven'),
+      'description' => t('Nahrávky zákazníků se ukládají do private://csobrec. Nastavte $settings[\'file_private_path\'] v settings.php.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+
+  // ffmpeg: bez něj se nahrávka nepřevede na MP3 a dávka nevznikne.
+  $ffmpeg = (string) \Drupal::config('csobrec.settings')->get('ffmpeg') ?: 'ffmpeg';
+  $kde = @shell_exec(sprintf('command -v %s 2>/dev/null', escapeshellarg($ffmpeg)));
+  $pozadavky['csobrec_ffmpeg'] = $kde
+    ? ['title' => t('Předávka ČSOB: ffmpeg'), 'value' => t('nalezen'), 'severity' => REQUIREMENT_OK]
+    : [
+      'title' => t('Předávka ČSOB: ffmpeg'),
+      'value' => t('nenalezen'),
+      'description' => t('Nahrávky se převádějí na MP3 ffmpegem. Nainstalujte ho, nebo doplňte cestu v nastavení.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+
+  if (!\Drupal::service('settings')->get('csobrec_daktela_token')) {
+    $pozadavky['csobrec_token'] = [
+      'title' => t('Předávka ČSOB: token k Datele'),
+      'value' => t('není v settings.php'),
+      'description' => t('Token se do configu nepíše (config se exportuje). Patří do $settings[\'csobrec_daktela_token\'] v settings.php.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+
+  return $pozadavky;
+}

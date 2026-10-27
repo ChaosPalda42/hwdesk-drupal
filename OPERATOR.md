@@ -120,3 +120,76 @@ Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
 - Testy ručně: `cd ~/projects/hwdesk-drupal && php vendor/bin/phpunit -c phpunit.xml`
 - PHPStan ručně: `php vendor/bin/phpstan analyse --no-progress web/modules/hwdesk`
 - Web lokálně (po `drush site:install`): `php -S localhost:8888 -t web web/.ht.router.php`
+
+## Rozhodnutí 27. 10. 2026 (Michael): předávka nahrávek ČSOB jako druhý modul
+
+Předávka nahrávek pro ČSOB, dosud hotová jako samostatná aplikace v Pythonu
+(`~/projects/csob-nahravky`, 14 kontraktů, 171 testů, ověřený vzorek nad
+26. 10. 2026), se **přepíše do PHP jako modul `csobrec` téhož Drupalu**.
+Michael to chce mít v systému, který IT už spravuje, ne jako druhý stack.
+
+Co z toho plyne a co jsem mu k tomu řekl:
+
+- Drupal běží **na jiném stroji** než kam měla jít předávka. Ten stroj proto
+  musí dostat `ffmpeg`, místo na disku (vzorek jednoho dne 307 MB) a odchozí
+  přístup na Datelu (443) i na SFTP ČSOB (port 2222, ne 22).
+- Nahrávky zákazníků tím začnou ležet na webovém serveru. Jdou do
+  `private://csobrec/…`, takže je Drupal neservíruje přímo, ale privátní
+  souborový systém na tom stroji **musí** být nastaven (`hook_requirements`
+  to hlásí jako chybu, když není).
+- Běh **nepatří do webového requestu**: 300 MB stahování a ffmpeg poběží jako
+  drush příkaz pod systemd timerem, ne `hook_cron`.
+- Python verze zůstává, kde je. Je hotová a ověřená, takže ji IT může nasadit
+  hned a předávka pojede; modul ji pak vystřídá. Zahodit ji dřív, než modul
+  projede ostrým dnem, by znamenalo, že ČSOB mezitím nedostává nic.
+
+### Kde modul žije a jak se chová
+
+Stejné konvence jako hwdesk: modul v `web/modules/csobrec`, každá tabulka
+začíná `csobrec_`, soubory v `private://csobrec/`.
+
+- `csobrec_odeslano` (unikát na `hovor`) je jediná pojistka proti druhému
+  odeslání téže nahrávky; `hook_uninstall` ji **nemaže**, jen to zaloguje.
+- `csobrec_davka` je přehled pro lidi: den, jméno dávky, kolik hovorů, kolik
+  nahráno, bajty, stav, chyba. Žádná telefonní čísla ani jména — platí pravidlo
+  „na obrazovku jen počty a cesty".
+- **Tajemství nejdou do configu.** Config se exportuje do yml a koluje po
+  discích, takže token k Datele a heslo k SFTP se čtou ze `settings.php`
+  (`$settings['csobrec_daktela_token']`, `$settings['csobrec_sftp_heslo']`).
+  V `csobrec.settings` je jen to, co smí být v exportu: adresa, fronty, hodina,
+  host/port/uživatel/cíl, otisk klíče a lhůta na mazání dávek.
+
+### Mapa: co se přepisuje z čeho
+
+| Python (C-0NN) | PHP v modulu |
+|---|---|
+| C-001 `jmena.py` | `Service\Naming` — jména souborů v dávce |
+| C-002 `index_xml.py` | `Service\IndexXml` — indexové XML bajtově stejně |
+| C-003 `vyber.py` | `Service\Selection` — pravidla ČSOB (VSE / LOGIKA) |
+| C-004 `davka.py` | `Service\Batch` — dávka na disku (MP3 + XML + `.don`) |
+| C-005 `daktela.py` | `Service\DaktelaClient` — Guzzle (`http_client`) |
+| C-006 `prevod.py` | `Service\Mp3Converter` — ffmpeg přes symfony/process |
+| C-007 `sftp.py` | `Service\SftpUploader` — phpseclib3, `.don` naposled |
+| C-008 `prevodnik.py` | `Service\CallMapper` — aktivita → hovor → řádek XML |
+| C-009 `beh.py` | `Service\DayRun` — jeden den od hovorů k dávce |
+| C-010 `sftp_server.py` | v PHP ekvivalent nemá; nahrávání se testuje proti zkušebnímu serveru z Python verze (test se přeskočí, když není po ruce) |
+| C-011 `evidence.py` | `Service\SentLedger` — tabulky výš |
+| C-012 `nastaveni.py` | `csobrec.settings` + `Form\SettingsForm` + settings.php |
+| C-013 `aplikace.py` | `Service\Application` — složení služeb |
+| C-014 `cli.py` | drush příkazy `csobrec:den|vcera|stav` |
+
+Dvě pravidla z Python verze platí i tady a patří do kontraktů, ne do hlav:
+
+- **Otisk klíče serveru se kontroluje PŘED přihlášením.** V paramiku to byla
+  skrytá past (`Transport.connect()` se přihlašuje sám), v phpseclib je
+  `getServerPublicHostKey()` dostupný před `login()` — a tak to má být:
+  při neshodě otisku nesmí heslo vůbec odejít.
+- **Token nesmí do výjimky ani do logu.** Je v adrese dotazu, takže chyba smí
+  jmenovat jen cestu a návratový kód (v Pythonu kvůli tomu nepoužíváme
+  `raise_for_status`; v Guzzle platí totéž o `RequestException::getMessage()`).
+
+Otevřené: po `composer require phpseclib/phpseclib symfony/process` hlásí
+PHPStan jeden nález ve **starém** testu hwdesku
+(`tests/src/Kernel/ProtocolPdfTest.php:50`, `method.alreadyNarrowedType` —
+novější phpstan). Bránu kontraktů to neblokuje (strážce analyzuje jen ten
+soubor, který dílna napsala), takže to tu zůstává jako úklid na jindy.
