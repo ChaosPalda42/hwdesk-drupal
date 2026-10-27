@@ -125,7 +125,7 @@ Bench coderů: gpt-oss-120b 2/2 v 1 iteraci; nasazen jako coder.
 
 Předávka nahrávek pro ČSOB, dosud hotová jako samostatná aplikace v Pythonu
 (`~/projects/csob-nahravky`, 14 kontraktů, 171 testů, ověřený vzorek nad
-26. 10. 2026), se **přepíše do PHP jako modul `csobrec` téhož Drupalu**.
+26. 10. 2026), se **přepíše do PHP jako modul `api_csobrec` téhož Drupalu**.
 Michael to chce mít v systému, který IT už spravuje, ne jako druhý stack.
 
 Co z toho plyne a co jsem mu k tomu řekl:
@@ -134,7 +134,7 @@ Co z toho plyne a co jsem mu k tomu řekl:
   musí dostat `ffmpeg`, místo na disku (vzorek jednoho dne 307 MB) a odchozí
   přístup na Datelu (443) i na SFTP ČSOB (port 2222, ne 22).
 - Nahrávky zákazníků tím začnou ležet na webovém serveru. Jdou do
-  `private://csobrec/…`, takže je Drupal neservíruje přímo, ale privátní
+  `private://api_csobrec/…`, takže je Drupal neservíruje přímo, ale privátní
   souborový systém na tom stroji **musí** být nastaven (`hook_requirements`
   to hlásí jako chybu, když není).
 - Běh **nepatří do webového requestu**: 300 MB stahování a ffmpeg poběží jako
@@ -145,18 +145,18 @@ Co z toho plyne a co jsem mu k tomu řekl:
 
 ### Kde modul žije a jak se chová
 
-Stejné konvence jako hwdesk: modul v `web/modules/csobrec`, každá tabulka
-začíná `csobrec_`, soubory v `private://csobrec/`.
+Stejné konvence jako hwdesk: modul v `web/modules/api_csobrec`, každá tabulka
+začíná `api_csobrec_`, soubory v `private://api_csobrec/`.
 
-- `csobrec_odeslano` (unikát na `hovor`) je jediná pojistka proti druhému
+- `api_csobrec_odeslano` (unikát na `hovor`) je jediná pojistka proti druhému
   odeslání téže nahrávky; `hook_uninstall` ji **nemaže**, jen to zaloguje.
-- `csobrec_davka` je přehled pro lidi: den, jméno dávky, kolik hovorů, kolik
+- `api_csobrec_davka` je přehled pro lidi: den, jméno dávky, kolik hovorů, kolik
   nahráno, bajty, stav, chyba. Žádná telefonní čísla ani jména — platí pravidlo
   „na obrazovku jen počty a cesty".
 - **Tajemství nejdou do configu.** Config se exportuje do yml a koluje po
   discích, takže token k Datele a heslo k SFTP se čtou ze `settings.php`
-  (`$settings['csobrec_daktela_token']`, `$settings['csobrec_sftp_heslo']`).
-  V `csobrec.settings` je jen to, co smí být v exportu: adresa, fronty, hodina,
+  (`$settings['api_csobrec_daktela_token']`, `$settings['api_csobrec_sftp_heslo']`).
+  V `api_csobrec.settings` je jen to, co smí být v exportu: adresa, fronty, hodina,
   host/port/uživatel/cíl, otisk klíče a lhůta na mazání dávek.
 
 ### Mapa: co se přepisuje z čeho
@@ -175,18 +175,18 @@ začíná `csobrec_`, soubory v `private://csobrec/`.
 | `davka.py` | `Service\BatchBuilder` — dávka na disku (MP3 + XML + `.don`) (C-020) |
 | `beh.py` | `Service\DayRun` — jeden den od hovorů k dávce (C-021) |
 | `aplikace.py` | `Service\Application` — postav, nahraj, zapiš, ukliď (C-022) |
-| `nastaveni.py` | `csobrec.settings` + `Form\SettingsForm` + settings.php |
-| `cli.py` | drush `csobrec:den|vcera|stav|ukliz` (`src/Drush/Commands`) |
+| `nastaveni.py` | `api_csobrec.settings` + `Form\SettingsForm` + settings.php |
+| `cli.py` | drush `api-csobrec:den|vcera|stav|ukliz` (`src/Drush/Commands`) |
 | `sftp_server.py` | v PHP ekvivalent nemá; `Sftp\PhpseclibSession` se neověřuje testem, ale ručně proti zkušebnímu serveru z Python verze |
 
-Co v Pythonu nebylo a tady je: přehled dávek na `/admin/reports/csobrec`,
-nastavení na `/admin/config/services/csobrec` a tři kontroly na
+Co v Pythonu nebylo a tady je: přehled dávek na `/admin/reports/api_csobrec`,
+nastavení na `/admin/config/services/api_csobrec` a tři kontroly na
 `/admin/reports/status` (privátní cesta, ffmpeg, token, cíl na SFTP, ověřování
 klíče).
 
 Ranní běh **nevisí na `hook_cron`** — jeden den jsou stovky nahrávek a stovky
 megabajtů přes ffmpeg, to nemá co dělat ve webovém požadavku. Pouští to
-systémový cron: `drush csobrec:vcera`.
+systémový cron: `drush api-csobrec:vcera`.
 
 Tři pravidla o tom, co nesmí odejít, patří do kontraktů, ne do hlav:
 

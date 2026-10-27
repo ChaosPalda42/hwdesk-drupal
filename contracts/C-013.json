@@ -1,15 +1,15 @@
 {
  "id": "C-013",
- "file": "web/modules/csobrec/src/Service/Selection.php",
+ "file": "web/modules/api_csobrec/src/Service/Selection.php",
  "role": "coder",
  "title": "výběr hovorů podle pravidel ČSOB",
- "interface": "final class Drupal\\csobrec\\Service\\Selection, no constructor arguments. Method select(array $calls, array $modes): array takes Call objects and a map 'queue number' => QueueMode and returns Item objects. A queue missing from $modes is ignored entirely. QueueMode::All takes every call of that queue. QueueMode::Logic takes a call whose disposition is '[CSOB] Nový prodej' or '[CSOB] Nový prodej TZ', and every call of the SAME phone number in the SAME queue whose time is earlier or equal — later calls are not part of that history. The same activity id must yield one line even when it appears twice in the input. Each selected call yields Item(call, call->policyNumber, 1); when the call has xSell TRUE and a non-empty xSellNumber it yields a second Item(call, xSellNumber, 2). The result is sorted by time, then activity, then copy. Pure function: it must not modify the input array or the Call objects.",
+ "interface": "final class Drupal\\api_csobrec\\Service\\Selection, no constructor arguments. Method select(array $calls, array $modes): array takes Call objects and a map 'queue number' => QueueMode and returns Item objects. A queue missing from $modes is ignored entirely. QueueMode::All takes every call of that queue. QueueMode::Logic takes a call whose disposition is '[CSOB] Nový prodej' or '[CSOB] Nový prodej TZ', and every call of the SAME phone number in the SAME queue whose time is earlier or equal — later calls are not part of that history. The same activity id must yield one line even when it appears twice in the input. Each selected call yields Item(call, call->policyNumber, 1); when the call has xSell TRUE and a non-empty xSellNumber it yields a second Item(call, xSellNumber, 2). The result is sorted by time, then activity, then copy. Pure function: it must not modify the input array or the Call objects.",
  "uses": {
-  "Call": "web/modules/csobrec/src/Call.php",
-  "Item": "web/modules/csobrec/src/Item.php",
-  "QueueMode": "web/modules/csobrec/src/QueueMode.php"
+  "Call": "web/modules/api_csobrec/src/Call.php",
+  "Item": "web/modules/api_csobrec/src/Item.php",
+  "QueueMode": "web/modules/api_csobrec/src/QueueMode.php"
  },
- "acceptance": "web/modules/csobrec/tests/src/Unit/SelectionTest.php",
+ "acceptance": "web/modules/api_csobrec/tests/src/Unit/SelectionTest.php",
  "budget": {
   "iterations": 10
  }

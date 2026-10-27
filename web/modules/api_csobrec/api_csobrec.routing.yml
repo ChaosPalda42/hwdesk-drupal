@@ -1,0 +1,15 @@
+api_csobrec.settings:
+  path: '/admin/config/services/api_csobrec'
+  defaults:
+    _form: '\Drupal\api_csobrec\Form\SettingsForm'
+    _title: 'Předávka nahrávek ČSOB'
+  requirements:
+    _permission: 'administer api_csobrec'
+
+api_csobrec.batches:
+  path: '/admin/reports/api_csobrec'
+  defaults:
+    _controller: '\Drupal\api_csobrec\Controller\BatchesController::page'
+    _title: 'Odeslané dávky nahrávek ČSOB'
+  requirements:
+    _permission: 'view api_csobrec batches'

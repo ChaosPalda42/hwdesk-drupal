@@ -1,11 +1,11 @@
 {
  "id": "C-012",
- "file": "web/modules/csobrec/src/Service/IndexXml.php",
+ "file": "web/modules/api_csobrec/src/Service/IndexXml.php",
  "role": "coder",
  "title": "indexové XML dávky, bajtově jako to, co ČSOB přijímá",
- "interface": "final class Drupal\\csobrec\\Service\\IndexXml, no constructor arguments. Method build(array $lines, int $priorityCm = 50): string returns the whole document as bytes in a PHP string. Each $lines element is an array<string,string>. Field order inside <dokument> is fixed: soubor, prostredi, operator, id_kampane, telefon, id_callcentra, c_poj_sml — the first six are mandatory, c_poj_sml is written only when present. A line with an unknown key, or missing a mandatory one, throws \\InvalidArgumentException naming the keys (never the values — the operator name is personal data). Lines end with CRLF including the last one, indentation is tabs, and &, < and > in values are escaped. Do not use DOMDocument or XMLWriter: they produce LF and their own formatting, and their importer rejects it.",
+ "interface": "final class Drupal\\api_csobrec\\Service\\IndexXml, no constructor arguments. Method build(array $lines, int $priorityCm = 50): string returns the whole document as bytes in a PHP string. Each $lines element is an array<string,string>. Field order inside <dokument> is fixed: soubor, prostredi, operator, id_kampane, telefon, id_callcentra, c_poj_sml — the first six are mandatory, c_poj_sml is written only when present. A line with an unknown key, or missing a mandatory one, throws \\InvalidArgumentException naming the keys (never the values — the operator name is personal data). Lines end with CRLF including the last one, indentation is tabs, and &, < and > in values are escaped. Do not use DOMDocument or XMLWriter: they produce LF and their own formatting, and their importer rejects it.",
  "uses": {},
- "acceptance": "web/modules/csobrec/tests/src/Unit/IndexXmlTest.php",
+ "acceptance": "web/modules/api_csobrec/tests/src/Unit/IndexXmlTest.php",
  "budget": {
   "iterations": 8
  }

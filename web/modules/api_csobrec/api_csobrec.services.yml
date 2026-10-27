@@ -1,0 +1,63 @@
+services:
+  # Pure logic, no dependencies: names, the index, the selection rules and the
+  # translation of Daktela's field shapes.
+  api_csobrec.naming:
+    class: Drupal\api_csobrec\Service\Naming
+  api_csobrec.index_xml:
+    class: Drupal\api_csobrec\Service\IndexXml
+  api_csobrec.selection:
+    class: Drupal\api_csobrec\Service\Selection
+  api_csobrec.call_mapper:
+    class: Drupal\api_csobrec\Service\CallMapper
+  api_csobrec.host_key:
+    class: Drupal\api_csobrec\Service\HostKeyCheck
+
+  # The token lives in settings.php, never in config: config is exported to
+  # yml and travels between machines.
+  api_csobrec.daktela:
+    class: Drupal\api_csobrec\Service\DaktelaClient
+    arguments: ['@http_client', '@config.factory', '@settings']
+  api_csobrec.mp3_converter:
+    class: Drupal\api_csobrec\Service\Mp3Converter
+    arguments: ['@config.factory']
+  api_csobrec.sftp_uploader:
+    class: Drupal\api_csobrec\Service\SftpUploader
+  api_csobrec.sent_ledger:
+    class: Drupal\api_csobrec\Service\SentLedger
+    arguments: ['@database', '@datetime.time']
+  api_csobrec.batch_builder:
+    class: Drupal\api_csobrec\Service\BatchBuilder
+    arguments: ['@file_system', '@api_csobrec.naming', '@api_csobrec.index_xml']
+
+  # The day and the whole morning. Both get the logger: the only thing an
+  # operator has after a failed 5 a.m. run is the log.
+  api_csobrec.day_run:
+    class: Drupal\api_csobrec\Service\DayRun
+    arguments:
+      - '@api_csobrec.daktela'
+      - '@api_csobrec.call_mapper'
+      - '@api_csobrec.selection'
+      - '@api_csobrec.naming'
+      - '@api_csobrec.mp3_converter'
+      - '@api_csobrec.sent_ledger'
+      - '@api_csobrec.batch_builder'
+      - '@config.factory'
+      - '@logger.factory'
+
+  # The password is in settings.php, not in config; the host key is checked
+  # before the login, inside the factory.
+  api_csobrec.sftp_sessions:
+    class: Drupal\api_csobrec\Sftp\PhpseclibSessionFactory
+    arguments: ['@config.factory', '@settings', '@api_csobrec.host_key', '@logger.factory']
+
+  api_csobrec.application:
+    class: Drupal\api_csobrec\Service\Application
+    arguments:
+      - '@api_csobrec.day_run'
+      - '@api_csobrec.sftp_uploader'
+      - '@api_csobrec.sent_ledger'
+      - '@api_csobrec.naming'
+      - '@api_csobrec.sftp_sessions'
+      - '@file_system'
+      - '@config.factory'
+      - '@logger.factory'

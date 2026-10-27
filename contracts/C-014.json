@@ -1,14 +1,14 @@
 {
  "id": "C-014",
- "file": "web/modules/csobrec/src/Service/CallMapper.php",
+ "file": "web/modules/api_csobrec/src/Service/CallMapper.php",
  "role": "coder",
  "title": "převodník: aktivita z Daktely na Call a Item na řádek XML",
- "interface": "final class Drupal\\csobrec\\Service\\CallMapper, no constructor arguments. fromActivity(array $activity): Call — the only place that knows Daktela's field shapes. queue.name and time ('Y-m-d H:i:s') are mandatory; a missing or unparsable one throws \\InvalidArgumentException naming the field, never the value. disposition is statuses[0].title or NULL. The phone number is item.clid, or the activity's title when clid is missing, and only its digits are kept. The operator is user.title, or item.id_agent.title. Campaign record fields live in record.customFields and arrive as arrays: take the first non-empty value, also accept a plain scalar. policyNumber is csob_cislo_navrhu_ps but only when it holds seven or more digits (operators type notes in there). xSell is TRUE when _csobp__vyuzit_x_sell_benefit is 'ANO' case-insensitively; xSellNumber is _csobp__x_sell___cislo_navrhu_ps under the same seven-digit rule. A missing record must not blow up. lineFromItem(Item $item, string $file): array returns the XML line as ['soubor' => $file, 'prostredi' => 'D', 'operator' => ..., 'id_kampane' => queue, 'telefon' => phone, 'id_callcentra' => '159'] plus 'c_poj_sml' only when the item has a policy number; the key order must match the XML field order.",
+ "interface": "final class Drupal\\api_csobrec\\Service\\CallMapper, no constructor arguments. fromActivity(array $activity): Call — the only place that knows Daktela's field shapes. queue.name and time ('Y-m-d H:i:s') are mandatory; a missing or unparsable one throws \\InvalidArgumentException naming the field, never the value. disposition is statuses[0].title or NULL. The phone number is item.clid, or the activity's title when clid is missing, and only its digits are kept. The operator is user.title, or item.id_agent.title. Campaign record fields live in record.customFields and arrive as arrays: take the first non-empty value, also accept a plain scalar. policyNumber is csob_cislo_navrhu_ps but only when it holds seven or more digits (operators type notes in there). xSell is TRUE when _csobp__vyuzit_x_sell_benefit is 'ANO' case-insensitively; xSellNumber is _csobp__x_sell___cislo_navrhu_ps under the same seven-digit rule. A missing record must not blow up. lineFromItem(Item $item, string $file): array returns the XML line as ['soubor' => $file, 'prostredi' => 'D', 'operator' => ..., 'id_kampane' => queue, 'telefon' => phone, 'id_callcentra' => '159'] plus 'c_poj_sml' only when the item has a policy number; the key order must match the XML field order.",
  "uses": {
-  "Call": "web/modules/csobrec/src/Call.php",
-  "Item": "web/modules/csobrec/src/Item.php"
+  "Call": "web/modules/api_csobrec/src/Call.php",
+  "Item": "web/modules/api_csobrec/src/Item.php"
  },
- "acceptance": "web/modules/csobrec/tests/src/Unit/CallMapperTest.php",
+ "acceptance": "web/modules/api_csobrec/tests/src/Unit/CallMapperTest.php",
  "budget": {
   "iterations": 10
  }
