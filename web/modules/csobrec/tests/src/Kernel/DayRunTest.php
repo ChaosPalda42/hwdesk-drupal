@@ -194,8 +194,10 @@ final class DayRunTest extends KernelTestBase {
     // b0 has no proposal number at all, so its line has no such field.
     $this->assertSame(5, substr_count($xml, '<dokument>'));
     $this->assertSame(3, substr_count($xml, '<c_poj_sml>'));
-    // The campaign number is the queue, and the call centre is fixed.
-    $this->assertSame(2, substr_count($xml, '<id_kampane>5004</id_kampane>'));
+    // The campaign number is the queue, and the call centre is fixed. Queue
+    // 5004 holds three lines: b0, b2 and the X-sell copy of b2.
+    $this->assertSame(2, substr_count($xml, '<id_kampane>5003</id_kampane>'));
+    $this->assertSame(3, substr_count($xml, '<id_kampane>5004</id_kampane>'));
     $this->assertSame(5, substr_count($xml, '<id_callcentra>159</id_callcentra>'));
   }
 

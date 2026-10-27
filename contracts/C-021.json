@@ -16,9 +16,18 @@
     "Item": "web/modules/csobrec/src/Item.php",
     "QueueMode": "web/modules/csobrec/src/QueueMode.php"
   },
+  "database": "",
   "acceptance": "web/modules/csobrec/tests/src/Kernel/DayRunTest.php",
+  "dobehly": "",
+  "forbidden": [],
+  "depends_on": [],
   "budget": {
     "iterations": 14
   },
+  "metamorfni_funkce": "",
+  "neutralni_upravy": [],
+  "neutralni_predpony": [],
+  "differential": false,
+  "differential_compare": "exact",
   "notes": "Pokus 1 (2026-10-27) spálil budget u obou rodin modelů na témže místě: klíče 'fronty' se porovnávaly s Call::$queue bez přetypování, takže Logic fronta se vůbec nezpracovala a 'calls' vyšlo 5 místo 7. Triage i druhý názor to hlásily jako nesplnitelnou akceptaci; ruční průchod řetězcem (11 tvrzení) ukázal, že splnitelná je. V akceptaci se opravila jen fixtura nečitelného řádku a4 (chyběl mu 'time', takže ho denní filtr Daktely zahodil)."
 }
