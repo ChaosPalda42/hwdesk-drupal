@@ -117,10 +117,19 @@ final class HandoverTokensTest extends KernelTestBase {
   }
 
   public function testExpiredLinkIsRejected(): void {
-    $propadle = $this->handover(['expires' => time() - 1]);
+    // Měří se stejnými hodinami, jaké má služba. getRequestTime() se zmrazí
+    // při vzniku požadavku, kdežto time() běží dál: „propadlo před vteřinou“
+    // podle nástěnných hodin tedy podle služby ještě nemuselo nastat a brána
+    // padala podle toho, jak dlouho už běh trvá.
+    $ted = $this->container->get('datetime.time')->getRequestTime();
+
+    $propadle = $this->handover(['expires' => $ted - 3600]);
     $this->assertNull($this->tokens()->verify($this->issueFor($propadle)));
 
-    $plati = $this->handover(['expires' => time() + 60]);
+    $tesne = $this->handover(['expires' => $ted - 1]);
+    $this->assertNull($this->tokens()->verify($this->issueFor($tesne)), 'Vteřina po platnosti je taky po platnosti.');
+
+    $plati = $this->handover(['expires' => $ted + 3600]);
     $this->assertNotNull($this->tokens()->verify($this->issueFor($plati)));
   }
 

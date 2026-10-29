@@ -113,7 +113,7 @@ final class IntakeServiceTest extends KernelTestBase {
       $this->fail('duplicate serial number accepted');
     }
     catch (\InvalidArgumentException $e) {
-      $this->assertStringContainsString('TAKEN', $e->getMessage());
+      $this->assertSame('Sériové číslo TAKEN už má zařízení NB-0099.', $e->getMessage());
     }
     $this->assertSame('', Asset::load($a->id())->getSerialNumber(), 'nothing was written');
   }
@@ -127,6 +127,41 @@ final class IntakeServiceTest extends KernelTestBase {
   public function testSetSerialNumbersRejectsUnknownAssets(): void {
     $this->expectException(\InvalidArgumentException::class);
     $this->intake()->setSerialNumbers([999 => 'X']);
+  }
+
+  public function testHlaskyJsouCeskyAJmenujiTo(): void {
+    try {
+      $this->intake()->createBatch(['type' => 'monitor', 'model' => 'U2723'], 0);
+      $this->fail('nula kusu prosla');
+    }
+    catch (\InvalidArgumentException $e) {
+      $this->assertSame('Počet kusů musí být od 1 do 500.', $e->getMessage());
+    }
+
+    try {
+      $this->intake()->createBatch(['type' => '', 'model' => 'U2723'], 1);
+      $this->fail('prazdny typ prosel');
+    }
+    catch (\InvalidArgumentException $e) {
+      $this->assertSame('Vyplňte typ zařízení i model.', $e->getMessage());
+    }
+
+    [$a, $b] = $this->intake()->createBatch(['type' => 'monitor', 'model' => 'U2723'], 2);
+    try {
+      $this->intake()->setSerialNumbers([(int) $a->id() => 'SAME', (int) $b->id() => ' same ']);
+      $this->fail('dvakrat totez seriove cislo proslo');
+    }
+    catch (\InvalidArgumentException $e) {
+      $this->assertSame('Sériové číslo same je v zadání dvakrát.', $e->getMessage());
+    }
+
+    try {
+      $this->intake()->setSerialNumbers([999999 => 'X']);
+      $this->fail('neexistujici id proslo');
+    }
+    catch (\InvalidArgumentException $e) {
+      $this->assertSame('Zařízení č. 999999 neexistuje.', $e->getMessage());
+    }
   }
 
 }

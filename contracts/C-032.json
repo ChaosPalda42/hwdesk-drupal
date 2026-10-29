@@ -1,0 +1,23 @@
+{
+  "id": "C-032",
+  "file": "web/modules/hwdesk/src/Controller/QrController.php",
+  "role": "coder",
+  "title": "The QR target: where a scanned label takes you, and what it refuses to tell",
+  "interface": "final class QrController extends \\Drupal\\Core\\Controller\\ControllerBase. It serves route hwdesk.qr, path /a/{tag}, requirement _user_is_logged_in TRUE and tag [A-Za-z0-9-]+. It is the target printed as a QR code on the label stuck to the hardware, so whoever scans it is signed in to the site but can be anyone on the staff, not only the person the piece belongs to.\n\ngo(string $tag): \\Symfony\\Component\\HttpFoundation\\RedirectResponse -- find the hwdesk_asset whose 'tag' field equals strtoupper($tag): entity query through $this->entityTypeManager()->getStorage('hwdesk_asset'), accessCheck(FALSE), ->condition('tag', strtoupper($tag)), ->range(0, 1), ->execute(), then load the first id. The label may be scanned in lower case, hence strtoupper.\n- When the current user has permission 'administer hwdesk': return $this->redirect('entity.hwdesk_asset.canonical', ['hwdesk_asset' => $asset->id()]).\n- Otherwise, when the asset has a holder and that holder is the current user: return $this->redirect('hwdesk.my').\n- In every other case throw \\Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException with no arguments.\n\n'Every other case' covers two things that must stay indistinguishable from outside: a tag that does not exist, and a tag that exists but belongs to somebody else (or to nobody). Status code and message of both answers are the same, so an employee who scans a colleague's label cannot learn which inventory numbers the company uses. This is why a foreign asset is NOT answered with AccessDeniedHttpException, which would say 'this one exists, you just may not see it'.",
+  "uses": {
+    "Asset": "web/modules/hwdesk/src/Entity/Asset.php: getHolder(): ?\\Drupal\\user\\UserInterface, tag field",
+    "The route": "web/modules/hwdesk/hwdesk.routing.yml: hwdesk.qr -> /a/{tag}, hwdesk.my, entity.hwdesk_asset.canonical -> /hwdesk/asset/{hwdesk_asset}"
+  },
+  "database": "The hwdesk_asset entity storage through $this->entityTypeManager(); no direct SQL.",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/QrControllerTest.php",
+  "depends_on": [],
+  "forbidden": [
+    "Answering a foreign or unassigned tag with AccessDeniedHttpException, a 403, a redirect to the login page, or any other answer that differs from the answer given for a tag that does not exist.",
+    "Putting the inventory number, the asset's name or its holder into the exception message or into a status message: the answer must not describe what was not found.",
+    "Rendering a page or a render array; this controller only redirects or throws.",
+    "Loading the asset with access checking on and letting Drupal turn the lack of access into a 403."
+  ],
+  "budget": {
+    "iterations": 8
+  }
+}
