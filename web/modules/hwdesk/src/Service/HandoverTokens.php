@@ -4,74 +4,115 @@ declare(strict_types=1);
 
 namespace Drupal\hwdesk\Service;
 
-use Drupal\Component\Utility\Crypt;
-use Drupal\Core\PrivateKey;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\hwdesk\Entity\Handover;
+use Drupal\hwdesk\HandoverStatus;
 
+/**
+ * Single-use confirmation links; only the checksum is stored.
+ */
 final class HandoverTokens {
+
   public function __construct(
-    private readonly PrivateKey $privateKey,
+    private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly TimeInterface $time,
   ) {}
 
   /**
-   * Issues a signed token.
+   * Issues a fresh link for a handover.
+   *
+   * The returned token is the only copy of the secret; the database keeps
+   * only its sha256 checksum. Issuing again retires the previous link.
+   *
+   * @param int $handoverId
+   *   The handover to issue the link for.
+   * @param int $handoverId
+   *   The handover to issue the link for.
+   * @param int $_uid
+   *   Legacy argument, ignored; the employee is read from the handover.
+   * @param int $_expires
+   *   Legacy argument, ignored; the expiry is read from the handover.
+   *
+   * @throws \InvalidArgumentException
+   *   When the handover does not exist.
    */
-  public function issue(int $handoverId, int $uid, int $expires): string {
-    // Build payload string.
-    $data = "$handoverId:$uid:$expires";
-    // Base64 URL-safe without padding.
-    $payload = rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-    // Signature using HMAC base64 (URL-safe alphabet already).
-    $signature = Crypt::hmacBase64($payload, $this->privateKey->get());
-    return $payload . '.' . $signature;
+  public function issue(int $handoverId, int $_uid, int $_expires): string {
+    $storage = $this->entityTypeManager->getStorage('hwdesk_handover');
+    $handover = $storage->load($handoverId);
+    if (!$handover instanceof Handover) {
+      throw new \InvalidArgumentException(sprintf('Handover %d does not exist.', $handoverId));
+    }
+
+    $raw = random_bytes(32);
+    $token = rtrim(strtr(base64_encode($raw), '+/', '-_'), '=');
+    $handover->set('token_hash', hash('sha256', $token));
+    $handover->save();
+    return $token;
   }
 
   /**
-   * Verifies a token and returns its components or NULL.
+   * Verifies a link and returns the handover it belongs to, or NULL.
+   *
+   * @return array{handover: int, uid: int, expires: int}|NULL
+   *   The stored handover id, the employee uid and the expiry timestamp,
+   *   or NULL when the token is malformed, unknown, not pending or expired.
    */
   public function verify(string $token): ?array {
-    // Token must contain exactly one dot.
-    if (substr_count($token, '.') !== 1) {
+    if (!preg_match('/^[A-Za-z0-9_-]{43}$/D', $token)) {
       return NULL;
     }
-    [$payload, $signature] = explode('.', $token, 2);
-    // Recalculate expected signature.
-    $expected = Crypt::hmacBase64($payload, $this->privateKey->get());
-    if (!hash_equals($expected, $signature)) {
+    $handover = $this->findByToken($token);
+    if ($handover === NULL) {
       return NULL;
     }
-    // Decode payload from base64url.
-    $b64 = strtr($payload, '-_', '+/');
-    // Add padding.
-    $padLen = 4 - (strlen($b64) % 4);
-    if ($padLen < 4) {
-      $b64 .= str_repeat('=', $padLen);
-    }
-    $decoded = base64_decode($b64, true);
-    if ($decoded === false) {
+    if ($handover->getStatus() !== HandoverStatus::Pending) {
       return NULL;
     }
-    $parts = explode(':', $decoded);
-    if (count($parts) !== 3) {
-      return NULL;
-    }
-    [$handoverId, $uid, $expires] = $parts;
-    // Ensure numeric and non‑negative.
-    if (!ctype_digit($handoverId) || !ctype_digit($uid) || !ctype_digit($expires)) {
-      return NULL;
-    }
-    $handoverId = (int) $handoverId;
-    $uid = (int) $uid;
-    $expires = (int) $expires;
-    // Check expiration.
-    if ($expires < $this->time->getRequestTime()) {
+    if ($handover->getExpires() < $this->time->getRequestTime()) {
       return NULL;
     }
     return [
-      'handover' => $handoverId,
-      'uid' => $uid,
-      'expires' => $expires,
+      'handover' => (int) $handover->id(),
+      'uid' => (int) $handover->getUser()->id(),
+      'expires' => $handover->getExpires(),
     ];
   }
+
+  /**
+   * Consumes a link: the stored checksum is cleared, so it works only once.
+   *
+   * Unknown, malformed or empty tokens are ignored in silence; this runs
+   * while a page is being answered and must never throw.
+   */
+  public function consume(string $token): void {
+    if (!preg_match('/^[A-Za-z0-9_-]{43}$/D', $token)) {
+      return;
+    }
+    $handover = $this->findByToken($token);
+    if ($handover === NULL) {
+      return;
+    }
+    $handover->set('token_hash', '');
+    $handover->save();
+  }
+
+  /**
+   * Finds the handover that stores the checksum of the given token.
+   */
+  private function findByToken(string $token): ?Handover {
+    $hash = hash('sha256', $token);
+    $ids = $this->entityTypeManager->getStorage('hwdesk_handover')
+      ->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('token_hash', $hash)
+      ->range(0, 1)
+      ->execute();
+    if ($ids === []) {
+      return NULL;
+    }
+    $handover = $this->entityTypeManager->getStorage('hwdesk_handover')->load(reset($ids));
+    return $handover instanceof Handover ? $handover : NULL;
+  }
+
 }
