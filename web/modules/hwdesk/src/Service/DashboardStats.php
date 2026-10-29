@@ -96,6 +96,83 @@ final class DashboardStats {
   }
 
   /**
+   * @return array{assets: int, value: float}
+   */
+  public function totals(): array {
+    $assets = (int) $this->entityTypeManager->getStorage('hwdesk_asset')->getQuery()
+      ->accessCheck(FALSE)
+      ->count()
+      ->execute();
+    $value_result = $this->entityTypeManager->getStorage('hwdesk_asset')->getAggregateQuery()
+      ->accessCheck(FALSE)
+      ->condition('status', [AssetStatus::Retired->value, AssetStatus::Lost->value], 'NOT IN')
+      ->aggregate('price', 'SUM')
+      ->execute();
+    $value = 0.0;
+    if (!empty($value_result) && is_array($value_result)) {
+      $row = reset($value_result);
+      if (is_array($row)) {
+        $value = (float) reset($row);
+      }
+    }
+    return ['assets' => $assets, 'value' => $value];
+  }
+
+  /**
+   * @return list<int>
+   */
+  public function pendingHandoverIds(int $limit = 10): array {
+    if ($limit <= 0) {
+      return [];
+    }
+    $ids = $this->entityTypeManager->getStorage('hwdesk_handover')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('status', HandoverStatus::Pending->value)
+      ->sort('created', 'DESC')
+      ->sort('id', 'DESC')
+      ->range(0, $limit)
+      ->execute();
+    return array_values(array_map('intval', $ids));
+  }
+
+  /**
+   * @return list<int>
+   */
+  public function warrantyExpiringIds(int $days = 90, int $limit = 10): array {
+    if ($limit <= 0) {
+      return [];
+    }
+    $today = date('Y-m-d');
+    $until = date('Y-m-d', strtotime("+$days days"));
+    $ids = $this->entityTypeManager->getStorage('hwdesk_asset')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('status', [AssetStatus::Retired->value, AssetStatus::Lost->value], 'NOT IN')
+      ->condition('warranty_until', $today, '>=')
+      ->condition('warranty_until', $until, '<=')
+      ->sort('warranty_until', 'ASC')
+      ->sort('id', 'ASC')
+      ->range(0, $limit)
+      ->execute();
+    return array_values(array_map('intval', $ids));
+  }
+
+  /**
+   * @return list<int>
+   */
+  public function recentAuditIds(int $limit = 10): array {
+    if ($limit <= 0) {
+      return [];
+    }
+    $ids = $this->entityTypeManager->getStorage('hwdesk_audit')->getQuery()
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->sort('id', 'DESC')
+      ->range(0, $limit)
+      ->execute();
+    return array_values(array_map('intval', $ids));
+  }
+
+  /**
    * COUNT(*) per distinct value of one base-table column of hwdesk_asset.
    *
    * @return array<string, int>
