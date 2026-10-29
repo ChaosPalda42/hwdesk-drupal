@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Drupal\hwdesk\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\hwdesk\AssetStatus;
 use Drupal\hwdesk\Entity\Asset;
 use Drupal\hwdesk\Entity\Handover;
 use Drupal\hwdesk\HandoverStatus;
-use Drupal\hwdesk\Service\HandoverService;
+use Drupal\hwdesk\Service\Presenter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -21,68 +19,80 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class MyAssetsController extends ControllerBase {
 
   public function __construct(
-    private readonly HandoverService $handovers,
-    private readonly DateFormatterInterface $dateFormatter,
+    private readonly Presenter $presenter,
   ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('hwdesk.handover'), $container->get('date.formatter'));
+    return new static($container->get('hwdesk.presenter'));
   }
 
+  /**
+   * @return array<string, mixed>
+   */
   public function page(): array {
     $uid = (int) $this->currentUser()->id();
     $handoverStorage = $this->entityTypeManager()->getStorage('hwdesk_handover');
-    $pendingIds = $handoverStorage->getQuery()->accessCheck(FALSE)
-      ->condition('user', $uid)->condition('status', HandoverStatus::Pending->value)->sort('created', 'DESC')->execute();
+    $assetStorage = $this->entityTypeManager()->getStorage('hwdesk_asset');
+
+    // Open handovers: the mailed link is single use, so the page only points
+    // at the token-free confirmation route for the logged-in employee.
     $pending = [];
+    $pendingIds = $handoverStorage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('user', $uid)
+      ->condition('status', HandoverStatus::Pending->value)
+      ->sort('created', 'DESC')
+      ->execute();
     foreach ($handoverStorage->loadMultiple($pendingIds) as $handover) {
-      assert($handover instanceof Handover);
-      $asset = $handover->getAsset();
-      $pending[] = [
-        $handover->getKind()->label(),
-        $asset ? $asset->getTag() : '',
-        $asset ? $asset->getDisplayName() : '',
-        $this->dateFormatter->format($handover->getExpires(), 'custom', 'j. n. Y H:i'),
-        Link::fromTextAndUrl($this->t('Potvrdit / odmítnout'), Url::fromUri($this->handovers->confirmUrl($handover))),
-      ];
+      if (!$handover instanceof Handover) {
+        continue;
+      }
+      $row = $this->presenter->handover($handover);
+      $row['confirm_url'] = Url::fromRoute('hwdesk.handover.confirm_own', ['hwdesk_handover' => $handover->id()])->toString();
+      $pending[] = $row;
     }
 
-    $assetStorage = $this->entityTypeManager()->getStorage('hwdesk_asset');
-    $ids = $assetStorage->getQuery()->accessCheck(FALSE)
+    $assets = [];
+    $assetIds = $assetStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('holder', $uid)
       ->condition('status', [AssetStatus::Assigned->value, AssetStatus::PendingReturn->value, AssetStatus::PendingHandover->value], 'IN')
-      ->sort('tag')->execute();
-    $rows = [];
-    foreach ($assetStorage->loadMultiple($ids) as $asset) {
-      assert($asset instanceof Asset);
-      $rows[] = [
-        Link::createFromRoute($asset->getTag(), 'entity.hwdesk_asset.canonical', ['hwdesk_asset' => $asset->id()]),
-        $asset->getDisplayName(),
-        $asset->getSerialNumber(),
-        $asset->getStatus()->label(),
-        $asset->getStatus() === AssetStatus::Assigned
-          ? Link::createFromRoute($this->t('Vrátit'), 'hwdesk.asset.handover', ['hwdesk_asset' => $asset->id()])
-          : '',
-      ];
+      ->sort('tag')
+      ->execute();
+    foreach ($assetStorage->loadMultiple($assetIds) as $asset) {
+      if ($asset instanceof Asset) {
+        $assets[] = $this->presenter->asset($asset);
+      }
     }
 
-    $build = ['#cache' => ['contexts' => ['user'], 'tags' => ['hwdesk_asset_list', 'hwdesk_handover_list']]];
-    if ($pending) {
-      $build['pending'] = [
-        '#type' => 'table',
-        '#caption' => $this->t('Čeká na vaše potvrzení'),
-        '#header' => [$this->t('Druh'), $this->t('Inv. číslo'), $this->t('Zařízení'), $this->t('Platnost do'), ''],
-        '#rows' => $pending,
-      ];
+    // Decided handovers: the protocol file is already in the row and the
+    // module's file download hook lets the employee fetch their own copy.
+    $handovers = [];
+    $handoverIds = $handoverStorage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('user', $uid)
+      ->condition('status', [HandoverStatus::Confirmed->value, HandoverStatus::Rejected->value], 'IN')
+      ->sort('decided', 'DESC')
+      ->range(0, 50)
+      ->execute();
+    foreach ($handoverStorage->loadMultiple($handoverIds) as $handover) {
+      if ($handover instanceof Handover) {
+        $handovers[] = $this->presenter->handover($handover);
+      }
     }
-    $build['assets'] = [
-      '#type' => 'table',
-      '#caption' => $this->t('Moje zařízení'),
-      '#header' => [$this->t('Inv. číslo'), $this->t('Zařízení'), $this->t('Sériové číslo'), $this->t('Stav'), ''],
-      '#rows' => $rows,
-      '#empty' => $this->t('Nemáte u sebe žádné zařízení.'),
+
+    return [
+      '#theme' => 'hwdesk_my',
+      '#account' => $this->currentUser()->getDisplayName(),
+      '#assets' => $assets,
+      '#pending' => $pending,
+      '#handovers' => $handovers,
+      '#attached' => ['library' => ['hwdesk/ui']],
+      '#cache' => [
+        'contexts' => ['user'],
+        'tags' => ['hwdesk_asset_list', 'hwdesk_handover_list'],
+      ],
     ];
-    return $build;
   }
 
 }
