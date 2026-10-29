@@ -27,7 +27,7 @@ use Symfony\Component\Mime\Email;
  */
 #[Mail(
   id: 'hwdesk_mail',
-  label: new TranslatableMarkup('HW Desk (SMTP z nastaveni modulu)'),
+  label: new TranslatableMarkup('HW Desk (SMTP z nastavení modulu)'),
 )]
 final class HwdeskMail implements MailInterface, ContainerFactoryPluginInterface {
 
