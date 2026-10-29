@@ -1,0 +1,160 @@
+{#
+/**
+ * Detail zařízení ve čtyřech záložkách, jako v původní předloze: přehled,
+ * historie, protokoly, soubory. Formuláře staví Drupal (status_form,
+ * handover_form), šablona jim jen dává místo.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+
+<div class="topbar">
+  <div class="hero">
+    <span class="ico">{{ m.icon(asset.type) }}</span>
+    <div>
+      <div class="crumbs"><a href="{{ links.assets }}">{{ 'Zařízení'|t }}</a> / <a href="{{ links.type }}">{{ asset.type_label }}</a></div>
+      <h1>{{ asset.tag }} <span class="muted">{{ asset.name ?: (asset.manufacturer ~ ' ' ~ asset.model)|trim }}</span></h1>
+      <div class="sub">{{ m.status(asset.status, asset.status_label) }} {{ m.condition(asset.condition, asset.condition_label) }} {{ m.tags(asset.tags) }}</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn secondary" href="{{ links.label }}">{{ m.icon('print') }} {{ 'Štítek'|t }}</a>
+    <a class="btn secondary" href="{{ links.edit }}">{{ 'Upravit'|t }}</a>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="#overview" data-tab="overview" class="active">{{ 'Přehled'|t }}</a>
+  <a href="#history" data-tab="history">{{ 'Historie'|t }}</a>
+  <a href="#protocols" data-tab="protocols">{{ 'Protokoly'|t }} ({{ handovers|length }})</a>
+  <a href="#files" data-tab="files">{{ 'Soubory'|t }} ({{ files|length }})</a>
+</div>
+
+<div class="tab-panel active" id="overview">
+  <div class="grid-2">
+    <div class="stack">
+      <div class="card">
+        <h2>{{ 'Zařízení'|t }}</h2>
+        <dl class="kv">
+          <dt>{{ 'Inventární číslo'|t }}</dt><dd class="mono">{{ asset.tag }}</dd>
+          <dt>{{ 'Název zařízení'|t }}</dt><dd>{{ asset.name ?: '—' }}</dd>
+          <dt>{{ 'Typ'|t }}</dt><dd><a href="{{ links.type }}">{{ asset.type_label }}</a></dd>
+          <dt>{{ 'Výrobce / model'|t }}</dt><dd>{{ (asset.manufacturer ~ ' ' ~ asset.model)|trim ?: '—' }}</dd>
+          <dt>{{ 'OEM'|t }}</dt><dd>{{ asset.oem ?: '—' }}</dd>
+          <dt>{{ 'Sériové číslo'|t }}</dt><dd class="mono">{{ asset.serial_number ?: '—' }}</dd>
+          <dt>{{ 'Stav kusu'|t }}</dt><dd>{{ m.condition(asset.condition, asset.condition_label) ?: '—' }}</dd>
+          <dt>{{ 'Lokalita'|t }}</dt><dd>{% if asset.location %}<a href="{{ path('hwdesk.assets') }}?location={{ asset.location.id }}">{{ asset.location.name }}</a>{% else %}—{% endif %}</dd>
+          <dt>{{ 'Štítky'|t }}</dt><dd>{{ m.tags(asset.tags) ?: '—' }}</dd>
+          <dt>{{ 'Poznámka'|t }}</dt><dd>{{ asset.notes ?: '—' }}</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>{{ 'Pořízení'|t }}</h2>
+        <dl class="kv">
+          <dt>{{ 'Faktura'|t }}</dt><dd>{% if asset.invoice %}<a href="{{ asset.invoice.url }}">{{ asset.invoice.number }}</a>{% else %}—{% endif %}</dd>
+          <dt>{{ 'Pořizovací cena'|t }}</dt><dd>{{ m.money(asset.price) }}</dd>
+          <dt>{{ 'Záruka do'|t }}</dt><dd>{{ asset.warranty_label ?: '—' }}</dd>
+          <dt>{{ 'Nákladové středisko'|t }}</dt><dd>{{ asset.cost_center ?: '—' }}</dd>
+          <dt>{{ 'V evidenci od'|t }}</dt><dd class="nowrap">{{ asset.created }}</dd>
+          <dt>{{ 'Naposledy změněno'|t }}</dt><dd class="nowrap">{{ asset.changed }}</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h2>{{ 'Držitel'|t }}</h2>
+        {% if asset.holder %}
+          <div class="hero">
+            <span class="ico">{{ m.icon('users') }}</span>
+            <div><b><a href="{{ asset.holder.url }}">{{ asset.holder.name }}</a></b><div class="sub muted small">{{ 'má zařízení u sebe'|t }}</div></div>
+          </div>
+        {% elseif asset.prepared_for %}
+          <div class="hero">
+            <span class="ico">{{ m.icon('clock') }}</span>
+            <div><b><a href="{{ asset.prepared_for.url }}">{{ asset.prepared_for.name }}</a></b><div class="sub muted small">{{ 'připraveno pro tohoto zaměstnance'|t }}</div></div>
+          </div>
+        {% else %}
+          <p class="muted">{{ 'Zařízení nikdo nemá u sebe.'|t }}</p>
+        {% endif %}
+      </div>
+      {% if open_handover %}
+        <div class="card attention">
+          <h2>{{ 'Čeká na zaměstnance'|t }}</h2>
+          <div class="item">
+            {{ m.icon('clock') }}
+            <div>
+              {{ open_handover.kind_label }} · <b>{{ open_handover.user ? open_handover.user.name : '—' }}</b>
+              <div class="small muted">{{ 'odesláno'|t }} {{ open_handover.created }}{% if open_handover.expires %} · {{ 'platí do'|t }} {{ open_handover.expires }}{% endif %}</div>
+            </div>
+            <a class="btn secondary sm" href="{{ open_handover.cancel_url }}">{{ 'Zrušit výzvu'|t }}</a>
+          </div>
+        </div>
+      {% else %}
+        <div class="card">{{ handover_form }}</div>
+      {% endif %}
+      <div class="card">
+        <h2>{{ 'Přepnout stav'|t }}</h2>
+        <div class="hint">{{ 'Ruční přepnutí mimo předávku: zařízení se tím nikomu nepřiřadí ani neodebere, jen se zapíše nový stav do auditu.'|t }}</div>
+        {{ status_form }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="history">
+  <div class="card">
+    <h2>{{ 'Co se se zařízením dělo'|t }}</h2>
+    <ul class="timeline">
+      {% for e in history %}
+        <li>
+          <div><b>{{ e.who }}</b> {{ e.message ?: e.action }}</div>
+          <div class="when">{{ e.when }}</div>
+        </li>
+      {% else %}
+        <li class="muted">{{ 'Zatím žádný zápis.'|t }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="tab-panel" id="protocols">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>{{ 'Číslo'|t }}</th><th>{{ 'Druh'|t }}</th><th>{{ 'Zaměstnanec'|t }}</th><th>{{ 'Stav'|t }}</th><th>{{ 'Vytvořeno'|t }}</th><th>{{ 'Rozhodnuto'|t }}</th><th></th></tr></thead>
+      <tbody>
+        {% for h in handovers %}
+          <tr>
+            <td class="mono">{{ h.protocol_number ?: '—' }}</td>
+            <td>{{ h.kind_label }}</td>
+            <td>{% if h.user %}<a href="{{ h.user.url }}">{{ h.user.name }}</a>{% else %}—{% endif %}</td>
+            <td>{{ m.status(h.status, h.status_label) }}{% if h.reason %}<div class="small muted">{{ h.reason }}</div>{% endif %}</td>
+            <td class="nowrap">{{ h.created }}</td>
+            <td class="nowrap">{{ h.decided ?: '—' }}</td>
+            <td class="actions">
+              {%- if h.is_open %}<a class="btn ghost sm" href="{{ h.cancel_url }}">{{ 'Zrušit'|t }}</a>{% endif -%}
+              {%- if h.protocol_url %}<a class="btn ghost sm" href="{{ h.protocol_url }}">PDF</a>{% endif -%}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7">{{ m.empty('Zatím žádné protokoly.'|t, 'handover') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="tab-panel" id="files">
+  <div class="card">
+    <h2>{{ 'Soubory'|t }}</h2>
+    <ul class="files">
+      {% for f in files %}
+        <li>
+          {{ m.icon('invoice') }}
+          <div><div class="name"><a href="{{ f.url }}">{{ f.name }}</a></div><div class="meta">{{ f.size }} · {{ f.when }}</div></div>
+        </li>
+      {% else %}
+        <li class="muted">{{ 'Žádné soubory. Faktura patří k faktuře (viz Pořízení); sem se nahrávají fotografie a dokumenty.'|t }}</li>
+      {% endfor %}
+    </ul>
+    <div class="btn-row"><a class="btn secondary sm" href="{{ links.edit }}">{{ m.icon('upload') }} {{ 'Nahrát soubor'|t }}</a></div>
+  </div>
+</div>

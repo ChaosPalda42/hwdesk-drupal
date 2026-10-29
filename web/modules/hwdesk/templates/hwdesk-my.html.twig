@@ -1,0 +1,89 @@
+{#
+/**
+ * Pohled zaměstnance: co mám u sebe, co mám potvrdit a moje protokoly.
+ * Zjednodušený pohled, jak se chtělo na schůzce — nic z administrace.
+ *
+ * Odkaz „Potvrdit nebo odmítnout" vede na vlastní stránku s potvrzením
+ * (hwdesk.handover.confirm_own), ne na jednorázový odkaz z e-mailu: ten by
+ * se každým zobrazením téhle stránky spotřeboval.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+
+<div class="topbar">
+  <div>
+    <h1>{{ 'Dobrý den, @jmeno'|t({'@jmeno': account|split(' ')|first}) }}</h1>
+    <div class="muted small">{{ 'Zařízení, která máte u sebe, a co je potřeba potvrdit'|t }}</div>
+  </div>
+  <div class="actions"></div>
+</div>
+
+{% if pending %}
+  <div class="attention">
+    <h2>{{ 'Čeká na vaše potvrzení'|t }}</h2>
+    {% for h in pending %}
+      <div class="item">
+        {{ m.icon(h.asset ? h.asset.type : 'handover') }}
+        <div>
+          <b>{{ h.asset ? h.asset.tag : '' }}</b> {{ h.asset ? (h.asset.name ?: (h.asset.manufacturer ~ ' ' ~ h.asset.model)|trim) : '' }}
+          <div class="small muted">{{ h.kind_label }} · {{ 'odesláno'|t }} {{ h.created }}{% if h.expires %} · {{ 'potvrďte do'|t }} {{ h.expires }}{% endif %}</div>
+        </div>
+        <a class="btn" href="{{ h.confirm_url }}">{{ 'Potvrdit nebo odmítnout'|t }}</a>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<h2>{{ 'Moje zařízení'|t }}</h2>
+{% if assets %}
+  <div class="cards">
+    {% for a in assets %}
+      {% set protokol = handovers|filter(h => h.kind == 'handover' and h.status == 'confirmed' and h.asset and h.asset.id == a.id)|first %}
+      <div class="device">
+        <div class="head">
+          <span class="ico">{{ m.icon(a.type) }}</span>
+          <div>
+            <div class="name">{{ a.name ?: (a.manufacturer ~ ' ' ~ a.model)|trim }}</div>
+            <div class="tagline">{{ a.type_label }} · <span class="mono">{{ a.tag }}</span></div>
+          </div>
+        </div>
+        <dl class="kv">
+          <dt>{{ 'Sériové číslo'|t }}</dt><dd class="mono">{{ a.serial_number ?: '—' }}</dd>
+          <dt>{{ 'U vás od'|t }}</dt><dd class="nowrap">{{ protokol ? protokol.decided : '—' }}</dd>
+          <dt>{{ 'Protokol'|t }}</dt><dd>{% if protokol and protokol.protocol_url %}<a href="{{ protokol.protocol_url }}">{{ protokol.protocol_number }}</a>{% else %}{{ protokol ? protokol.protocol_number : '—' }}{% endif %}</dd>
+          <dt>{{ 'Stav'|t }}</dt><dd>{{ m.status(a.status, a.status_label) }}</dd>
+        </dl>
+        <div class="foot">
+          {% if a.status == 'assigned' %}
+            <a class="btn secondary sm" href="{{ path('hwdesk.asset.handover', {'hwdesk_asset': a.id}) }}">{{ 'Chci zařízení vrátit'|t }}</a>
+          {% else %}
+            <span class="small muted">{{ 'Čeká se na vaše potvrzení výše.'|t }}</span>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card">{{ m.empty('Nemáte u sebe žádné firemní zařízení.'|t, 'laptop') }}</div>
+{% endif %}
+
+{% if handovers %}
+  <h2>{{ 'Moje předávací protokoly'|t }}</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>{{ 'Číslo'|t }}</th><th>{{ 'Druh'|t }}</th><th>{{ 'Zařízení'|t }}</th><th>{{ 'Stav'|t }}</th><th>{{ 'Rozhodnuto'|t }}</th><th></th></tr></thead>
+      <tbody>
+        {% for h in handovers %}
+          <tr>
+            <td class="mono">{{ h.protocol_number ?: '—' }}</td>
+            <td>{{ h.kind_label }}</td>
+            <td>{{ h.asset ? h.asset.tag : '—' }}</td>
+            <td>{{ m.status(h.status, h.status_label) }}{% if h.reason %}<div class="small muted">{{ h.reason }}</div>{% endif %}</td>
+            <td class="nowrap">{{ h.decided ?: '—' }}</td>
+            <td class="actions">{% if h.protocol_url %}<a class="btn ghost sm" href="{{ h.protocol_url }}">PDF</a>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

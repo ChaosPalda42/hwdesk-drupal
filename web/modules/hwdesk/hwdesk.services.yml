@@ -10,6 +10,9 @@ services:
   hwdesk.handover_tokens:
     class: Drupal\hwdesk\Service\HandoverTokens
     arguments: ['@entity_type.manager', '@datetime.time']
+  hwdesk.mail_transport:
+    class: Drupal\hwdesk\Service\MailTransport
+    arguments: ['@config.factory', '@?key.repository']
   hwdesk.protocol_numbers:
     class: Drupal\hwdesk\Service\ProtocolNumbers
     arguments: ['@state', '@datetime.time']

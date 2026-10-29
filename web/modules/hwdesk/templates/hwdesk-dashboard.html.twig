@@ -1,39 +1,147 @@
 {#
 /**
- * @file
- * Overview: tiles (status counts, pending, warranty), then by type and by location.
- * Every number links to the asset list with that filter.
+ * Přehled podle původní předlohy: čtyři velká čísla, pod nimi to, co na někoho
+ * čeká, a nakonec rozpad podle typu a lokality. Každé číslo je odkaz do
+ * seznamu se stejným filtrem.
+ *
+ * Proměnné: totals, tiles, pending, warranty, activity, by_type, by_location.
  */
 #}
-<div class="hwdesk-dashboard">
-  <div class="hwdesk-tiles">
-    {% for tile in tiles %}
-      <a class="hwdesk-tile hwdesk-tile--{{ tile.key }}" href="{{ tile.url.toString() }}">
-        <span class="hwdesk-tile__count">{{ tile.count }}</span>
-        <span class="hwdesk-tile__label">{{ tile.label }}</span>
-      </a>
-    {% endfor %}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+
+{% set t = {} %}
+{% for tile in tiles %}{% set t = t|merge({(tile.key): tile}) %}{% endfor %}
+
+<div class="topbar">
+  <div>
+    <h1>{{ 'Přehled'|t }}</h1>
+    <div class="muted small">{{ 'Stav evidence k dnešnímu dni'|t }}</div>
   </div>
-  <div class="hwdesk-columns">
-    <section>
-      <h2>{{ 'Podle typu'|t }}</h2>
-      <table class="hwdesk-mini">
-        {% for row in by_type %}
-          <tr><td>{{ row.label }}</td><td class="num"><a href="{{ row.url.toString() }}">{{ row.count }}</a></td></tr>
-        {% else %}
-          <tr><td colspan="2">{{ 'Zatím žádná zařízení.'|t }}</td></tr>
-        {% endfor %}
-      </table>
-    </section>
-    <section>
-      <h2>{{ 'Podle lokality'|t }}</h2>
-      <table class="hwdesk-mini">
-        {% for row in by_location %}
-          <tr><td>{{ row.label }}</td><td class="num"><a href="{{ row.url.toString() }}">{{ row.count }}</a></td></tr>
-        {% else %}
-          <tr><td colspan="2">{{ 'Zatím žádná zařízení.'|t }}</td></tr>
-        {% endfor %}
-      </table>
-    </section>
+  <div class="actions">
+    <a class="btn secondary" href="{{ path('hwdesk.intake') }}">{{ m.icon('inbox') }} {{ 'Příjem zařízení'|t }}</a>
+    <a class="btn" href="{{ path('entity.hwdesk_asset.add_form') }}">{{ m.icon('plus') }} {{ 'Nové zařízení'|t }}</a>
   </div>
 </div>
+
+<div class="grid-4">
+  <a class="stat" href="{{ path('hwdesk.assets') }}">
+    <div class="label">{{ 'Zařízení celkem'|t }}</div>
+    <div class="value">{{ totals.assets }}</div>
+    <div class="sub">{{ 'hodnota'|t }} {{ m.money(totals.value) }}</div>
+  </a>
+  <a class="stat ok" href="{{ t.assigned.url }}">
+    <div class="label">{{ 'Přiděleno'|t }}</div>
+    <div class="value">{{ t.assigned.count }}</div>
+    <div class="sub">{{ t.in_stock.count }} {{ 'skladem'|t }}</div>
+  </a>
+  <a class="stat {{ t.pending.count ? 'warn' }}" href="{{ t.pending.url }}">
+    <div class="label">{{ 'Čeká na potvrzení'|t }}</div>
+    <div class="value">{{ t.pending.count }}</div>
+    <div class="sub">{{ 'předání a vrácení'|t }}</div>
+  </a>
+  <a class="stat {{ t.warranty.count ? 'bad' }}" href="{{ t.warranty.url }}">
+    <div class="label">{{ 'Končící záruka'|t }}</div>
+    <div class="value">{{ t.warranty.count }}</div>
+    <div class="sub">{{ 'do 90 dnů'|t }}</div>
+  </a>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2><a href="{{ t.pending.url }}">{{ 'Čeká na potvrzení zaměstnancem'|t }}</a></h2>
+    {% if pending %}
+      <div class="table-wrap plain">
+        <table>
+          <thead><tr><th>{{ 'Zařízení'|t }}</th><th>{{ 'Zaměstnanec'|t }}</th><th>{{ 'Druh'|t }}</th><th>{{ 'Od'|t }}</th></tr></thead>
+          <tbody>
+            {% for h in pending %}
+              <tr>
+                <td>{% if h.asset %}{{ m.asset_cell(h.asset) }}{% else %}—{% endif %}</td>
+                <td>{% if h.user %}<a href="{{ h.user.url }}">{{ h.user.name }}</a>{% else %}—{% endif %}</td>
+                <td>{{ h.kind_label }}</td>
+                <td class="nowrap">{{ h.created }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {{ m.empty('Nic nečeká na potvrzení.'|t, 'check') }}
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>{{ 'Podle typu'|t }}</h2>
+    {% set max_type = by_type|length ? by_type|first.count : 1 %}
+    <div class="bars">
+      {% for row in by_type %}
+        <a class="bar" href="{{ row.url }}">
+          <span>{{ row.label }}</span>
+          <i style="width:{{ (100 * row.count / max_type)|round }}%"></i>
+          <span class="n">{{ row.count }}</span>
+        </a>
+      {% else %}
+        {{ m.empty('Zatím žádná zařízení.'|t, 'laptop') }}
+      {% endfor %}
+    </div>
+    <h2>{{ 'Podle stavu'|t }}</h2>
+    <div class="btn-row">
+      {% for tile in tiles|filter(tile => tile.key not in ['pending', 'warranty', 'holders']) %}
+        <a href="{{ tile.url }}">{{ m.status(tile.key, tile.label) }} <b>{{ tile.count }}</b></a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2><a href="{{ t.warranty.url }}">{{ 'Končící záruka (90 dnů)'|t }}</a></h2>
+    {% if warranty %}
+      <div class="table-wrap plain">
+        <table>
+          <thead><tr><th>{{ 'Zařízení'|t }}</th><th>{{ 'Držitel'|t }}</th><th>{{ 'Záruka do'|t }}</th></tr></thead>
+          <tbody>
+            {% for a in warranty %}
+              <tr>
+                <td>{{ m.asset_cell(a) }}</td>
+                <td>{% if a.holder %}<a href="{{ a.holder.url }}">{{ a.holder.name }}</a>{% else %}—{% endif %}</td>
+                <td class="nowrap">{{ a.warranty_label ?: '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {{ m.empty('Žádná záruka v nejbližších 90 dnech nekončí.'|t, 'shield') }}
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2><a href="{{ path('hwdesk.audit') }}">{{ 'Poslední aktivita'|t }}</a></h2>
+    <ul class="timeline">
+      {% for e in activity %}
+        <li>
+          <div>{{ e.message ?: e.action }} {% if e.target_url %}<span class="muted">· <a href="{{ e.target_url }}">{{ e.target_label }}</a></span>{% endif %}</div>
+          <div class="when">{{ e.when }} · {{ e.who }}</div>
+        </li>
+      {% else %}
+        <li class="muted">{{ 'Zatím žádná aktivita.'|t }}</li>
+      {% endfor %}
+    </ul>
+    <div class="btn-row"><a class="btn ghost sm" href="{{ path('hwdesk.audit') }}">{{ 'Celý audit'|t }} →</a></div>
+  </div>
+</div>
+
+{% if by_location %}
+  <div class="card">
+    <h2>{{ 'Podle lokality'|t }}</h2>
+    {% set max_loc = by_location|first.count %}
+    <div class="bars">
+      {% for row in by_location %}
+        <a class="bar" href="{{ row.url }}">
+          <span>{{ row.label }}</span>
+          <i style="width:{{ (100 * row.count / max_loc)|round }}%"></i>
+          <span class="n">{{ row.count }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

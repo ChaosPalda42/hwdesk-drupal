@@ -76,7 +76,7 @@ function hwdesk_handover_status_options(): array {
 function hwdesk_theme(): array {
   return [
     'hwdesk_protocol' => [
-      'variables' => ['handover' => NULL, 'asset' => NULL, 'employee' => NULL, 'admin' => NULL, 'company' => '', 'confirmed_at' => '', 'terms' => NULL],
+      'variables' => ['handover' => NULL, 'asset' => NULL, 'employee' => NULL, 'admin' => NULL, 'company' => '', 'confirmed_at' => '', 'terms' => NULL, 'consented_at' => ''],
     ],
     'hwdesk_label_sheet' => [
       'variables' => ['labels' => []],
