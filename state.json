@@ -28,22 +28,22 @@
       "updated_at": "2026-09-17T15:52:11+00:00"
     },
     "C-006": {
-      "status": "green",
-      "attempts": 2,
-      "iterations": 14,
+      "status": "escalated",
+      "attempts": 3,
+      "iterations": 33,
       "commit": "0ad1530e",
-      "last_finding": "",
-      "packet": "",
-      "updated_at": "2026-09-17T15:52:14+00:00"
+      "last_finding": "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/ProtocolPdf.php: phpstan failed: e:phar:///Users/AI/projects/hwdesk-drupal/vendor/phpstan/phpstan/phpstan.phar/bin/phpstan:18}()\n#15 /Users/AI/projects/hwdesk-drupal/vendor/phpstan/phpstan/phpstan(8): require('phar:///Users/A...')\n#16 /Users/AI/projects",
+      "packet": "P-009",
+      "updated_at": "2026-10-29T21:55:14+00:00"
     },
     "C-009": {
-      "status": "green",
+      "status": "pending",
       "attempts": 2,
       "iterations": 24,
       "commit": "73cad9a3",
-      "last_finding": "",
+      "last_finding": "přerušeno zvenčí",
       "packet": "",
-      "updated_at": "2026-09-17T15:51:40+00:00"
+      "updated_at": "2026-10-29T22:43:00+00:00"
     },
     "C-010": {
       "status": "green",
@@ -55,13 +55,13 @@
       "updated_at": "2026-09-17T15:39:15+00:00"
     },
     "C-005": {
-      "status": "green",
+      "status": "pending",
       "attempts": 2,
       "iterations": 10,
       "commit": "34a22c3e",
-      "last_finding": "",
+      "last_finding": "contracts/C-005.json se od zelené změnilo; kontrakt běží znovu",
       "packet": "",
-      "updated_at": "2026-10-29T20:43:26+00:00"
+      "updated_at": "2026-10-29T21:42:56+00:00"
     },
     "C-007": {
       "status": "green",
@@ -91,13 +91,58 @@
       "updated_at": "2026-10-29T20:31:47+00:00"
     },
     "C-026": {
-      "status": "escalated",
+      "status": "pending",
       "attempts": 1,
       "iterations": 16,
       "commit": "",
-      "last_finding": "acceptance failed (1 failed); [IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `handovers` and never uses it -- wire it through or rename it to `_handovers`; [IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__co",
+      "last_finding": "přerušeno zvenčí",
       "packet": "P-008",
-      "updated_at": "2026-10-29T21:21:31+00:00"
+      "updated_at": "2026-10-29T22:43:00+00:00"
+    },
+    "C-027": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "přerušeno zvenčí",
+      "packet": "",
+      "updated_at": "2026-10-29T22:43:00+00:00"
+    },
+    "C-028": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
+    },
+    "C-029": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "přerušeno zvenčí",
+      "packet": "",
+      "updated_at": "2026-10-29T22:43:00+00:00"
+    },
+    "C-030": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
+    },
+    "C-031": {
+      "status": "pending",
+      "attempts": 0,
+      "iterations": 0,
+      "commit": "",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": ""
     }
   },
   "runs": [
@@ -220,7 +265,19 @@
       "red": 0,
       "escalated": 1,
       "note": "1 packet(s) waiting"
+    },
+    {
+      "started_at": "2026-10-29T21:42:57+00:00",
+      "finished_at": "2026-10-29T22:43:00+00:00",
+      "outcome": "interrupted",
+      "iterations": 0,
+      "green": 7,
+      "red": 0,
+      "escalated": 1,
+      "note": "přerušeno zvenčí (Ctrl-C nebo signál)"
     }
   ],
-  "open_packets": []
+  "open_packets": [
+    "P-009"
+  ]
 }

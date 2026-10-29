@@ -1,0 +1,8 @@
+{
+  "packet": "P-009",
+  "kind": "retry",
+  "diff": "",
+  "contract": {},
+  "note": "Prostredi, ale ne harness: phpstan padal na duplicitnim hwdesk_update_11003 v hwdesk.install, ktery jsem tam omylem pripsal pri zapojovani posty. Kod C-006 s tim nemel nic. Opraveno na 11005 (commit viz hwdesk.install), phpstan nad ProtocolPdf.php je cisty. Druhy nazor modelu, ze harness nepousti phpstan, neplati -- harness ho pousti, prave jeho stacktrace chybu prozradil.",
+  "created_at": "2026-10-29T22:12:58+00:00"
+}

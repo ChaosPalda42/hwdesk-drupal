@@ -12,16 +12,23 @@
   },
   "database": "Only through the entities and services above; no direct SQL.",
   "acceptance": "web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php",
-  "depends_on": [
-    "C-003"
-  ],
+  "dobehly": "",
   "forbidden": [
     "Any check of the visitor's account on the /hvd/{token} route: the whole point is that the employee does not have to log in.",
     "Storing the terms text after confirm() has run, or not storing it at all: the protocol prints what was agreed.",
     "Spending the link when the submit failed, or spending it on the logged-in route.",
     "Writing the routing file, the service file or the test."
   ],
+  "depends_on": [
+    "C-003"
+  ],
   "budget": {
     "iterations": 12
-  }
+  },
+  "metamorfni_funkce": "",
+  "neutralni_upravy": [],
+  "neutralni_predpony": [],
+  "differential": false,
+  "differential_compare": "exact",
+  "notes": ""
 }

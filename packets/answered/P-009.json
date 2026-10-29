@@ -1,0 +1,89 @@
+{
+  "id": "P-009",
+  "contract": "C-006",
+  "title": "Protocol PDF: render the hwdesk_protocol template with dompdf, store under private://hwdesk/protocols",
+  "created_at": "2026-10-29T21:54:59+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 7 iterations",
+    "retained on factory/failed/C-006-3"
+  ],
+  "findings": [
+    "[ANALYZE_ERROR] web/modules/hwdesk/src/Service/ProtocolPdf.php: phpstan failed: e:phar:///Users/AI/projects/hwdesk-drupal/vendor/phpstan/phpstan/phpstan.phar/bin/phpstan:18}()\n#15 /Users/AI/projects/hwdesk-drupal/vendor/phpstan/phpstan/phpstan(8): require('phar:///Users/A...')\n#16 /Users/AI/projects/hwdesk-drupal/vendor/bin/phpstan(119): include('/Users/AI/proje...')\n#17 {main}"
+  ],
+  "failing": "",
+  "diff": "diff --git a/web/modules/hwdesk/src/Service/ProtocolPdf.php b/web/modules/hwdesk/src/Service/ProtocolPdf.php\nindex 2c43ec5a..4a3fbe81 100644\n--- a/web/modules/hwdesk/src/Service/ProtocolPdf.php\n+++ b/web/modules/hwdesk/src/Service/ProtocolPdf.php\n@@ -4,20 +4,23 @@\n \n namespace Drupal\\hwdesk\\Service;\n \n-use Drupal\\Core\\Render\\RendererInterface;\n-use Drupal\\file\\FileRepositoryInterface;\n-use Drupal\\Core\\File\\FileSystemInterface;\n+use Drupal\\Component\\Utility\\Xss;\n use Drupal\\Core\\Config\\ConfigFactoryInterface;\n use Drupal\\Core\\Datetime\\DateFormatterInterface;\n+use Drupal\\Core\\File\\FileExists;\n+use Drupal\\Core\\File\\FileSystemInterface;\n+use Drupal\\Core\\Render\\RendererInterface;\n+use Drupal\\file\\FileInterface;\n+use Drupal\\file\\FileRepositoryInterface;\n use Drupal\\hwdesk\\Entity\\Handover;\n use Dompdf\\Dompdf;\n use Dompdf\\Options;\n-use Drupal\\file\\FileInterface;\n \n /**\n  * Service to generate and store protocol PDFs.\n  */\n final class ProtocolPdf {\n+\n   public function __construct(\n     private readonly RendererInterface $renderer,\n     private readonly FileRepositoryInterface $fileRepository,\n@@ -27,9 +30,9 @@ public function __construct(\n   ) {}\n \n   /**\n-   * Render the PDF bytes for a handover.\n+   * Build the render array and return the finished protocol HTML.\n    */\n-  public function render(Handover $handover): string {\n+  public function renderHtml(Handover $handover): string {\n     $asset = $handover->getAsset();\n     $employee = $handover->getUser();\n     $admin = $handover->getRequestedBy();\n@@ -44,6 +47,18 @@ public function render(Handover $handover): string {\n       'j. n. Y H:i'\n     );\n \n+    // The terms are frozen on the handover: the protocol must print the text\n+    // the employee actually agreed to, not whatever the setting says today.\n+    $termsValue = $handover->get('terms')->value;\n+    $terms = $termsValue === NULL || $termsValue === ''\n+      ? NULL\n+      : ['#markup' => Xss::filterAdmin((string) $termsValue)];\n+\n+    $consentedValue = $handover->get('consented')->value;\n+    $consentedAt = $consentedValue === NULL || $consentedValue === ''\n+      ? ''\n+      : $this->dateFormatter->format((int) $consentedValue, 'custom', 'j. n. Y H:i');\n+\n… (37 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 7 iterations",
+    "1: read_file web/modules/hwdesk/tests/src/Kernel/ProtocolPdfTest.php ok",
+    "1: list_files web/modules/hwdesk/src/Service ok",
+    "2: read_file web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "2: read_file web/modules/hwdesk/templates/hwdesk-protocol.html.twig ok",
+    "3: write_file web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "4: read_file web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "5: list_files . ok",
+    "6: read_file phpstan.neon ok",
+    "7: read_file composer.json ok",
+    "8: apply_patch web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "9: read_file STATE.md ok",
+    "9: read_file state.json ok",
+    "10: run_command git log --oneline -5 -- web/modules/hwdesk/src/Service/Proto ok",
+    "11: run_command git diff 0ad1530e -- web/modules/hwdesk/src/Service/Protocol ok",
+    "12: read_file web/modules/hwdesk/hwdesk.services.yml ok",
+    "12: read_file web/modules/hwdesk/hwdesk.module ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "2: run_command vendor/bin/phpstan analyze web/modules/hwdesk/src/Service/Pr FAILED {\"error\": \"executable must be a bare command name, not a path: 'vendor/bin/phpstan'\", \"recoverable\": true}",
+    "3: run_command php vendor/bin/phpstan analyze web/modules/hwdesk/src/Servic FAILED {\"error\": \"executable 'php' is not in the allowed development tool list (['ffmpeg', 'ffprobe', 'git', 'go', 'node', 'npm', 'pytest', 'python",
+    "4: run_command vendor/bin/phpstan analyze web/modules/hwdesk/src/Service/Pr FAILED {\"error\": \"executable must be a bare command name, not a path: 'vendor/bin/phpstan'\", \"recoverable\": true}",
+    "5: read_file web/modules/hwdesk/src/Service/ProtocolPdf.php ok",
+    "6: run_command pytest web/modules/hwdesk/tests/src/Kernel/ProtocolPdfTest.p ok",
+    "7: run_command python3 -m pytest web/modules/hwdesk/tests/src/Kernel/Protoc ok",
+    "final: no file change in six turns"
+  ],
+  "ask": "patch | contract | skip | question",
+  "attempt": 3,
+  "contract_snapshot": {
+    "id": "C-006",
+    "file": "web/modules/hwdesk/src/Service/ProtocolPdf.php",
+    "role": "coder",
+    "title": "Protocol PDF: render the hwdesk_protocol template with dompdf, store under private://hwdesk/protocols",
+    "interface": "final class ProtocolPdf. Constructor: __construct(\\Drupal\\Core\\Render\\RendererInterface $renderer, \\Drupal\\file\\FileRepositoryInterface $fileRepository, \\Drupal\\Core\\File\\FileSystemInterface $fileSystem, \\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, \\Drupal\\Core\\Datetime\\DateFormatterInterface $dateFormatter). Service 'hwdesk.protocol_pdf' (registered).\nrender(\\Drupal\\hwdesk\\Entity\\Handover $handover): string -- PDF bytes. Build the render array ['#theme' => 'hwdesk_protocol', '#handover' => $handover, '#asset' => $handover->getAsset(), '#employee' => $handover->getUser(), '#admin' => $handover->getRequestedBy(), '#company' => (string) config('hwdesk.settings')->get('company_name'), '#confirmed_at' => $dateFormatter->format($handover->getDecided() ?? time(), 'custom', 'j. n. Y H:i')], render it with $renderer->renderInIsolation($build) (cast to string), then Dompdf: $dompdf = new \\Dompdf\\Dompdf(new \\Dompdf\\Options(['isRemoteEnabled' => FALSE, 'defaultFont' => 'DejaVu Sans'])); $dompdf->loadHtml($html, 'UTF-8'); $dompdf->setPaper('A4'); $dompdf->render(); return (string) $dompdf->output(). Asset or user missing -> \\InvalidArgumentException.\nstore(Handover $handover): \\Drupal\\file\\FileInterface -- protocol number empty -> \\InvalidArgumentException. Destination 'private://hwdesk/protocols/<protocol_number>.pdf'; $fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS) first; $file = $fileRepository->writeData($this->render($handover), $destination, \\Drupal\\Core\\File\\FileExists::Replace); $file->setPermanent(); $file->setMimeType('application/pdf'); $file->save(); return $file. Storing twice for the same number must not create a second file entity for the same URI (FileExists::Replace reuses it).\nThe template hwdesk-protocol.html.twig and hook_theme already exist; do not create templates. File header: <?php + declare(strict_types=1); namespace Drupal\\hwdesk\\Service; final class; constructor property promotion with readonly; no \\Drupal:: static calls (everything is injected); no other new files.\nZměna z 29. 10. 2026 (předávák): do protokolu patří i text, se kterým zaměstnanec souhlasil.\nrenderHtml(\\Drupal\\hwdesk\\Entity\\Handover $handover): string -- veřejná metoda, která složí render array a vrátí hotové HTML: (string) $this->renderer->renderInIsolation($build). render() ji použije a HTML si už neskládá sám. Build je stejný jako dosud a navíc:\n  '#terms' => text, se kterým zaměstnanec souhlasil, vzatý z $handover->get('terms')->value (NE z konfigurace -- ta se od té doby mohla změnit). Prázdný nebo NULL text -> '#terms' => NULL. Jinak ['#markup' => \\Drupal\\Component\\Utility\\Xss::filterAdmin((string) $handover->get('terms')->value)], takže se z něj do PDF dostanou nadpisy, odstavce a odrážky, ale ne skript.\n  '#consented_at' => čas zaškrtnutí souhlasu: $handover->get('consented')->value je prázdné -> '', jinak $this->dateFormatter->format((int) $handover->get('consented')->value, 'custom', 'j. n. Y H:i').\nObě nové proměnné jsou už ohlášené v hwdesk_theme() ('terms', 'consented_at'); nic jiného do buildu nepřidávej a nic z něj neubírej.",
+    "uses": {
+      "Handover": "web/modules/hwdesk/src/Entity/Handover.php: getAsset/getUser/getRequestedBy/getKind/getDecided/getProtocolNumber",
+      "Asset": "web/modules/hwdesk/src/Entity/Asset.php"
+    },
+    "database": "entities through the injected services only",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/ProtocolPdfTest.php",
+    "dobehly": "",
+    "forbidden": [],
+    "depends_on": [],
+    "budget": {
+      "iterations": 12
+    },
+    "metamorfni_funkce": "",
+    "neutralni_upravy": [],
+    "neutralni_predpony": [],
+    "differential": false,
+    "differential_compare": "exact",
+    "notes": ""
+  },
+  "failing_tests": [],
+  "proposal": {
+    "kind": "retry",
+    "confidence": 0.5,
+    "reason": "Bez signálu o chybě v implementaci — ve dvou třetinách měřených paketů šlo o prostředí, fixturu nebo přerušení, ne o kód.",
+    "action": "Update the harness to allow 'php' and 'vendor/bin/phpstan' in the allowed development tool list, or provide a PHP test runner, then retry the contract."
+  },
+  "proposal_failed": false,
+  "second_opinion": {
+    "kind": "retry",
+    "confidence": 0.95,
+    "reason": "The failure is environmental: the worker is blocked by a harness restriction that prevents running PHPStan (not in allowed tools) and the acceptance test (PHP Kernel test) cannot be executed via the available Python/pytest runner.",
+    "action": "Update the harness to allow 'php' and 'vendor/bin/phpstan' in the allowed development tool list, or provide a PHP test runner, then retry the contract."
+  },
+  "second_opinion_failed": false,
+  "second_opinion_agreed": true
+}
