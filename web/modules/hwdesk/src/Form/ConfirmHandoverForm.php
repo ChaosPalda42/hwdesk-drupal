@@ -60,11 +60,11 @@ final class ConfirmHandoverForm extends FormBase {
       // logged-in account.
       $claims = $this->tokens->verify($token);
       if ($claims === NULL) {
-        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+        throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');
       }
       $handover = Handover::load($claims['handover']);
       if (!$handover instanceof Handover) {
-        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+        throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');
       }
     }
     elseif ($hwdesk_handover !== NULL) {
@@ -72,15 +72,15 @@ final class ConfirmHandoverForm extends FormBase {
       // handover must belong to them and still be open. Nothing is consumed,
       // so the link in the e-mail stays valid.
       if ((int) $hwdesk_handover->getUser()?->id() !== (int) $this->currentUser()->id()) {
-        throw new AccessDeniedHttpException('Tato vyzva patri jinemu zamestnanci.');
+        throw new AccessDeniedHttpException('Tato výzva patří jinému zaměstnanci.');
       }
       if ($hwdesk_handover->getStatus() !== HandoverStatus::Pending || $hwdesk_handover->getExpires() < $this->time->getRequestTime()) {
-        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+        throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');
       }
       $handover = $hwdesk_handover;
     }
     else {
-      throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+      throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');
     }
 
     $config = $this->configFactory->get('hwdesk.settings');
@@ -121,17 +121,17 @@ final class ConfirmHandoverForm extends FormBase {
 
     $form['reason'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Duvod odmitnuti (jen pokud odmitate)'),
+      '#title' => $this->t('Důvod odmítnutí (jen pokud odmítáte)'),
       '#maxlength' => 500,
     ];
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['confirm'] = [
       '#type' => 'submit',
-      '#value' => $handover->getKind() === HandoverKind::ReturnItem ? $this->t('Potvrzuji vraceni') : $this->t('Potvrzuji prevzeti'),
+      '#value' => $handover->getKind() === HandoverKind::ReturnItem ? $this->t('Potvrzuji vrácení') : $this->t('Potvrzuji převzetí'),
       '#button_type' => 'primary',
       '#name' => 'confirm',
     ];
-    $form['actions']['reject'] = ['#type' => 'submit', '#value' => $this->t('Odmitnout'), '#name' => 'reject'];
+    $form['actions']['reject'] = ['#type' => 'submit', '#value' => $this->t('Odmítnout'), '#name' => 'reject'];
     return $form;
   }
 
@@ -142,12 +142,12 @@ final class ConfirmHandoverForm extends FormBase {
       // The checkbox value callback turns both a missing input and NULL into
       // integer 0, so empty() is the only correct test for "not ticked".
       if ((string) $form_state->get('terms') !== '' && empty($form_state->getValue('consent'))) {
-        $form_state->setErrorByName('consent', $this->t('Bez souhlasu s podminkami prevzeti nelze pokracovat.'));
+        $form_state->setErrorByName('consent', $this->t('Bez souhlasu s podmínkami převzetí nelze pokračovat.'));
       }
     }
     elseif ($trigger === 'reject') {
       if (trim((string) $form_state->getValue('reason')) === '') {
-        $form_state->setErrorByName('reason', $this->t('Pri odmitnuti uvedte duvod.'));
+        $form_state->setErrorByName('reason', $this->t('Při odmítnutí uveďte důvod.'));
       }
     }
   }
@@ -168,7 +168,7 @@ final class ConfirmHandoverForm extends FormBase {
     try {
       if ($trigger === 'reject') {
         $this->handovers->reject($handover, $actor, (string) $form_state->getValue('reason'));
-        $this->messenger()->addStatus($this->t('Odmitnuto, zadavatel dostal zpravu.'));
+        $this->messenger()->addStatus($this->t('Odmítnuto, zadavatel dostal zprávu.'));
       }
       else {
         // Freeze the agreement first: the PDF protocol is generated inside
@@ -176,7 +176,7 @@ final class ConfirmHandoverForm extends FormBase {
         $terms = (string) $form_state->get('terms');
         $handover->set('terms', $terms)->set('consented', $this->time->getRequestTime())->save();
         $confirmed = $this->handovers->confirm($handover, $actor);
-        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vam prisel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]));
+        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vám přišel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]));
       }
     }
     catch (\DomainException | \InvalidArgumentException $e) {
