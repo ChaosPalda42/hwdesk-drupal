@@ -130,4 +130,10 @@ final class HwdeskMailTest extends KernelTestBase {
     return $radky;
   }
 
+  public function testStitekPluginuJeCeskySDiakritikou(): void {
+    $definice = $this->container->get('plugin.manager.mail')->getDefinition('hwdesk_mail');
+
+    $this->assertSame('HW Desk (SMTP z nastavení modulu)', (string) $definice['label']);
+  }
+
 }

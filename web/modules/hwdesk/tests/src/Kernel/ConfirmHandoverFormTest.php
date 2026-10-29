@@ -262,4 +262,42 @@ final class ConfirmHandoverFormTest extends KernelTestBase {
     $this->assertSame(HandoverStatus::Confirmed, $this->reload($handover)->getStatus());
   }
 
+  public function testVsechnoCoClovekUvidiJeCeskySDiakritikou(): void {
+    [, $token] = $this->vyzva();
+    $form = $this->build($token);
+
+    $this->assertSame('Potvrzuji převzetí', (string) $form['actions']['confirm']['#value']);
+    $this->assertSame('Odmítnout', (string) $form['actions']['reject']['#value']);
+    $this->assertSame('Důvod odmítnutí (jen pokud odmítáte)', (string) $form['reason']['#title']);
+
+    [, $token_vraceni] = $this->vyzva(HandoverKind::ReturnItem);
+    $vraceni = $this->build($token_vraceni);
+    $this->assertSame('Potvrzuji vrácení', (string) $vraceni['actions']['confirm']['#value']);
+  }
+
+  public function testHlaskyPriChybeJsouCeskySDiakritikou(): void {
+    [, $token] = $this->vyzva();
+    $chyby = array_values(array_map('strval', $this->submit($token, 'confirm')->getErrors()));
+    $this->assertSame(['Bez souhlasu s podmínkami převzetí nelze pokračovat.'], $chyby);
+
+    [, $druhy] = $this->vyzva();
+    $chyby = array_values(array_map('strval', $this->submit($druhy, 'reject')->getErrors()));
+    $this->assertSame(['Při odmítnutí uveďte důvod.'], $chyby);
+  }
+
+  public function testOznameniPoRozhodnutiJsouCeskySDiakritikou(): void {
+    [, $token] = $this->vyzva();
+    $this->submit($token, 'reject', ['reason' => 'Mám jiný kus.']);
+    $zpravy = array_map('strval', $this->container->get('messenger')->messagesByType('status'));
+    $this->assertSame(['Odmítnuto, zadavatel dostal zprávu.'], $zpravy);
+    $this->container->get('messenger')->deleteAll();
+
+    [, $druhy] = $this->vyzva();
+    $this->submit($druhy, 'confirm', ['consent' => 1]);
+    $zpravy = array_map('strval', $this->container->get('messenger')->messagesByType('status'));
+    $this->assertCount(1, $zpravy);
+    $this->assertStringContainsString('vám přišel e-mailem', $zpravy[0]);
+    $this->assertStringStartsWith('Potvrzeno. Protokol ', $zpravy[0]);
+  }
+
 }
