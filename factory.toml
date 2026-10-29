@@ -5,3 +5,9 @@
 test_command = ['php', 'vendor/bin/phpunit', '-c', 'phpunit.xml']
 iterations_per_contract = 12
 max_run_iterations = 400
+
+# Šablony se píšou rukou, protože brána nad vzhledem nerozhodne — o jejich
+# přeložitelnosti ale rozhodne, a tenhle test to dělá. Kontrakt na něj proto
+# není a ve výpisu sirotků má stát jako „schválně rukou", ne jako nevysvětlený.
+[check]
+rukou = ["web/modules/hwdesk/tests/src/Unit/TemplatesParseTest.php"]
