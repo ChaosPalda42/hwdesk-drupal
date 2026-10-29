@@ -1,0 +1,32 @@
+{
+  "id": "C-030",
+  "file": "web/modules/hwdesk/src/Controller/AssetController.php",
+  "role": "coder",
+  "title": "Device detail: overview, history, protocols, files",
+  "interface": "namespace Drupal\\hwdesk\\Controller; final class AssetController extends \\Drupal\\Core\\Controller\\ControllerBase (declare(strict_types=1)).\nThe page behind a click on a device. It only collects data and hands it to the template hwdesk-asset.html.twig; it formats nothing itself, because every row has to look the same here as on the list pages. That shaping is the Presenter's job.\nConstructor: __construct(private readonly \\Drupal\\hwdesk\\Service\\Presenter $presenter, private readonly \\Drupal\\hwdesk\\Service\\HandoverService $handovers). create(ContainerInterface $container): static passes 'hwdesk.presenter' and 'hwdesk.handover' in that order.\ndetail(\\Drupal\\hwdesk\\Entity\\Asset $hwdesk_asset): array -- src/Routing/RouteSubscriber.php points the entity's own canonical route entity.hwdesk_asset.canonical (path /hwdesk/asset/{hwdesk_asset}) at this method, so the parameter name must not be renamed. It returns a render array with exactly these keys:\n  '#theme' => 'hwdesk_asset'.\n  '#asset' => $this->presenter->asset($hwdesk_asset).\n  '#handovers' => every handover and return of this device, newest first: query the 'hwdesk_handover' storage with accessCheck(FALSE), condition('asset', $hwdesk_asset->id()), sort('created', 'DESC'), then one $this->presenter->handover($h) per row. No range limit: the protocol history of one device is short and complete.\n  '#history' => what happened to the device, taken from the audit log and not from entity revisions, because the audit also knows about things that happened outside a form (a confirmation, a return, a bulk edit): query the 'hwdesk_audit' storage with accessCheck(FALSE), condition('target_type', 'hwdesk_asset'), condition('target_id', (int) $hwdesk_asset->id()), sort('created', 'DESC'), range(0, 100), then one $this->presenter->audit($entry) per row.\n  '#files' => $this->presenter->files('attachments', $hwdesk_asset).\n  '#status_form' => $this->formBuilder()->getForm(\\Drupal\\hwdesk\\Form\\AssetStatusForm::class, $hwdesk_asset) -- the direct status switch, so a device stuck in 'waiting to be handed over' can be put back without going through the workflow.\n  '#handover_form' => $this->formBuilder()->getForm(\\Drupal\\hwdesk\\Form\\RequestHandoverForm::class, $hwdesk_asset).\n  '#open_handover' => the one handover that is still waiting, as $this->presenter->handover($open), or NULL: $open = $this->handovers->openFor($hwdesk_asset); use it only when it is a Handover instance. The template draws the 'Cancel the request' action from the row's own cancel_url, so nothing extra is needed here.\n  '#links' => a map of strings, each built with Url and ->toString(): 'edit' => $hwdesk_asset->toUrl('edit-form'), 'label' => Url::fromRoute('hwdesk.labels', [], ['query' => ['ids' => $hwdesk_asset->id()]]), 'assets' => Url::fromRoute('hwdesk.assets'), 'type' => Url::fromRoute('hwdesk.assets', [], ['query' => ['type' => $hwdesk_asset->get('type')->value]]) -- the breadcrumb leads back to the list filtered by the same type.\n  '#cache' => ['tags' => array_merge($hwdesk_asset->getCacheTags(), ['hwdesk_handover_list', 'hwdesk_audit_list']), 'contexts' => ['user.permissions']].\nTwo small private helpers for the two queries are welcome; keep them private and typed.\nNo \\Drupal:: static calls (use $this->entityTypeManager(), $this->formBuilder()), no new routes, no HTML and no date formatting in this file.",
+  "uses": {
+    "Presenter": "web/modules/hwdesk/src/Service/Presenter.php: asset(Asset $a): array, handover(Handover $h): array (the row already contains protocol_url and cancel_url), audit(AuditEntry $e): array, files(string $field, EntityInterface $entity): array",
+    "HandoverService": "web/modules/hwdesk/src/Service/HandoverService.php: openFor(Asset $asset): ?Handover",
+    "AssetStatusForm": "web/modules/hwdesk/src/Form/AssetStatusForm.php",
+    "RequestHandoverForm": "web/modules/hwdesk/src/Form/RequestHandoverForm.php",
+    "The template that consumes this": "web/modules/hwdesk/templates/hwdesk-asset.html.twig",
+    "A controller in the same house style": "web/modules/hwdesk/src/Controller/AssetsController.php",
+    "The route subscriber that points the canonical route here": "web/modules/hwdesk/src/Routing/RouteSubscriber.php"
+  },
+  "database": "Only entity queries through the storages above; no direct SQL.",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/AssetControllerTest.php",
+  "depends_on": [
+    "C-005"
+  ],
+  "forbidden": [
+    "Formatting anything in the controller (dates, prices, status labels): the rows must come from the Presenter unchanged, otherwise the detail page shows different text than the list.",
+    "'#type' => 'table' or any other core render element in place of the template.",
+    "Static \\Drupal:: calls or a static loadMultiple() on an entity class.",
+    "Issuing or verifying a handover token here: the detail page is for the administrator, the token belongs to the e-mail link.",
+    "Writing the routing file, the template or the test."
+  ],
+  "budget": {
+    "iterations": 8
+  },
+  "dobehly": "Soubor byl adoptován: zadání popisuje, co v něm už je, a akceptační test to drží. Psát ho znovu by byl jen risk."
+}

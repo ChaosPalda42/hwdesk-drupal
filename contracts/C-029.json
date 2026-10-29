@@ -1,0 +1,27 @@
+{
+  "id": "C-029",
+  "file": "web/modules/hwdesk/src/Controller/MyAssetsController.php",
+  "role": "coder",
+  "title": "The employee's own page: what they hold, what to confirm, their protocols",
+  "interface": "namespace Drupal\\hwdesk\\Controller; final class MyAssetsController extends \\Drupal\\Core\\Controller\\ControllerBase (declare(strict_types=1)). Rewrite of the existing file; keep the class and the method name page().\nThree things change. (1) The page renders through the module's own template, so it looks like the rest of HW Desk instead of a bare Drupal table. (2) The employee sees their own handover protocols, which the page did not show at all. (3) The link that leads to the confirmation no longer carries a token: the mailed link is single use now, so asking for one on every page view would burn it. A logged-in employee goes to the route hwdesk.handover.confirm_own instead.\nConstructor: __construct(private readonly \\Drupal\\hwdesk\\Service\\Presenter $presenter). create(ContainerInterface $container): static returns new static($container->get('hwdesk.presenter')). The HandoverService and the date formatter are no longer needed -- do not inject them, and drop their use statements.\nEvery row in the build comes from the Presenter, exactly like AssetController and EmployeesController do it; this class formats nothing itself, has no date format string in it and reads no entity field directly except through the typed getters named below.\npage(): array -- $uid = (int) $this->currentUser()->id(). Two storages from $this->entityTypeManager(): 'hwdesk_handover' and 'hwdesk_asset'. Every query has ->accessCheck(FALSE) and is narrowed to this one employee, because the page is their own.\n  $pending: handovers with condition('user', $uid), condition('status', \\Drupal\\hwdesk\\HandoverStatus::Pending->value), sort('created', 'DESC'). For each loaded \\Drupal\\hwdesk\\Entity\\Handover take $row = $this->presenter->handover($handover) and add one key of your own: $row['confirm_url'] = \\Drupal\\Core\\Url::fromRoute('hwdesk.handover.confirm_own', ['hwdesk_handover' => $handover->id()])->toString(). Append $row to the list.\n  $assets: assets with condition('holder', $uid), condition('status', [\\Drupal\\hwdesk\\AssetStatus::Assigned->value, \\Drupal\\hwdesk\\AssetStatus::PendingReturn->value, \\Drupal\\hwdesk\\AssetStatus::PendingHandover->value], 'IN'), sort('tag'). One row per asset: $this->presenter->asset($asset), nothing added.\n  $handovers: the decided ones -- condition('user', $uid), condition('status', [\\Drupal\\hwdesk\\HandoverStatus::Confirmed->value, \\Drupal\\hwdesk\\HandoverStatus::Rejected->value], 'IN'), sort('decided', 'DESC'), range(0, 50). One row per handover: $this->presenter->handover($handover), nothing added. The protocol file's URL is already in that row under 'protocol_url'; the module's hook_file_download lets the employee download their own protocol, so no permission work belongs here.\n  Return ['#theme' => 'hwdesk_my', '#account' => $this->currentUser()->getDisplayName(), '#assets' => $assets, '#pending' => $pending, '#handovers' => $handovers, '#attached' => ['library' => ['hwdesk/ui']], '#cache' => ['contexts' => ['user'], 'tags' => ['hwdesk_asset_list', 'hwdesk_handover_list']]]. The theme hook 'hwdesk_my' is declared in hwdesk.module with exactly the variables assets, pending, handovers and account; pass those four and no others.\nGuard the loaded entities the way AssetController does ($x instanceof Asset / instanceof Handover) and skip anything else, so a stale reference cannot bring the page down.\nNo \\Drupal:: static calls, no Entity::load()/loadMultiple() statics, no SQL, no '#type' => 'table'.",
+  "uses": {
+    "Presenter": "web/modules/hwdesk/src/Service/Presenter.php: asset(Asset $asset): array, handover(Handover $handover): array -- the row shapes the templates expect",
+    "A controller that already does it this way": "web/modules/hwdesk/src/Controller/AssetController.php",
+    "The theme hook and the download rule": "web/modules/hwdesk/hwdesk.module: hwdesk_theme() declares hwdesk_my, hwdesk_file_download() guards the private files",
+    "HandoverStatus": "web/modules/hwdesk/src/HandoverStatus.php",
+    "AssetStatus": "web/modules/hwdesk/src/AssetStatus.php"
+  },
+  "database": "The hwdesk_asset and hwdesk_handover entity storages through $this->entityTypeManager(); no direct SQL.",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/MyAssetsControllerTest.php",
+  "depends_on": [],
+  "forbidden": [
+    "Calling HandoverService::confirmUrl() or issuing a token anywhere on this page: that would spend the link from the e-mail on every page view.",
+    "Formatting dates, statuses or asset cells in the controller instead of asking the Presenter.",
+    "Showing anything that belongs to another employee.",
+    "Core '#type' => 'table' render elements: the page goes through the hwdesk_my template.",
+    "Writing the module file, the template, the Presenter or the test."
+  ],
+  "budget": {
+    "iterations": 12
+  }
+}

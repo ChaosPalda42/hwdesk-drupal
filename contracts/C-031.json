@@ -1,0 +1,27 @@
+{
+  "id": "C-031",
+  "file": "web/modules/hwdesk/src/Controller/DashboardController.php",
+  "role": "coder",
+  "title": "The overview page: tiles, three short lists, breakdown by type and place",
+  "interface": "namespace Drupal\\hwdesk\\Controller; final class DashboardController extends \\Drupal\\Core\\Controller\\ControllerBase (declare(strict_types=1)). Rewrite of the existing file; keep the class and the method name page().\nWhy it changes: the overview showed only tiles, so the person who opens HW Desk in the morning cannot see WHAT is waiting -- they have to click through to a list. The original design has three short lists next to the tiles: what is waiting for the employees, whose warranty runs out next, and what happened last. The numbers themselves stay exactly as they are.\nConstructor: __construct(private readonly \\Drupal\\hwdesk\\Service\\DashboardStats $stats, private readonly \\Drupal\\hwdesk\\Service\\Presenter $presenter). create(ContainerInterface $container): static returns new static($container->get('hwdesk.dashboard_stats'), $container->get('hwdesk.presenter')).\npage(): array returns, with the keys in this order:\n  '#theme' => 'hwdesk_dashboard'.\n  '#totals' => $this->stats->totals().\n  '#tiles' => the same tiles as before, but every 'url' is a string (->toString()), not a Url object: one row per status from $this->stats->byStatus() as ['label' => \\Drupal\\hwdesk\\AssetStatus::from($status)->label(), 'count' => $count, 'url' => the asset list filtered by that status, 'key' => $status], then ['label' => $this->t('Čeká na potvrzení'), 'count' => $this->stats->pendingHandovers(), 'url' => route hwdesk.handovers with query status=pending, 'key' => 'pending'], then ['label' => $this->t('Záruka končí do 90 dnů'), 'count' => $this->stats->warrantyExpiring(), 'url' => the asset list with query warranty_until=['min' => date('Y-m-d'), 'max' => date('Y-m-d', strtotime('+90 days'))], 'key' => 'warranty'], then ['label' => $this->t('Držitelů'), 'count' => $this->stats->holders(), 'url' => the asset list with query status=assigned, 'key' => 'holders']. The asset list is Url::fromRoute('hwdesk.assets', [], ['query' => $query]).\n  '#pending' => one row per id from $this->stats->pendingHandoverIds(10), in that order: $this->presenter->handover($handover) for the loaded \\Drupal\\hwdesk\\Entity\\Handover. An id that no longer loads is skipped.\n  '#warranty' => one row per id from $this->stats->warrantyExpiringIds(90, 10), in that order: $this->presenter->asset($asset). An id that no longer loads is skipped.\n  '#activity' => one row per id from $this->stats->recentAuditIds(10), in that order: $this->presenter->audit($entry). An id that no longer loads is skipped.\n  '#by_type' => as before: ['label' => the name from the asset_types setting or the bare key when the setting does not know it, 'count' => $count, 'url' => the asset list with query type=<key>, as a string].\n  '#by_location' => as before: ['label' => the location's name, or $this->t('Bez lokality') for the key 0, or the bare id when the location no longer exists, 'count' => $count, 'url' => for 0 the plain asset list, otherwise the asset list with query location=<id>, as a string]. Load the locations through $this->entityTypeManager()->getStorage('hwdesk_location')->loadMultiple(...) -- the static Location::loadMultiple() that is in the file today must go.\n  '#attached' => ['library' => ['hwdesk/ui']].\n  '#cache' => ['tags' => ['hwdesk_asset_list', 'hwdesk_handover_list', 'hwdesk_audit_list'], 'contexts' => ['user.permissions']].\nEvery list row comes from the Presenter, exactly like AssetController does it; this class formats no dates, statuses or asset cells itself.\nNo \\Drupal:: static calls, no static Entity::load()/loadMultiple(), no SQL, no counting in a loop -- the numbers are DashboardStats's job.",
+  "uses": {
+    "DashboardStats": "web/modules/hwdesk/src/Service/DashboardStats.php: byStatus(): array, byType(): array, byLocation(): array, pendingHandovers(): int, warrantyExpiring(int $days = 90): int, holders(): int, totals(): array, pendingHandoverIds(int $limit = 10): array, warrantyExpiringIds(int $days = 90, int $limit = 10): array, recentAuditIds(int $limit = 10): array",
+    "Presenter": "web/modules/hwdesk/src/Service/Presenter.php: asset(Asset $asset): array, handover(Handover $handover): array, audit(AuditEntry $entry): array",
+    "A controller that already does it this way": "web/modules/hwdesk/src/Controller/AssetController.php",
+    "AssetStatus": "web/modules/hwdesk/src/AssetStatus.php"
+  },
+  "database": "Only through DashboardStats and the entity storages from $this->entityTypeManager(); no direct SQL.",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/DashboardControllerTest.php",
+  "depends_on": [
+    "C-009"
+  ],
+  "forbidden": [
+    "Counting anything in the controller: every number comes from DashboardStats.",
+    "Static Entity::load() / Entity::loadMultiple() or \\Drupal:: calls.",
+    "Leaving Url objects in the build: the template prints strings.",
+    "Writing DashboardStats, the Presenter, the template or the test."
+  ],
+  "budget": {
+    "iterations": 12
+  }
+}

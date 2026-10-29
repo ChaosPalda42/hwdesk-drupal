@@ -1,0 +1,22 @@
+{
+  "id": "C-027",
+  "file": "web/modules/hwdesk/src/Service/MailTransport.php",
+  "role": "coder",
+  "title": "Sender address and the way to the SMTP server",
+  "interface": "namespace Drupal\\hwdesk\\Service; final class MailTransport (declare(strict_types=1)). New file.\nEverything the mail plugin needs to know before it sends: which address the mail comes from, which server to hand it to, and how to describe a failure so that a human can act on it without the password ending up in the log.\nConstructor: __construct(\\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, ?\\Drupal\\key\\KeyRepositoryInterface $keyRepository = NULL). Registered in hwdesk.services.yml as 'hwdesk.mail_transport' with arguments ['@config.factory', '@?key.repository'] (already written; do not touch). The key repository is optional on purpose: the module declares key:key as a dependency, so a real site always has it, but a kernel test that does not enable the Key module must still be able to build the container.\nRead config 'hwdesk.settings' on every call (the tests change it at runtime): mail_from, mail_from_name, mail_reply_to, smtp_enabled (bool), smtp_host, smtp_port (int), smtp_security ('none'|'tls'|'ssl'), smtp_user, smtp_key (the id of a Key entity, never the password itself).\nThe password is read only through $this->keyRepository->getKey($id)?->getKeyValue(); a missing key or an empty id means no password, which is not an error. When the repository itself is NULL (the Key module is switched off) and trim(smtp_key) is not '', there is likewise no password, and keyMissing(): bool must return TRUE so that the caller can log a reason instead of sending unauthenticated mail into a void. keyMissing() is FALSE in every other case, including an empty smtp_key.\nPublic methods:\n- isSmtp(): bool -- TRUE only when smtp_enabled is truthy AND trim(smtp_host) is not ''. A switched-on SMTP without a server address is not SMTP; otherwise the mail would quietly disappear.\n- dsn(): string -- the Symfony mailer DSN. Not SMTP -> exactly 'sendmail://default'. SMTP -> scheme 'smtps://' when smtp_security is 'ssl', otherwise 'smtp://'; then, when trim(smtp_user) is not '', rawurlencode(user), and when a password was found ':' . rawurlencode(password), then '@'; then the trimmed host, ':' and the port; finally '?auto_tls=false' when smtp_security is 'none' (so an administrator who asked for an unencrypted connection gets one instead of a silent STARTTLS). Both scheme names and the auto_tls option are what symfony/mailer understands (vendor/symfony/mailer/Transport/Smtp/EsmtpTransportFactory.php). Never build the DSN with string interpolation of an unencoded user name: an at sign in 'asistentka@firma.cz' would break the address.\n- from(): array -- ['address' => mail_from, 'name' => mail_from_name] when trim(mail_from) is not '', otherwise an empty array [] (then the site default stands). The name may be ''.\n- replyTo(): string -- trim(mail_reply_to), possibly ''.\n- describeFailure(\\Throwable $e, string $where): string -- one line for the log that says the reason, the place in the application and the place in the code: the exception's getMessage(), the $where the caller passed (for example 'odeslani protokolu'), and basename($e->getFile()) . ':' . $e->getLine(). Before returning, remove the password: when it is not '', replace every occurrence of it AND of rawurlencode(password) in the whole line with '***'. Symfony puts the complete DSN into its connection errors, so without this the password lands in the log the moment the server is unreachable.\nNo logger (the caller logs), no \\Drupal:: static calls, no echo or print, nothing else public.",
+  "uses": {
+    "Mail settings form (the exact config keys)": "web/modules/hwdesk/src/Form/MailSettingsForm.php: the form that writes the keys named above"
+  },
+  "database": "not applicable (config and the Key module only)",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/MailTransportTest.php",
+  "depends_on": [],
+  "forbidden": [
+    "Reading the password from config, from settings.php or from an environment variable: it lives in a Key entity, nowhere else.",
+    "Returning a DSN with an unencoded user name or password.",
+    "Letting the password, or its url-encoded form, stay in the text describeFailure() returns.",
+    "Writing hwdesk.services.yml, the form or the test."
+  ],
+  "budget": {
+    "iterations": 12
+  }
+}

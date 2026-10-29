@@ -66,4 +66,73 @@ final class ProtocolPdfTest extends KernelTestBase {
     $this->pdf()->store($handover);
   }
 
+  public function testTheTermsTheEmployeeAgreedToArePrintedInTheProtocol(): void {
+    $employee = $this->makeUser('jana.novakova@firma.cz', 'Jana Nováková');
+    $handover = $this->makeHandover($this->makeAsset('NB-0004'), $employee, [
+      'status' => HandoverStatus::Confirmed->value,
+      'decided' => 1761000000,
+      'consented' => 1760999940,
+      'protocol_number' => 'HP-2026-0004',
+      'terms' => '<h3>Podmínky převzetí</h3><p>Zařízení zůstává majetkem firmy.</p><script>alert(1)</script>',
+    ]);
+
+    $html = $this->pdf()->renderHtml($handover);
+
+    $this->assertStringContainsString('<div class="protokol-podminky">', $html, 'Podmínky mají v protokolu svůj rámeček.');
+    $this->assertStringContainsString('<h3>Podmínky převzetí</h3>', $html, 'Text, se kterým zaměstnanec souhlasil, patří do protokolu.');
+    $this->assertStringContainsString('Zařízení zůstává majetkem firmy.', $html);
+    $this->assertStringNotContainsString('<script', $html, 'Do PDF se z textu nesmí dostat skript.');
+    $souhlas = $this->container->get('date.formatter')->format(1760999940, 'custom', 'j. n. Y H:i');
+    $this->assertStringContainsString($souhlas, $html, 'V protokolu je i čas, kdy souhlas padl.');
+    $this->assertStringStartsWith('%PDF-', $this->pdf()->render($handover));
+  }
+
+  public function testWhatIsPrintedIsTheTextFromTheHandoverNotTheCurrentSetting(): void {
+    $employee = $this->makeUser('jana.novakova@firma.cz', 'Jana Nováková');
+    $handover = $this->makeHandover($this->makeAsset('NB-0005'), $employee, [
+      'status' => HandoverStatus::Confirmed->value,
+      'decided' => 1761000000,
+      'consented' => 1761000000,
+      'protocol_number' => 'HP-2026-0005',
+      'terms' => '<p>Verze, se kterou zaměstnanec souhlasil.</p>',
+    ]);
+    $this->config('hwdesk.settings')->set('handover_terms', '<p>Nové podmínky z dneška.</p>')->save();
+
+    $html = $this->pdf()->renderHtml($handover);
+
+    $this->assertStringContainsString('Verze, se kterou zaměstnanec souhlasil.', $html);
+    $this->assertStringNotContainsString('Nové podmínky z dneška.', $html);
+  }
+
+  public function testWithoutAnyTermsTheProtocolHasNoEmptySection(): void {
+    $employee = $this->makeUser('jana.novakova@firma.cz', 'Jana Nováková');
+    $handover = $this->makeHandover($this->makeAsset('NB-0006'), $employee, [
+      'status' => HandoverStatus::Confirmed->value,
+      'decided' => 1761000000,
+      'protocol_number' => 'HP-2026-0006',
+    ]);
+
+    $html = $this->pdf()->renderHtml($handover);
+
+    $this->assertStringNotContainsString('<div class="protokol-podminky">', $html, 'Bez textu podmínek se prázdná sekce nekreslí.');
+    $this->assertStringStartsWith('%PDF-', $this->pdf()->render($handover));
+  }
+
+  public function testTheProtocolDoesNotClaimTheEmployeeLoggedIn(): void {
+    $employee = $this->makeUser('jana.novakova@firma.cz', 'Jana Nováková');
+    $handover = $this->makeHandover($this->makeAsset('NB-0007'), $employee, [
+      'status' => HandoverStatus::Confirmed->value,
+      'decided' => 1761000000,
+      'consented' => 1761000000,
+      'protocol_number' => 'HP-2026-0007',
+      'terms' => '<p>Podmínky.</p>',
+    ]);
+
+    $html = $this->pdf()->renderHtml($handover);
+
+    // Potvrzení chodí jednorázovým odkazem z e-mailu; nikdo se kvůli němu nepřihlašuje.
+    $this->assertStringNotContainsString('přihlášeným účtem', $html);
+    $this->assertStringContainsString('odkazem', $html);
+  }
+
 }

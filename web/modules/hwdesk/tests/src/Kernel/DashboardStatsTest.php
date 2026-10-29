@@ -70,4 +70,71 @@ final class DashboardStatsTest extends KernelTestBase {
     $this->assertSame(2, $this->stats()->holders());
   }
 
+  public function testTotalsCountEverythingAndValueLeavesOutWhatIsOutOfService(): void {
+    $this->makeAsset('NB-0001', ['price' => '30000.00']);
+    $this->makeAsset('NB-0002', ['price' => '20000.00', 'status' => AssetStatus::Assigned->value]);
+    $this->makeAsset('NB-0003', ['price' => '10000.00', 'status' => AssetStatus::Retired->value]);
+    $this->makeAsset('NB-0004', ['price' => '5000.00', 'status' => AssetStatus::Lost->value]);
+    $this->makeAsset('NB-0005');
+
+    $this->assertSame(['assets' => 5, 'value' => 50000.0], $this->stats()->totals());
+  }
+
+  public function testTotalsOnAnEmptyDatabase(): void {
+    $this->assertSame(['assets' => 0, 'value' => 0.0], $this->stats()->totals());
+  }
+
+  public function testWhatIsWaitingForConfirmationComesBackNewestFirst(): void {
+    $jana = $this->makeUser('jana@firma.cz');
+    $asset = $this->makeAsset('NB-0001');
+    $stary = $this->makeHandover($asset, $jana, ['created' => 1760000100]);
+    $novy = $this->makeHandover($asset, $jana, ['created' => 1760000300]);
+    $prostredni = $this->makeHandover($asset, $jana, ['created' => 1760000200]);
+    $this->makeHandover($asset, $jana, ['created' => 1760000400, 'status' => HandoverStatus::Confirmed->value]);
+
+    $this->assertSame(
+      [(int) $novy->id(), (int) $prostredni->id(), (int) $stary->id()],
+      $this->stats()->pendingHandoverIds()
+    );
+    $this->assertSame([(int) $novy->id()], $this->stats()->pendingHandoverIds(1));
+    $this->assertSame([], $this->stats()->pendingHandoverIds(0));
+  }
+
+  public function testWarrantyListStartsWithWhatExpiresFirst(): void {
+    $za10 = $this->makeAsset('NB-0010', ['warranty_until' => date('Y-m-d', strtotime('+10 days'))]);
+    $za80 = $this->makeAsset('NB-0080', ['warranty_until' => date('Y-m-d', strtotime('+80 days'))]);
+    $za40 = $this->makeAsset('NB-0040', ['warranty_until' => date('Y-m-d', strtotime('+40 days'))]);
+    // Mimo okno nebo mimo provoz: do seznamu nepatří.
+    $this->makeAsset('NB-0200', ['warranty_until' => date('Y-m-d', strtotime('+200 days'))]);
+    $this->makeAsset('NB-0001', ['warranty_until' => date('Y-m-d', strtotime('-1 day'))]);
+    $this->makeAsset('NB-0099', ['warranty_until' => date('Y-m-d', strtotime('+20 days')), 'status' => AssetStatus::Retired->value]);
+
+    $this->assertSame(
+      [(int) $za10->id(), (int) $za40->id(), (int) $za80->id()],
+      $this->stats()->warrantyExpiringIds()
+    );
+    $this->assertSame([(int) $za10->id(), (int) $za40->id()], $this->stats()->warrantyExpiringIds(90, 2));
+    $this->assertSame([(int) $za10->id()], $this->stats()->warrantyExpiringIds(30));
+  }
+
+  public function testTheLastActivityComesBackNewestFirst(): void {
+    $storage = $this->container->get('entity_type.manager')->getStorage('hwdesk_audit');
+    $ids = [];
+    foreach ([1760000100, 1760000300, 1760000200] as $kdy) {
+      $entry = $storage->create([
+        'target_type' => 'hwdesk_asset',
+        'target_id' => 1,
+        'target_label' => 'NB-0001',
+        'action' => 'asset.changed',
+        'message' => 'Stav: skladem',
+        'created' => $kdy,
+      ]);
+      $entry->save();
+      $ids[$kdy] = (int) $entry->id();
+    }
+
+    $this->assertSame([$ids[1760000300], $ids[1760000200], $ids[1760000100]], $this->stats()->recentAuditIds());
+    $this->assertSame([$ids[1760000300]], $this->stats()->recentAuditIds(1));
+  }
+
 }

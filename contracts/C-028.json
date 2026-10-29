@@ -1,0 +1,25 @@
+{
+  "id": "C-028",
+  "file": "web/modules/hwdesk/src/Plugin/Mail/HwdeskMail.php",
+  "role": "coder",
+  "title": "Sending the mail: the assistant's address, the PDF attachment, a readable failure",
+  "interface": "namespace Drupal\\hwdesk\\Plugin\\Mail; final class HwdeskMail implements \\Drupal\\Core\\Mail\\MailInterface, \\Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface (declare(strict_types=1)). New file, new directory.\nWhy it exists: the site default plugin (php_mail) cannot send over SMTP, cannot set the sender the company wants and throws the PDF protocol away, because it ignores $message['params']['attachment']. And when sending fails it says nothing a human can act on.\nThe plugin attribute above the class: #[\\Drupal\\Core\\Mail\\Attribute\\Mail(id: 'hwdesk_mail', label: new \\Drupal\\Core\\StringTranslation\\TranslatableMarkup('HW Desk (SMTP z nastaveni modulu)'))]. Keep the id exactly 'hwdesk_mail'; the site config points at it by that name. Look at web/core/lib/Drupal/Core/Mail/Plugin/Mail/SymfonyMailer.php for how a core plugin is put together, but do not extend it -- it is marked @internal.\nConstructor: __construct(private readonly \\Drupal\\hwdesk\\Service\\MailTransport $transport, private readonly \\Psr\\Log\\LoggerInterface $logger). create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static returns new static($container->get('hwdesk.mail_transport'), $container->get('logger.factory')->get('hwdesk')).\nformat(array $message): array -- make the body one plain-text string: cast every item of (array) $message['body'] to string and implode them with \"\\n\\n\"; an empty body gives ''. The subject must stay on a single line: replace every CR and LF in (string) $message['subject'] with a space (a newline there would let someone smuggle in another header). Return the whole $message array with those two keys replaced; touch nothing else.\nmail(array $message): bool -- build \\Symfony\\Component\\Mime\\Email: ->to((string) $message['to']), ->subject((string) $message['subject']), ->text((string) $message['body']). From: $from = $this->transport->from(); when it is not empty, ->from(new \\Symfony\\Component\\Mime\\Address($from['address'], (string) ($from['name'] ?? ''))), otherwise keep (string) $message['from']. Reply-To: $reply = $this->transport->replyTo(); when it is not '', ->replyTo($reply). Attachment: when $message['params']['attachment'] is a non-empty string, treat it as a file path or stream URI and attach it with ->attachFromPath($path) -- use \\Drupal::service? no: the file system is reached through the path as given, because the protocol is written as a real file. When it is an array with a 'filepath' key, attach that path and pass the 'filename' key as the second argument when it is present.\n  Then send it: $mailer = new \\Symfony\\Component\\Mailer\\Mailer(\\Symfony\\Component\\Mailer\\Transport::fromDsn($this->transport->dsn())); $mailer->send($email); return TRUE.\n  The failure path is the point of this class: catch \\Throwable $e and write ONE log record through $this->logger->error('@popis', ['@popis' => $this->transport->describeFailure($e, sprintf('odeslani zpravy %s na %s', (string) $message['id'], (string) $message['to']))]) and return FALSE. describeFailure() already names the reason, the place in the application and the file with the line, and it removes the password. Never swallow the error silently, never return TRUE after a failure, never put the DSN into the log yourself.\nNothing else is public. No \\Drupal:: static calls (everything is injected), no echo or print.",
+  "uses": {
+    "MailTransport": "web/modules/hwdesk/src/Service/MailTransport.php: isSmtp(): bool, dsn(): string, from(): array, replyTo(): string, describeFailure(\\Throwable $e, string $where): string",
+    "A core mail plugin for reference": "web/core/lib/Drupal/Core/Mail/Plugin/Mail/SymfonyMailer.php"
+  },
+  "database": "not applicable",
+  "acceptance": "web/modules/hwdesk/tests/src/Kernel/HwdeskMailTest.php",
+  "depends_on": [
+    "C-027"
+  ],
+  "forbidden": [
+    "Extending \\Drupal\\Core\\Mail\\Plugin\\Mail\\SymfonyMailer or PhpMail: both are core internals that change between releases.",
+    "Returning TRUE when the send threw, or logging nothing.",
+    "Building the DSN yourself instead of asking MailTransport.",
+    "Writing the service, the module file or the test."
+  ],
+  "budget": {
+    "iterations": 12
+  }
+}
