@@ -222,7 +222,5 @@
       "note": "1 packet(s) waiting"
     }
   ],
-  "open_packets": [
-    "P-008"
-  ]
+  "open_packets": []
 }
