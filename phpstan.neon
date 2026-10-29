@@ -5,6 +5,5 @@ parameters:
   level: 5
   paths:
     - web/modules/hwdesk
-    - web/modules/api_csobrec
   reportUnmatchedIgnoredErrors: false
   treatPhpDocTypesAsCertain: false

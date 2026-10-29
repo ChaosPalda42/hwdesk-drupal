@@ -1,7 +1,0 @@
-'administer api_csobrec':
-  title: 'Nastavení předávky nahrávek ČSOB'
-  description: 'Fronty, hodina předávky, přístup na SFTP. Tajemství se tu nezadávají.'
-  restrict access: true
-'view api_csobrec batches':
-  title: 'Přehled odeslaných dávek'
-  description: 'Kdy co odešlo, kolik hovorů a co se nepovedlo. Bez telefonních čísel a jmen.'

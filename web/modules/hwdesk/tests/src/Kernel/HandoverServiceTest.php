@@ -94,11 +94,11 @@ final class HandoverServiceTest extends KernelTestBase {
     $this->assertCount(1, $mails);
     $this->assertSame('jana@firma.cz', $mails[0]['to']);
     $this->assertStringContainsString('NB-0001', $mails[0]['subject']);
-    $url = $this->service()->confirmUrl($handover);
-    $this->assertStringStartsWith('https://intranet.example/hwdesk/confirm/', $url);
-    $this->assertStringContainsString($url, $mails[0]['body']);
-    $token = substr($url, strlen('https://intranet.example/hwdesk/confirm/'));
-    $claims = $this->container->get('hwdesk.handover_tokens')->verify($token);
+    // Odkaz platí jen jednou, takže se nedá vyrobit znovu; čte se z e-mailu.
+    $this->assertMatchesRegularExpression('#https://intranet\\.example/hvd/[A-Za-z0-9_-]{43}#', $mails[0]['body']);
+    $this->assertStringNotContainsString('přihlášení', $mails[0]['body'], 'Potvrzení nevyžaduje přihlášení.');
+    preg_match('#https://intranet\\.example/hvd/([A-Za-z0-9_-]{43})#', $mails[0]['body'], $odkaz);
+    $claims = $this->container->get('hwdesk.handover_tokens')->verify($odkaz[1] ?? '');
     $this->assertSame((int) $handover->id(), $claims['handover'] ?? NULL);
     $this->assertSame((int) $this->jana->id(), $claims['uid'] ?? NULL);
   }

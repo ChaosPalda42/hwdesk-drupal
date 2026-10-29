@@ -23,9 +23,7 @@
         "drupal/core-recipe-unpack": "^11.4",
         "drupal/core-recommended": "^11.4",
         "drupal/key": "^1.22",
-        "drush/drush": "^13.8",
-        "phpseclib/phpseclib": "^3.0",
-        "symfony/process": "^7.4"
+        "drush/drush": "^13.8"
     },
     "conflict": {
         "drupal/drupal": "*"

@@ -25,14 +25,10 @@
     <testsuite name="custom">
       <directory>web/modules/hwdesk/tests/src</directory>
     </testsuite>
-    <testsuite name="api_csobrec">
-      <directory>web/modules/api_csobrec/tests/src</directory>
-    </testsuite>
   </testsuites>
   <source>
     <include>
       <directory>web/modules/hwdesk/src</directory>
-      <directory>web/modules/api_csobrec/src</directory>
     </include>
   </source>
 </phpunit>

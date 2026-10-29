@@ -127,6 +127,20 @@ hwdesk.handover.cancel:
       hwdesk_handover:
         type: entity:hwdesk_handover
 
+hwdesk.handover.confirm_own:
+  # Totéž okno pro zaměstnance, který už přihlášený je: identitu dokládá sezení,
+  # takže se tu žádný odkaz nespotřebuje a ten z e-mailu zůstane platný.
+  path: '/hwdesk/prevzeti/{hwdesk_handover}'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\ConfirmHandoverForm'
+    _title: 'Potvrzení převzetí'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+  options:
+    parameters:
+      hwdesk_handover:
+        type: entity:hwdesk_handover
+
 hwdesk.assets:
   path: '/hwdesk/assets'
   defaults:

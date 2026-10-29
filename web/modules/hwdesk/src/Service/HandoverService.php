@@ -107,7 +107,7 @@ final class HandoverService {
         sprintf('Dobrý den, %s,', $user->getDisplayName()),
         '',
         sprintf('bylo vám přiděleno zařízení %s (inventární číslo %s%s).', $asset->getDisplayName(), $asset->getTag(), $asset->getSerialNumber() !== '' ? ', S/N ' . $asset->getSerialNumber() : ''),
-        'Převzetí prosím potvrďte kliknutím na odkaz (po přihlášení svým účtem):',
+        'Převzetí prosím potvrďte kliknutím na odkaz (nikam se nemusíte přihlašovat, odkaz platí jen jednou):',
         $url,
         '',
         sprintf('Odkaz platí do %s. Pokud zařízení nepřebíráte, můžete na stejné stránce převzetí odmítnout a uvést důvod.', $expiryFormatted),
@@ -122,7 +122,7 @@ final class HandoverService {
         sprintf('Dobrý den, %s,', $user->getDisplayName()),
         '',
         sprintf('zařízení %s (inventární číslo %s) se vrací do skladu.', $asset->getDisplayName(), $asset->getTag()),
-        'Vrácení prosím potvrďte kliknutím na odkaz (po přihlášení svým účtem):',
+        'Vrácení prosím potvrďte kliknutím na odkaz (nikam se nemusíte přihlašovat, odkaz platí jen jednou):',
         $url,
         '',
         sprintf('Odkaz platí do %s. Pokud zařízení nevracíte, můžete na stejné stránce vrácení odmítnout a uvést důvod.', $expiryFormatted),
@@ -151,7 +151,7 @@ final class HandoverService {
       // Use Drupal's Url service to generate the absolute URL without static calls.
     return \Drupal\Core\Url::fromRoute('hwdesk.handover.confirm', ['token' => $token], ['absolute' => TRUE])->toString();
     }
-    return $base . '/hwdesk/confirm/' . $token;
+    return $base . '/hvd/' . $token;
   }
 
   public function confirm(Handover $handover, AccountInterface $actor): Handover {

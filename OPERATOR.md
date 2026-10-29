@@ -215,3 +215,19 @@ PHPStan jeden nález ve **starém** testu hwdesku
 (`tests/src/Kernel/ProtocolPdfTest.php:50`, `method.alreadyNarrowedType` —
 novější phpstan). Bránu kontraktů to neblokuje (strážce analyzuje jen ten
 soubor, který dílna napsala), takže to tu zůstává jako úklid na jindy.
+
+## Rozhodnutí 29. 10. 2026 (Michael): HW Desk a předávka ČSOB jsou dva projekty
+
+Sekce o `api_csobrec` výš (27. 10.) **se tohoto repozitáře už netýká**. Modul se
+odstěhoval do `~/projects/csob-drupal`, kde má odfiltrovanou historii a zelené
+testy; sem ji nepřepisujeme, aby se dalo dohledat, jak to vznikalo.
+
+Co z toho tady zmizelo: `web/modules/api_csobrec`, kontrakty C-011…C-023,
+pakety P-008…P-010, cesty k modulu v `phpunit.xml` a `phpstan.neon` a přímý
+`require phpseclib/phpseclib`. `symfony/process` zůstává — chce ho jádro
+Drupalu. `drupal/key` **zůstává a je potřeba**: hwdesk v něm drží heslo k SMTP
+(`Form\MailSettingsForm`), takže se neodstraňuje.
+
+Tři pravidla o tom, co nesmí odejít (otisk klíče před přihlášením, token ani
+telefonní číslo do výjimky a do logu), platí dál i tady: hwdesk posílá e-maily
+s jednorázovým odkazem a heslo ke SMTP čte z klíče, ne z konfigurace.

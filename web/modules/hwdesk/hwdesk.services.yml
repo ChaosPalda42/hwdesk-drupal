@@ -9,7 +9,7 @@ services:
     arguments: ['@entity_type.manager', '@current_user']
   hwdesk.handover_tokens:
     class: Drupal\hwdesk\Service\HandoverTokens
-    arguments: ['@private_key', '@datetime.time']
+    arguments: ['@entity_type.manager', '@datetime.time']
   hwdesk.protocol_numbers:
     class: Drupal\hwdesk\Service\ProtocolNumbers
     arguments: ['@state', '@datetime.time']
