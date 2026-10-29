@@ -1,0 +1,107 @@
+{
+  "id": "P-008",
+  "contract": "C-026",
+  "title": "The handover page: terms, consent tick box, confirm or reject",
+  "created_at": "2026-10-29T21:20:46+00:00",
+  "ladder": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 4 iterations",
+    "suspect: acceptance — dva různé modely skončily na téže množině padajících uzlů (1): Drupal\\Tests\\hwdesk\\Kernel\\ConfirmHandoverFormTest::testConfirmingWithoutConsentIsRefused. Nehnuté dno napříč rodinami modelů bývá nesplnitelná akceptace, ne chyba implementace.",
+    "triage: arbitráž pro tenhle jazyk zatím není (1× padá, uzly přečteny, experiment neumíme spustit; první Drupal\\Tests\\hwdesk\\Kernel\\ConfirmHandoverFormTest::testConfirmingWithoutConsentIsRefused: Bez zakliknutí souhlasu se převzít nedá. Failed asserting that an array has the key 'consent'. /Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php:147)",
+    "retained on factory/failed/C-026-1"
+  ],
+  "findings": [
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `handovers` and never uses it -- wire it through or rename it to `_handovers`",
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `tokens` and never uses it -- wire it through or rename it to `_tokens`",
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `dateFormatter` and never uses it -- wire it through or rename it to `_dateFormatter`",
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `time` and never uses it -- wire it through or rename it to `_time`",
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 128: `validateForm` accepts `form` and never uses it -- wire it through or rename it to `_form`",
+    "[IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 143: `submitForm` accepts `form` and never uses it -- wire it through or rename it to `_form`",
+    "[SUSPECT_ACCEPTANCE] web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php: suspect: acceptance — dva různé modely skončily na téže množině padajících uzlů (1): Drupal\\Tests\\hwdesk\\Kernel\\ConfirmHandoverFormTest::testConfirmingWithoutConsentIsRefused. Nehnuté dno napříč rodinami modelů bývá nesplnitelná akceptace, ne chyba implementace."
+  ],
+  "failing": "PHPUnit 11.5.56 by Sebastian Bergmann and contributors.\n\nRuntime:       PHP 8.5.10\nConfiguration: /Users/AI/projects/hwdesk-drupal/phpunit.xml\n\n..F.........                                                      12 / 12 (100%)\n\nTime: 00:12.444, Memory: 14.00 MB\n\nThere was 1 failure:\n\n1) Drupal\\Tests\\hwdesk\\Kernel\\ConfirmHandoverFormTest::testConfirmingWithoutConsentIsRefused\nBez zakliknutí souhlasu se převzít nedá.\nFailed asserting that an array has the key 'consent'.\n\n/Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php:147\n\nFAILURES!\nTests: 12, Assertions: 226, Failures: 1.\n",
+  "diff": "diff --git a/web/modules/hwdesk/src/Form/ConfirmHandoverForm.php b/web/modules/hwdesk/src/Form/ConfirmHandoverForm.php\nindex 6fae4654..d46125e6 100644\n--- a/web/modules/hwdesk/src/Form/ConfirmHandoverForm.php\n+++ b/web/modules/hwdesk/src/Form/ConfirmHandoverForm.php\n@@ -4,10 +4,14 @@\n \n namespace Drupal\\hwdesk\\Form;\n \n+use Drupal\\Component\\Datetime\\TimeInterface;\n+use Drupal\\Component\\Utility\\Xss;\n+use Drupal\\Core\\Config\\ConfigFactoryInterface;\n use Drupal\\Core\\Datetime\\DateFormatterInterface;\n use Drupal\\Core\\Form\\FormBase;\n use Drupal\\Core\\Form\\FormStateInterface;\n use Drupal\\hwdesk\\Entity\\Handover;\n+use Drupal\\hwdesk\\HandoverKind;\n use Drupal\\hwdesk\\HandoverStatus;\n use Drupal\\hwdesk\\Service\\HandoverService;\n use Drupal\\hwdesk\\Service\\HandoverTokens;\n@@ -24,29 +28,66 @@ public function __construct(\n     protected readonly HandoverService $handovers,\n     protected readonly HandoverTokens $tokens,\n     protected readonly DateFormatterInterface $dateFormatter,\n-  ) {}\n+    ConfigFactoryInterface $configFactory,\n+    protected readonly TimeInterface $time,\n+  ) {\n+    $this->configFactory = $configFactory;\n+  }\n \n   public static function create(ContainerInterface $container): static {\n-    return new static($container->get('hwdesk.handover'), $container->get('hwdesk.handover_tokens'), $container->get('date.formatter'));\n+    return new static(\n+      $container->get('hwdesk.handover'),\n+      $container->get('hwdesk.handover_tokens'),\n+      $container->get('date.formatter'),\n+      $container->get('config.factory'),\n+      $container->get('datetime.time'),\n+    );\n   }\n \n   public function getFormId(): string {\n     return 'hwdesk_confirm_handover';\n   }\n \n-  public function buildForm(array $form, FormStateInterface $form_state, string $token = ''): array {\n-    $claims = $this->tokens->verify($token);\n-    if ($claims === NULL) {\n-      throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');\n+  public function buildForm(array $form, FormStateInterface $form_state, string $token = '', ?Handover $hwdesk_handover = NULL): array {\n+    if ($token !== '') {\n+      // The link itself proves who the visitor is; nobody has to log in.\n+      $claims = $this->tokens->verify($token);\n+      if ($claims === NULL) {\n+        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');\n+      }\n+      $handover = Handover::load($claims['handover']);\n+      if (!$handover instanceof Handover) {\n+        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');\n+      }\n… (135 more lines)",
+  "tried": [
+    "worker: budget after 12 iterations",
+    "retry: stopped after 4 iterations",
+    "triage: arbitráž pro tenhle jazyk zatím není (1× padá, uzly přečteny, experiment neumíme spustit; první Drupal\\Tests\\hwdesk\\Kernel\\ConfirmHandoverFormTest::testConfirmingWithoutConsentIsRefused: Bez zakliknutí souhlasu se převzít nedá. Failed asserting that an array has the key 'consent'. /Users/AI/projects/hwdesk-drupal/web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php:147)",
+    "1: read_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "1: read_file web/modules/hwdesk/src/Service/HandoverTokens.php ok",
+    "1: read_file web/modules/hwdesk/src/Entity/Handover.php ok",
+    "2: read_file web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php ok",
+    "2: read_file web/modules/hwdesk/config/install/hwdesk.settings.yml ok",
+    "3: write_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "4: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "5: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "6: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "7: read_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "8: run_command python -c import os; print([p for p in os.listdir('web/core/ ok",
+    "9: read_file web/core/lib/Drupal/Core/Form/FormBase.php ok",
+    "10: read_file web/core/lib/Drupal/Core/Form/FormBuilder.php ok",
+    "11: read_file web/core/lib/Drupal/Core/Render/Element/Checkbox.php ok",
+    "12: read_file web/core/lib/Drupal/Core/Form/FormState.php ok",
+    "final: budget exhausted",
+    "-- retry --",
+    "1: read_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "2: apply_patch web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "3: write_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "4: write_file web/modules/hwdesk/src/Form/ConfirmHandoverForm.php ok",
+    "final: provider: Local LM Studio chat completion exceeded the hard wall-clock timeout of 900s"
+  ],
+  "ask": "patch | contract | skip | question",
+  "attempt": 1,
+  "contract_snapshot": {
+    "id": "C-026",
+    "file": "web/modules/hwdesk/src/Form/ConfirmHandoverForm.php",
+    "role": "coder",
+    "title": "The handover page: terms, consent tick box, confirm or reject",
+    "interface": "namespace Drupal\\hwdesk\\Form; final class ConfirmHandoverForm extends \\Drupal\\Core\\Form\\FormBase (declare(strict_types=1)). getFormId(): 'hwdesk_confirm_handover'.\nRewrite of the page behind the link in the e-mail. Two things change. (1) The link itself proves who the visitor is, so nobody has to log in: the old check against the logged-in account is gone. (2) The employee has to tick that they agree with the handover terms, and the text they agreed to is copied onto the handover at that moment, so a later edit of the settings never changes what somebody already signed.\nConstructor: __construct(protected readonly \\Drupal\\hwdesk\\Service\\HandoverService $handovers, protected readonly \\Drupal\\hwdesk\\Service\\HandoverTokens $tokens, protected readonly \\Drupal\\Core\\Datetime\\DateFormatterInterface $dateFormatter, protected readonly \\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory, protected readonly \\Drupal\\Component\\Datetime\\TimeInterface $time). create(ContainerInterface $container): static passes 'hwdesk.handover', 'hwdesk.handover_tokens', 'date.formatter', 'config.factory', 'datetime.time' in that order.\nbuildForm(array $form, FormStateInterface $form_state, string $token = '', ?\\Drupal\\hwdesk\\Entity\\Handover $hwdesk_handover = NULL): array -- the parameter names match the two routes and must not be renamed.\n  Entry A, route hwdesk.handover.confirm (path /hvd/{token}, open to anonymous): $token is set. $claims = $this->tokens->verify($token); NULL -> throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.') (Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException). Load the handover from $claims['handover']; not a Handover -> NotFoundHttpException. Do NOT compare anything with the logged-in account: the link is the proof.\n  Entry B, route hwdesk.handover.confirm_own (path /hwdesk/prevzeti/{hwdesk_handover}, logged in): $hwdesk_handover is set and $token is ''. The handover must belong to the current user: (int) $hwdesk_handover->getUser()?->id() !== (int) $this->currentUser()->id() -> throw new AccessDeniedHttpException('Tato vyzva patri jinemu zamestnanci.'). Its status must be \\Drupal\\hwdesk\\HandoverStatus::Pending and its expires must not be in the past (use $this->time->getRequestTime()), otherwise NotFoundHttpException. Nothing is consumed on this route, so the link in the e-mail stays valid.\n  Neither given (both empty) -> NotFoundHttpException.\n  Then: $form_state->set('handover_id', (int) $handover->id()); $form_state->set('token', $token); $form_state->set('terms', $terms) where $terms is the text described below.\n  $form['summary'] stays as it is today: a '#theme' => 'item_list' with the kind, the device name and tag, the serial number, the condition and the expiry formatted with $this->dateFormatter->format($handover->getExpires(), 'custom', 'j. n. Y H:i').\n  The terms text: read config 'hwdesk.settings' through $this->configFactory->get(). For a return ($handover->getKind() === \\Drupal\\hwdesk\\HandoverKind::ReturnItem) take (string) $config->get('return_terms') and fall back to (string) $config->get('handover_terms') when it is '' after trim(); for a handover always 'handover_terms'. When the resulting text is not '', add $form['terms'] = ['#markup' => '<div class=\"hwdesk-terms\">' . \\Drupal\\Component\\Utility\\Xss::filterAdmin($terms) . '</div>'] (so the formatting the administrator wrote survives but a <script> does not) and $form['consent'] = ['#type' => 'checkbox', '#title' => (string) $config->get('handover_consent_label'), '#default_value' => 0]. Do NOT set '#required': rejecting must stay possible without ticking it. When the text is '', neither 'terms' nor 'consent' is added at all.\n  $form['reason'] is a textfield, maxlength 500, title 'Duvod odmitnuti (jen pokud odmitate)'. $form['actions'] holds two submit buttons with '#name' => 'confirm' (primary, value 'Potvrzuji prevzeti', or 'Potvrzuji vraceni' for a return) and '#name' => 'reject' (value 'Odmitnout').\nvalidateForm(): read $trigger = $form_state->getTriggeringElement()['#name'] ?? ''. On 'confirm': when $form_state->get('terms') is not '' and $form_state->getValue('consent') is empty -> $form_state->setErrorByName('consent', $this->t('Bez souhlasu s podminkami prevzeti nelze pokracovat.')). On 'reject': when trim((string) $form_state->getValue('reason')) === '' -> setErrorByName('reason', $this->t('Pri odmitnuti uvedte duvod.')).\nsubmitForm(): load the handover from $form_state->get('handover_id'); not a Handover -> return. $actor = $handover->getUser() -- the identified employee, which is what HandoverService checks; never $this->currentUser(), which is usually anonymous here. In a try block around \\DomainException and \\InvalidArgumentException (on catch, $this->messenger()->addError($e->getMessage()) and nothing else):\n  'reject' -> $this->handovers->reject($handover, $actor, (string) $form_state->getValue('reason')) and addStatus('Odmitnuto, zadavatel dostal zpravu.').\n  otherwise -> first freeze the agreement: $terms = (string) $form_state->get('terms'); $handover->set('terms', $terms)->set('consented', $this->time->getRequestTime())->save(); only then $confirmed = $this->handovers->confirm($handover, $actor) and addStatus('Potvrzeno. Protokol @number vam prisel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]). The order matters: the PDF protocol is generated inside confirm() and prints the terms.\n  After a successful confirm or reject, and only then, spend the link: $t = (string) $form_state->get('token'); if ($t !== '') { $this->tokens->consume($t); }. After a caught exception the link must stay usable.\n  Redirect: $form_state->setRedirect($this->currentUser()->isAuthenticated() ? 'hwdesk.my' : '<front>') -- an anonymous visitor cannot open the employee page.\nNo \\Drupal:: static calls (use the injected services), no new routes, no logger.",
+    "uses": {
+      "HandoverService": "web/modules/hwdesk/src/Service/HandoverService.php: confirm(Handover $handover, AccountInterface $actor): Handover and reject(Handover $handover, AccountInterface $actor, string $reason): Handover -- both throw \\DomainException when the handover is not pending or when $actor is not the handover's employee, reject() throws \\InvalidArgumentException on an empty reason",
+      "HandoverStatus": "web/modules/hwdesk/src/HandoverStatus.php",
+      "HandoverKind": "web/modules/hwdesk/src/HandoverKind.php",
+      "A form in the same house style": "web/modules/hwdesk/src/Form/CancelHandoverForm.php"
+    },
+    "database": "Only through the entities and services above; no direct SQL.",
+    "acceptance": "web/modules/hwdesk/tests/src/Kernel/ConfirmHandoverFormTest.php",
+    "dobehly": "",
+    "forbidden": [
+      "Any check of the visitor's account on the /hvd/{token} route: the whole point is that the employee does not have to log in.",
+      "Storing the terms text after confirm() has run, or not storing it at all: the protocol prints what was agreed.",
+      "Spending the link when the submit failed, or spending it on the logged-in route.",
+      "Writing the routing file, the service file or the test."
+    ],
+    "depends_on": [
+      "C-003"
+    ],
+    "budget": {
+      "iterations": 12
+    },
+    "metamorfni_funkce": "",
+    "neutralni_upravy": [],
+    "neutralni_predpony": [],
+    "differential": false,
+    "differential_compare": "exact",
+    "notes": ""
+  },
+  "failing_tests": [
+    "  public function testConfirmingWithoutConsentIsRefused(): void {\n    [$handover, $token] = $this->vyzva();\n    $form_state = $this->submit($token, 'confirm', ['consent' => 0]);\n\n    $this->assertArrayHasKey('consent', $form_state->getErrors(), 'Bez zakliknutí souhlasu se převzít nedá.');\n    $nedotcene = $this->reload($handover);\n    $this->assertSame(HandoverStatus::Pending, $nedotcene->getStatus());\n    $this->assertSame('', (string) $nedotcene->get('consented')->value);\n    $this->assertNotNull($this->tokens()->verify($token), 'Neúspěšný pokus odkaz nespálí.');\n  }"
+  ],
+  "proposal": {
+    "kind": "contract",
+    "confidence": 0.75,
+    "reason": "Dva různé modely skončily na téže množině padajících uzlů — nehnuté dno napříč rodinami modelů bývá nesplnitelná akceptace, ne chyba implementace.",
+    "action": "Přečti si ta tvrzení, která nehnutě padají; bývá v nich požadavek, který si odporuje nebo nejde splnit."
+  },
+  "proposal_failed": false,
+  "second_opinion": {
+    "kind": "patch",
+    "confidence": 0.95,
+    "reason": "The test expects a form error with the key 'consent' when the checkbox is not ticked, but the implementation likely uses a different key (e.g., 'consent_checkbox') or fails to set the error correctly in validateForm. The diff shows significant changes to the form structure, suggesting the error key was not aligned with the test's expectation.",
+    "action": "Ensure that in ConfirmHandoverForm::validateForm, if the 'consent' checkbox is not checked, an error is set with the key 'consent' (e.g., $form_state->setErrorByName('consent', '...'))."
+  },
+  "second_opinion_failed": false,
+  "second_opinion_agreed": false
+}

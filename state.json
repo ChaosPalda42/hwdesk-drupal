@@ -56,12 +56,12 @@
     },
     "C-005": {
       "status": "green",
-      "attempts": 1,
-      "iterations": 4,
-      "commit": "327aefac",
+      "attempts": 2,
+      "iterations": 10,
+      "commit": "34a22c3e",
       "last_finding": "",
       "packet": "",
-      "updated_at": "2026-09-17T16:05:16+00:00"
+      "updated_at": "2026-10-29T20:43:26+00:00"
     },
     "C-007": {
       "status": "green",
@@ -80,6 +80,24 @@
       "last_finding": "",
       "packet": "",
       "updated_at": "2026-09-17T16:09:58+00:00"
+    },
+    "C-003": {
+      "status": "green",
+      "attempts": 1,
+      "iterations": 4,
+      "commit": "6353447f",
+      "last_finding": "",
+      "packet": "",
+      "updated_at": "2026-10-29T20:31:47+00:00"
+    },
+    "C-026": {
+      "status": "escalated",
+      "attempts": 1,
+      "iterations": 16,
+      "commit": "",
+      "last_finding": "acceptance failed (1 failed); [IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__construct` accepts `handovers` and never uses it -- wire it through or rename it to `_handovers`; [IGNORED_PARAMETER] web/modules/hwdesk/src/Form/ConfirmHandoverForm.php: line 27: `__co",
+      "packet": "P-008",
+      "updated_at": "2026-10-29T21:21:31+00:00"
     }
   },
   "runs": [
@@ -192,7 +210,19 @@
       "red": 0,
       "escalated": 0,
       "note": "test_command passed (250 tests)"
+    },
+    {
+      "started_at": "2026-10-29T20:28:25+00:00",
+      "finished_at": "2026-10-29T21:21:31+00:00",
+      "outcome": "needs-operator",
+      "iterations": 26,
+      "green": 10,
+      "red": 0,
+      "escalated": 1,
+      "note": "1 packet(s) waiting"
     }
   ],
-  "open_packets": []
+  "open_packets": [
+    "P-008"
+  ]
 }

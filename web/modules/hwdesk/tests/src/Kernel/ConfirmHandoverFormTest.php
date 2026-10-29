@@ -140,15 +140,24 @@ final class ConfirmHandoverFormTest extends KernelTestBase {
     $this->assertGreaterThan(0, (int) $potvrzene->get('consented')->value, 'Ukládá se i čas souhlasu.');
   }
 
+  /**
+   * Nezaškrtnuté políčko se programově posílá jako NULL, nebo se klíč vynechá
+   * — tak to dělá i prohlížeč. Neposílej 0: Checkbox::valueCallback vrací
+   * `isset($input) ? #return_value : 0`, takže nula znamená ZAŠKRTNUTO a tohle
+   * tvrzení by pak nemohl splnit žádný kód.
+   */
   public function testConfirmingWithoutConsentIsRefused(): void {
-    [$handover, $token] = $this->vyzva();
-    $form_state = $this->submit($token, 'confirm', ['consent' => 0]);
+    foreach ([['consent' => NULL], []] as $poradi => $values) {
+      [$handover, $token] = $this->vyzva();
+      $form_state = $this->submit($token, 'confirm', $values);
 
-    $this->assertArrayHasKey('consent', $form_state->getErrors(), 'Bez zakliknutí souhlasu se převzít nedá.');
-    $nedotcene = $this->reload($handover);
-    $this->assertSame(HandoverStatus::Pending, $nedotcene->getStatus());
-    $this->assertSame('', (string) $nedotcene->get('consented')->value);
-    $this->assertNotNull($this->tokens()->verify($token), 'Neúspěšný pokus odkaz nespálí.');
+      $this->assertArrayHasKey('consent', $form_state->getErrors(), 'Bez zakliknutí souhlasu se převzít nedá (varianta ' . $poradi . ').');
+      $nedotcene = $this->reload($handover);
+      $this->assertSame(HandoverStatus::Pending, $nedotcene->getStatus());
+      $this->assertSame('', (string) $nedotcene->get('consented')->value);
+      $this->assertSame('', (string) $nedotcene->get('terms')->value, 'Nepotvrzená předávka nemá co mrazit.');
+      $this->assertNotNull($this->tokens()->verify($token), 'Neúspěšný pokus odkaz nespálí.');
+    }
   }
 
   public function testALaterEditOfTheTextDoesNotChangeWhatWasSigned(): void {
