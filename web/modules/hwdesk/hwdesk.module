@@ -88,7 +88,7 @@ function hwdesk_theme(): array {
       'variables' => ['items' => [], 'groups' => [], 'is_admin' => FALSE, 'account' => NULL, 'role_label' => '', 'company' => ''],
     ],
     'hwdesk_dashboard' => [
-      'variables' => ['tiles' => [], 'by_type' => [], 'by_location' => [], 'pending' => [], 'warranty' => [], 'attention' => [], 'links' => []],
+      'variables' => ['totals' => [], 'tiles' => [], 'pending' => [], 'warranty' => [], 'activity' => [], 'by_type' => [], 'by_location' => []],
     ],
     'hwdesk_my' => [
       'variables' => ['assets' => [], 'pending' => [], 'handovers' => [], 'account' => ''],
@@ -269,4 +269,18 @@ function hwdesk_file_download(string $uri): array|int|null {
   }
   $assets = \Drupal::entityTypeManager()->getStorage('hwdesk_asset')->getQuery()->accessCheck(FALSE)->condition('attachments', $file->id())->condition('holder', $account->id())->range(0, 1)->execute();
   return $assets ? $headers : -1;
+}
+
+/**
+ * Implements hook_toolbar_alter().
+ *
+ * Kdo má HW Desk a ne administraci Drupalu, dostane v černé liště položku
+ * „Manage" s prázdným panelem — na úzkém displeji zabere půl obrazovky a
+ * neukáže nic, protože celé administrační menu je pro něj nepřístupné. Lišta
+ * jako taková zůstává, bere se jen ta jedna položka.
+ */
+function hwdesk_toolbar_alter(&$items): void {
+  if (!\Drupal::currentUser()->hasPermission('access administration pages')) {
+    unset($items['administration']);
+  }
 }

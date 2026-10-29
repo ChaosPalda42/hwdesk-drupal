@@ -129,5 +129,25 @@ function hwdesk_requirements(string $phase): array {
       'severity' => REQUIREMENT_ERROR,
     ];
   }
+  if ($phase === 'runtime') {
+    $adresar = 'private://hwdesk';
+    if (\Drupal::service('stream_wrapper_manager')->isValidScheme('private')
+      && !\Drupal::service('file_system')->prepareDirectory($adresar, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY)) {
+      $requirements['hwdesk_private_zapis'] = [
+        'title' => t('HW Desk'),
+        'value' => t('Do private://hwdesk se nedá zapisovat'),
+        'description' => t('Privátní cesta je nastavená, ale web do ní nesmí zapisovat. První předávací protokol se nemá kam uložit. Zkontrolujte práva adresáře @kam.', ['@kam' => \Drupal::service('file_system')->realpath('private://') ?: 'private://']),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+    if (trim((string) \Drupal::config('hwdesk.settings')->get('base_url')) === '') {
+      $requirements['hwdesk_base_url'] = [
+        'title' => t('HW Desk'),
+        'value' => t('Základní URL webu není vyplněná'),
+        'description' => t('Odkazy na potvrzení převzetí se skládají ze základní URL v nastavení HW Desku. Dokud je prázdná, berou adresu z právě probíhajícího požadavku — a pošta odeslaná z cronu nebo z drushe žádný požadavek nemá, takže odkaz povede nikam. Vyplňte ji v <a href=":kde">nastavení HW Desku</a>.', [':kde' => \Drupal\Core\Url::fromRoute('hwdesk.settings')->toString()]),
+        'severity' => REQUIREMENT_WARNING,
+      ];
+    }
+  }
   return $requirements;
 }

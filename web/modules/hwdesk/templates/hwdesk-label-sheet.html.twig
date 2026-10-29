@@ -19,6 +19,8 @@
       </div>
     </div>
   {% else %}
-    <p>{{ 'Nic k tisku.'|t }}</p>
+    <p>{{ 'Nic k tisku.'|t }}
+      <a href="{{ path('hwdesk.assets') }}">{{ 'Vyberte zařízení v evidenci a dejte „Tisk štítků“.'|t }}</a>
+    </p>
   {% endfor %}
 </div>

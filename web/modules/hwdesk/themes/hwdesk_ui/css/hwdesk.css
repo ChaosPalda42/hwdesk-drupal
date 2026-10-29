@@ -1,9 +1,12 @@
 /* HW Desk — design system. One palette, one type scale, one spacing rhythm. */
 :root {
   --bg: #f4f6f9; --surface: #ffffff; --surface-2: #f8fafc;
-  --ink: #0f172a; --ink-2: #475569; --ink-3: #94a3b8; --rule: #e2e8f0; --rule-2: #cbd5e1;
+  /* --ink-3 a --side-ink-2 jsou proti původní předloze o stupeň tmavší,
+     resp. světlejší: v předloze měly podtexty na bílé 2,56:1 a skupiny
+     v tmavém sloupci 3,75:1, což se nedá přečíst. Ostatní barvy sedí. */
+  --ink: #0f172a; --ink-2: #475569; --ink-3: #64748b; --rule: #e2e8f0; --rule-2: #cbd5e1;
   --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #dbeafe; --accent-hover: #1d4ed8;
-  --side: #0f172a; --side-ink: #cbd5e1; --side-ink-2: #64748b; --side-active: #1e293b;
+  --side: #0f172a; --side-ink: #cbd5e1; --side-ink-2: #94a3b8; --side-link: #93c5fd; --side-active: #1e293b;
   --ok: #15803d; --ok-soft: #dcfce7; --warn: #b45309; --warn-soft: #fef3c7; --bad: #b91c1c; --bad-soft: #fee2e2; --info: #1d4ed8; --info-soft: #dbeafe; --muted-soft: #e2e8f0;
   --tag-gray: #64748b; --tag-blue: #2563eb; --tag-green: #15803d; --tag-yellow: #b45309; --tag-red: #b91c1c; --tag-purple: #7c3aed;
   --radius: 8px; --radius-lg: 12px; --shadow: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
@@ -34,7 +37,7 @@ p { margin: 0 0 10px; } .muted { color: var(--ink-2); } .small { font-size: 12px
 .side nav a svg { width: 17px; height: 17px; flex: none; opacity: .9; }
 .side .foot { margin-top: auto; padding: 10px 8px; border-top: 1px solid #1e293b; font-size: 12px; color: var(--side-ink-2); }
 .side .foot strong { display: block; color: var(--side-ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
-.side .foot form { display: inline; } .side .foot button { background: none; border: 0; color: var(--side-ink-2); padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+.side .foot form { display: inline; } .side .foot button, .side .foot a { background: none; border: 0; color: var(--side-link); padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
 .content { padding: 0 32px 48px; min-width: 0; }
 .topbar { display: flex; align-items: center; gap: 16px; padding: 20px 0 16px; flex-wrap: wrap; }
 .topbar .crumbs { font-size: 12px; color: var(--ink-3); margin-bottom: 2px; } .topbar .crumbs a { color: var(--ink-2); }
@@ -226,3 +229,14 @@ body.toolbar-fixed.toolbar-horizontal.toolbar-tray-open .side { top: 79px; heigh
    style="box-shadow:none"; tady je z toho třída. */
 .card .table-wrap.plain { box-shadow: none; border: 0; border-radius: 0; background: transparent; }
 .card .table-wrap.plain table { font-size: 13px; }
+
+/* Úzký displej: sloupec se skládá nad obsah (viz @media výš), takže z odkazů
+   pod sebou uděláme štítky — jinak je obsah až 600 px pod horním okrajem. */
+@media (max-width: 860px) {
+  .side { gap: 10px; padding: 12px; }
+  .side nav { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .side nav .group { display: none; }
+  .side nav a { padding: 6px 10px; background: var(--side-active); font-size: 13px; }
+  .side nav .sub { flex-direction: row; flex-wrap: wrap; margin: 0; border-left: 0; padding-left: 0; }
+  .side .foot { margin-top: 4px; }
+}
