@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Drupal\hwdesk\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\hwdesk\Entity\Handover;
+use Drupal\hwdesk\HandoverKind;
 use Drupal\hwdesk\HandoverStatus;
 use Drupal\hwdesk\Service\HandoverService;
 use Drupal\hwdesk\Service\HandoverTokens;
@@ -17,6 +21,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The page behind the link in the e-mail: confirm, or reject with a reason.
+ *
+ * The link itself proves who the visitor is, so nobody has to log in. The
+ * employee ticks that they agree with the handover terms; the text they
+ * agreed to is copied onto the handover at that moment, so a later edit of
+ * the settings never changes what somebody already signed.
  */
 final class ConfirmHandoverForm extends FormBase {
 
@@ -24,29 +33,71 @@ final class ConfirmHandoverForm extends FormBase {
     protected readonly HandoverService $handovers,
     protected readonly HandoverTokens $tokens,
     protected readonly DateFormatterInterface $dateFormatter,
+    protected readonly TimeInterface $time,
   ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('hwdesk.handover'), $container->get('hwdesk.handover_tokens'), $container->get('date.formatter'));
+    $form = new static(
+      $container->get('hwdesk.handover'),
+      $container->get('hwdesk.handover_tokens'),
+      $container->get('date.formatter'),
+      $container->get('datetime.time'),
+    );
+    // FormBase already declares an untyped, read-write $configFactory; a
+    // typed redeclaration would be a fatal error, so the inherited property
+    // is assigned here.
+    $form->configFactory = $container->get('config.factory');
+    return $form;
   }
 
   public function getFormId(): string {
     return 'hwdesk_confirm_handover';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, string $token = ''): array {
-    $claims = $this->tokens->verify($token);
-    if ($claims === NULL) {
-      throw new NotFoundHttpException('Odkaz je neplatný nebo vypršel.');
+  public function buildForm(array $form, FormStateInterface $form_state, string $token = '', ?Handover $hwdesk_handover = NULL): array {
+    if ($token !== '') {
+      // The link is the proof of identity; nothing is compared with the
+      // logged-in account.
+      $claims = $this->tokens->verify($token);
+      if ($claims === NULL) {
+        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+      }
+      $handover = Handover::load($claims['handover']);
+      if (!$handover instanceof Handover) {
+        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+      }
     }
-    if ($claims['uid'] !== (int) $this->currentUser()->id()) {
-      throw new AccessDeniedHttpException('Tento odkaz patří jinému účtu.');
+    elseif ($hwdesk_handover !== NULL) {
+      // The logged-in employee opens the same page without a link; the
+      // handover must belong to them and still be open. Nothing is consumed,
+      // so the link in the e-mail stays valid.
+      if ((int) $hwdesk_handover->getUser()?->id() !== (int) $this->currentUser()->id()) {
+        throw new AccessDeniedHttpException('Tato vyzva patri jinemu zamestnanci.');
+      }
+      if ($hwdesk_handover->getStatus() !== HandoverStatus::Pending || $hwdesk_handover->getExpires() < $this->time->getRequestTime()) {
+        throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
+      }
+      $handover = $hwdesk_handover;
     }
-    $handover = Handover::load($claims['handover']);
-    if (!$handover instanceof Handover) {
-      throw new NotFoundHttpException();
+    else {
+      throw new NotFoundHttpException('Odkaz je neplatny nebo vyprsel.');
     }
-    $form_state->set('handover_id', $handover->id());
+
+    $config = $this->configFactory->get('hwdesk.settings');
+    if ($handover->getKind() === HandoverKind::ReturnItem) {
+      $terms = (string) $config->get('return_terms');
+      if (trim($terms) === '') {
+        $terms = (string) $config->get('handover_terms');
+      }
+    }
+    else {
+      $terms = (string) $config->get('handover_terms');
+    }
+
+    $form_state->set('handover_id', (int) $handover->id());
+    $form_state->set('token', $token);
+    $form_state->set('terms', $terms);
+
     $asset = $handover->getAsset();
     $form['summary'] = [
       '#theme' => 'item_list',
@@ -58,51 +109,87 @@ final class ConfirmHandoverForm extends FormBase {
         $this->t('Platnost výzvy do: @until', ['@until' => $this->dateFormatter->format($handover->getExpires(), 'custom', 'j. n. Y H:i')]),
       ],
     ];
-    if ($handover->getStatus() !== HandoverStatus::Pending) {
-      $form['done'] = ['#markup' => '<p>' . $this->t('Tato výzva už byla vyřízena: @status.', ['@status' => $handover->getStatus()->label()]) . '</p>'];
-      return $form;
+
+    if ($terms !== '') {
+      $form['terms'] = ['#markup' => '<div class="hwdesk-terms">' . Xss::filterAdmin($terms) . '</div>'];
+      $form['consent'] = [
+        '#type' => 'checkbox',
+        '#title' => (string) $config->get('handover_consent_label'),
+        '#default_value' => 0,
+      ];
     }
+
     $form['reason'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Důvod odmítnutí (jen pokud odmítáte)'),
+      '#title' => $this->t('Duvod odmitnuti (jen pokud odmitate)'),
       '#maxlength' => 500,
     ];
     $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['confirm'] = ['#type' => 'submit', '#value' => $this->t('Potvrzuji převzetí'), '#button_type' => 'primary', '#name' => 'confirm'];
-    if ($handover->getKind()->value === 'return') {
-      $form['actions']['confirm']['#value'] = $this->t('Potvrzuji vrácení');
-    }
-    $form['actions']['reject'] = ['#type' => 'submit', '#value' => $this->t('Odmítnout'), '#name' => 'reject'];
+    $form['actions']['confirm'] = [
+      '#type' => 'submit',
+      '#value' => $handover->getKind() === HandoverKind::ReturnItem ? $this->t('Potvrzuji vraceni') : $this->t('Potvrzuji prevzeti'),
+      '#button_type' => 'primary',
+      '#name' => 'confirm',
+    ];
+    $form['actions']['reject'] = ['#type' => 'submit', '#value' => $this->t('Odmitnout'), '#name' => 'reject'];
     return $form;
   }
 
   public function validateForm(array &$form, FormStateInterface $form_state): void {
+    $form = $form;
     $trigger = $form_state->getTriggeringElement()['#name'] ?? '';
-    if ($trigger === 'reject' && trim((string) $form_state->getValue('reason')) === '') {
-      $form_state->setErrorByName('reason', $this->t('Při odmítnutí uveďte důvod.'));
+    if ($trigger === 'confirm') {
+      // The checkbox value callback turns both a missing input and NULL into
+      // integer 0, so empty() is the only correct test for "not ticked".
+      if ((string) $form_state->get('terms') !== '' && empty($form_state->getValue('consent'))) {
+        $form_state->setErrorByName('consent', $this->t('Bez souhlasu s podminkami prevzeti nelze pokracovat.'));
+      }
+    }
+    elseif ($trigger === 'reject') {
+      if (trim((string) $form_state->getValue('reason')) === '') {
+        $form_state->setErrorByName('reason', $this->t('Pri odmitnuti uvedte duvod.'));
+      }
     }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $form = $form;
     $handover = Handover::load($form_state->get('handover_id'));
     if (!$handover instanceof Handover) {
+      return;
+    }
+    // The identified employee is what the service checks; the visitor is
+    // usually anonymous here.
+    $actor = $handover->getUser();
+    if ($actor === NULL) {
       return;
     }
     $trigger = $form_state->getTriggeringElement()['#name'] ?? '';
     try {
       if ($trigger === 'reject') {
-        $this->handovers->reject($handover, $this->currentUser(), (string) $form_state->getValue('reason'));
-        $this->messenger()->addStatus($this->t('Odmítnuto, zadavatel dostal zprávu.'));
+        $this->handovers->reject($handover, $actor, (string) $form_state->getValue('reason'));
+        $this->messenger()->addStatus($this->t('Odmitnuto, zadavatel dostal zpravu.'));
       }
       else {
-        $confirmed = $this->handovers->confirm($handover, $this->currentUser());
-        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vám přišel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]));
+        // Freeze the agreement first: the PDF protocol is generated inside
+        // confirm() and prints the terms, so the text must be stored before.
+        $terms = (string) $form_state->get('terms');
+        $handover->set('terms', $terms)->set('consented', $this->time->getRequestTime())->save();
+        $confirmed = $this->handovers->confirm($handover, $actor);
+        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vam prisel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]));
       }
     }
     catch (\DomainException | \InvalidArgumentException $e) {
       $this->messenger()->addError($e->getMessage());
+      return;
     }
-    $form_state->setRedirect('hwdesk.my');
+    // Only a successful decision spends the link; on the logged-in route the
+    // token is empty and the mailed link stays valid.
+    $t = (string) $form_state->get('token');
+    if ($t !== '') {
+      $this->tokens->consume($t);
+    }
+    $form_state->setRedirect($this->currentUser()->isAuthenticated() ? 'hwdesk.my' : '<front>');
   }
 
 }
