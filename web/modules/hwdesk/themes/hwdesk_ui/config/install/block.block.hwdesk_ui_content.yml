@@ -1,0 +1,17 @@
+langcode: cs
+status: true
+dependencies:
+  theme:
+    - hwdesk_ui
+id: hwdesk_ui_content
+theme: hwdesk_ui
+region: content
+weight: 0
+provider: null
+plugin: system_main_block
+settings:
+  id: system_main_block
+  label: 'Hlavní obsah'
+  label_display: '0'
+  provider: system
+visibility: {  }

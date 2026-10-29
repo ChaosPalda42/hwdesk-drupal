@@ -70,7 +70,7 @@ final class SerialNumbersForm extends FormBase {
     $ids = implode(',', (array) $form_state->get('ids'));
     $trigger = $form_state->getTriggeringElement()['#name'] ?? '';
     if ($trigger === 'skip') {
-      $form_state->setRedirect('view.hwdesk_assets.page');
+      $form_state->setRedirect('hwdesk.assets');
       return;
     }
     $form_state->setRedirect('hwdesk.labels', [], ['query' => ['ids' => $ids]]);

@@ -32,6 +32,42 @@ hwdesk.settings:
     base_url:
       type: string
       label: 'Absolute URL of the site for QR codes and e-mail links; empty = current request'
+    mail_from:
+      type: email
+      label: 'Address the HW Desk mails are sent from; empty = site mail'
+    mail_from_name:
+      type: label
+      label: 'Display name of the sender'
+    mail_reply_to:
+      type: email
+      label: 'Reply-To address; empty = the sender address'
+    smtp_enabled:
+      type: boolean
+      label: 'Send HW Desk mail through an own SMTP server'
+    smtp_host:
+      type: string
+      label: 'SMTP host'
+    smtp_port:
+      type: integer
+      label: 'SMTP port'
+    smtp_security:
+      type: string
+      label: 'SMTP encryption: none, tls (STARTTLS) or ssl'
+    smtp_user:
+      type: string
+      label: 'SMTP user name; empty = no authentication'
+    smtp_key:
+      type: string
+      label: 'Id of the Key entity holding the SMTP password; the password itself is never in config'
+    handover_terms:
+      type: text
+      label: 'Terms the employee has to agree with when taking a device over'
+    return_terms:
+      type: text
+      label: 'Terms shown when returning a device; empty = the handover terms'
+    handover_consent_label:
+      type: label
+      label: 'Wording of the consent checkbox'
 
 action.configuration.hwdesk_asset_retire:
   type: action_configuration_default

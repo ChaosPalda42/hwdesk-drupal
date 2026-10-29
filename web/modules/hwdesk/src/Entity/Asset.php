@@ -190,6 +190,14 @@ final class Asset extends RevisionableContentEntityBase implements RevisionLogIn
       // The label field doubles as the page title; no "Inventární číslo:" prefix there.
       ->setDisplayOptions('view', ['label' => 'hidden', 'type' => 'string', 'weight' => 0]);
 
+    $fields['name'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Název zařízení'))
+      ->setDescription(new TranslatableMarkup('Jak se zařízení říká v evidenci. Prázdné = výrobce a model.'))
+      ->setSetting('max_length', 255)
+      ->setRevisionable(TRUE)
+      ->setDisplayOptions('form', ['type' => 'string_textfield', 'weight' => 0])
+      ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'string', 'weight' => 0]);
+
     $fields['type'] = BaseFieldDefinition::create('list_string')
       ->setLabel(new TranslatableMarkup('Typ'))
       ->setRequired(TRUE)
@@ -200,6 +208,14 @@ final class Asset extends RevisionableContentEntityBase implements RevisionLogIn
 
     $fields['manufacturer'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Výrobce'))
+      ->setSetting('max_length', 128)
+      ->setRevisionable(TRUE)
+      ->setDisplayOptions('form', ['type' => 'string_textfield', 'weight' => 2])
+      ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'string', 'weight' => 2]);
+
+    $fields['oem'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Označení OEM'))
+      ->setDescription(new TranslatableMarkup('Objednací či partnerské označení od výrobce, pokud se od modelu liší.'))
       ->setSetting('max_length', 128)
       ->setRevisionable(TRUE)
       ->setDisplayOptions('form', ['type' => 'string_textfield', 'weight' => 2])
@@ -243,6 +259,15 @@ final class Asset extends RevisionableContentEntityBase implements RevisionLogIn
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
       ->setRevisionable(TRUE)
+      ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'entity_reference_label', 'weight' => 7]);
+
+    $fields['prepared_for'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Připraveno pro'))
+      ->setDescription(new TranslatableMarkup('Komu se zařízení chystá, ještě než si ho převezme.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('handler', 'default')
+      ->setRevisionable(TRUE)
+      ->setDisplayOptions('form', ['type' => 'entity_reference_autocomplete', 'weight' => 7])
       ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'entity_reference_label', 'weight' => 7]);
 
     $fields['location'] = BaseFieldDefinition::create('entity_reference')

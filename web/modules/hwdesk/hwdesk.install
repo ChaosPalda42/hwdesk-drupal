@@ -15,9 +15,86 @@ use Drupal\user\RoleInterface;
  */
 function hwdesk_install(): void {
   user_role_grant_permissions(RoleInterface::AUTHENTICATED_ID, ['view own hwdesk assets', 'confirm own hwdesk handovers']);
+  // Stránky HW Desku se kreslí vlastním vzhledem; ten je součástí modulu,
+  // takže se zapne s ním a mimo /hwdesk se do ničeho nemontuje.
+  \Drupal::service('theme_installer')->install(['hwdesk_ui']);
   $fs = \Drupal::service('file_system');
   foreach (['private://hwdesk/attachments', 'private://hwdesk/invoices', 'private://hwdesk/protocols'] as $dir) {
     $fs->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+  }
+  hwdesk_seed_home_office();
+}
+
+/**
+ * Práce z domova je lokalita jako každá jiná, jen ji nikdo nezaloží sám.
+ */
+function hwdesk_seed_home_office(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('hwdesk_location');
+  if ($storage->getQuery()->accessCheck(FALSE)->condition('name', 'Home office')->count()->execute() > 0) {
+    return;
+  }
+  $storage->create([
+    'name' => 'Home office',
+    'note' => 'Zařízení, která má zaměstnanec u sebe doma.',
+  ])->save();
+}
+
+/**
+ * Nová pole evidence: název zařízení, označení OEM, připraveno pro.
+ */
+function hwdesk_update_11001(): void {
+  $updates = \Drupal::entityDefinitionUpdateManager();
+  $definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('hwdesk_asset');
+  foreach (['name', 'oem', 'prepared_for'] as $field) {
+    if ($updates->getFieldStorageDefinition($field, 'hwdesk_asset') === NULL) {
+      $updates->installFieldStorageDefinition($field, 'hwdesk_asset', 'hwdesk', $definitions[$field]);
+    }
+  }
+}
+
+/**
+ * Předávák: kontrolní součet odkazu, text podmínek a čas souhlasu.
+ */
+function hwdesk_update_11002(): void {
+  $updates = \Drupal::entityDefinitionUpdateManager();
+  $definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('hwdesk_handover');
+  foreach (['token_hash', 'terms', 'consented'] as $field) {
+    if ($updates->getFieldStorageDefinition($field, 'hwdesk_handover') === NULL) {
+      $updates->installFieldStorageDefinition($field, 'hwdesk_handover', 'hwdesk', $definitions[$field]);
+    }
+  }
+}
+
+/**
+ * Vlastní vzhled HW Desku a lokalita Home office pro už nasazené weby.
+ */
+function hwdesk_update_11003(): void {
+  if (!\Drupal::service('theme_handler')->themeExists('hwdesk_ui')) {
+    \Drupal::service('theme_installer')->install(['hwdesk_ui']);
+  }
+  hwdesk_seed_home_office();
+}
+
+/**
+ * Nastavení pošty a text předávacích podmínek.
+ */
+function hwdesk_update_11004(): void {
+  $installed = \Drupal::service('extension.list.module')->getPath('hwdesk') . '/config/install/hwdesk.settings.yml';
+  $defaults = \Symfony\Component\Yaml\Yaml::parseFile($installed);
+  $config = \Drupal::configFactory()->getEditable('hwdesk.settings');
+  $added = 0;
+  foreach ([
+    'mail_from', 'mail_from_name', 'mail_reply_to', 'smtp_enabled', 'smtp_host',
+    'smtp_port', 'smtp_security', 'smtp_user', 'smtp_key',
+    'handover_terms', 'return_terms', 'handover_consent_label',
+  ] as $key) {
+    if ($config->get($key) === NULL) {
+      $config->set($key, $defaults[$key]);
+      $added++;
+    }
+  }
+  if ($added > 0) {
+    $config->save();
   }
 }
 

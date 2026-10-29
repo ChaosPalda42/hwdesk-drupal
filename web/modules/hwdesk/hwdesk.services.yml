@@ -36,3 +36,20 @@ services:
   hwdesk.offboarding:
     class: Drupal\hwdesk\Service\Offboarding
     arguments: ['@entity_type.manager', '@config.factory', '@plugin.manager.mail', '@language_manager']
+  hwdesk.navigation:
+    class: Drupal\hwdesk\Service\Navigation
+    arguments: ['@current_user']
+  hwdesk.theme_negotiator:
+    class: Drupal\hwdesk\Theme\HwdeskNegotiator
+    tags:
+      - { name: theme_negotiator, priority: 1000 }
+  hwdesk.route_subscriber:
+    class: Drupal\hwdesk\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  hwdesk.presenter:
+    class: Drupal\hwdesk\Service\Presenter
+    arguments: ['@date.formatter', '@config.factory']
+  hwdesk.asset_query:
+    class: Drupal\hwdesk\Service\AssetQuery
+    arguments: ['@entity_type.manager']

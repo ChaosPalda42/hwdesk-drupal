@@ -18,3 +18,26 @@ protocol_copy_to: ''
 company_name: ''
 label_printer_host: ''
 base_url: ''
+mail_from: ''
+mail_from_name: 'HW Desk'
+mail_reply_to: ''
+smtp_enabled: false
+smtp_host: ''
+smtp_port: 587
+smtp_security: tls
+smtp_user: ''
+smtp_key: ''
+handover_consent_label: 'Přečetl/a jsem podmínky převzetí a souhlasím s nimi.'
+return_terms: ''
+handover_terms: |
+  <h3>Podmínky převzetí zařízení</h3>
+  <p>Převzetím zařízení potvrzuji, že jsem ho dostal/a ve stavu uvedeném v tomto
+  protokolu, včetně příslušenství, a že jsem byl/a seznámen/a s pravidly jeho
+  používání.</p>
+  <ul>
+    <li>Zařízení zůstává majetkem firmy a používám ho pro pracovní účely.</li>
+    <li>Starám se o ně s péčí řádného hospodáře a nepředávám ho dalším osobám.</li>
+    <li>Poškození, ztrátu nebo krádež hlásím neprodleně IT oddělení.</li>
+    <li>Zařízení vracím při ukončení pracovního poměru nebo na vyzvání.</li>
+    <li>Instalovaný software ani nastavení zabezpečení neobcházím.</li>
+  </ul>

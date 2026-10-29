@@ -1,0 +1,10 @@
+{#
+/**
+ * Záložky v nastavení. Stejná řada jako v původní předloze.
+ */
+#}
+{% if items %}
+  <div class="subnav">
+    {% for i in items %}<a href="{{ path(i.route) }}" class="{{ i.active ? 'active' }}">{{ i.label }}</a>{% endfor %}
+  </div>
+{% endif %}

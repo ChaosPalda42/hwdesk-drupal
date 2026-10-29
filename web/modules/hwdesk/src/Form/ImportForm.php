@@ -61,7 +61,7 @@ final class ImportForm extends FormBase {
     foreach ($report['errors'] as $error) {
       $this->messenger()->addWarning($error);
     }
-    $form_state->setRedirect('view.hwdesk_assets.page');
+    $form_state->setRedirect('hwdesk.assets');
   }
 
 }

@@ -143,6 +143,24 @@ final class Handover extends ContentEntityBase {
       ->setSetting('max_length', 500)
       ->setDisplayOptions('view', ['label' => 'inline', 'type' => 'string', 'weight' => 7]);
 
+    $fields['token_hash'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Odkaz k potvrzení'))
+      ->setDescription(new TranslatableMarkup('Jen kontrolní součet odkazu. Samotný odkaz je pouze v odeslaném e-mailu.'))
+      ->setSetting('max_length', 64)
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
+    $fields['terms'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(new TranslatableMarkup('Předávací podmínky'))
+      ->setDescription(new TranslatableMarkup('Text, se kterým zaměstnanec souhlasil. Ukládá se v té podobě, v jaké ho viděl.'))
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
+    $fields['consented'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(new TranslatableMarkup('Souhlas s podmínkami'))
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
     $fields['protocol_number'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Číslo protokolu'))
       ->setSetting('max_length', 32)

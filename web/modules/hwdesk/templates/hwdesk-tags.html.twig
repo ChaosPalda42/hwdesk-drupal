@@ -1,0 +1,38 @@
+{#
+/**
+ * Nastavení · Štítky. Libovolné třídění napříč typy.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  title: 'Nastavení · Štítky'|t,
+  subtitle: 'Projekty, zápůjčky, poškozené kusy, VIP…'|t,
+} %}
+  {% block actions %}
+    <a class="btn" href="{{ links.add }}">{{ m.icon('plus') }} {{ 'Nový štítek'|t }}</a>
+  {% endblock %}
+{% endembed %}
+
+{{ subnav }}
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>{{ 'Štítek'|t }}</th><th>{{ 'Barva'|t }}</th><th class="right">{{ 'Zařízení'|t }}</th><th></th></tr></thead>
+    <tbody>
+      {% for t in rows %}
+        <tr>
+          <td><a class="tag tag-{{ t.color }}" href="{{ t.assets_url }}">{{ t.name }}</a></td>
+          <td class="muted mono">{{ t.color }}</td>
+          <td class="right num"><a class="quiet" href="{{ t.assets_url }}">{{ t.assets }}</a></td>
+          <td class="actions">
+            <a class="btn ghost sm" href="{{ t.edit_url }}">{{ 'Upravit'|t }}</a>
+            <a class="btn ghost sm" href="{{ t.delete_url }}">{{ 'Smazat'|t }}</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">{{ m.empty('Zatím žádné štítky.'|t, 'tag') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="table-foot"><span>{{ '@total štítků'|t({'@total': total}) }}</span></div>
+</div>

@@ -1,0 +1,35 @@
+{#
+/**
+ * Tmavý sloupec vlevo. Stejná sestava jako v původní předloze: Moje zařízení
+ * nahoře, pak Správa a Evidence pro správce, dole kdo je přihlášený.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+<aside class="side">
+  <a class="brand" href="{{ path('hwdesk.my') }}">
+    <span class="logo">{{ m.icon('box') }}</span>
+    <span>HW Desk{% if company %}<small>{{ company }}</small>{% endif %}</span>
+  </a>
+  <nav>
+    {% for item in items %}
+      <a href="{{ path(item.route) }}" class="{{ item.active ? 'active' }}">{{ m.icon(item.icon) }} {{ item.label }}</a>
+    {% endfor %}
+    {% for group in groups %}
+      <div class="group">{{ group.label }}</div>
+      {% for item in group.items %}
+        <a href="{{ path(item.route) }}" class="{{ item.active ? 'active' }}">{{ m.icon(item.icon) }} {{ item.label }}</a>
+        {% if item.sub %}
+          <div class="sub">
+            {% for s in item.sub %}<a href="{{ path(s.route) }}" class="{{ s.active ? 'active' }}">{{ s.label }}</a>{% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </nav>
+  <div class="foot">
+    {% if account %}
+      <strong title="{{ account }}">{{ account }}</strong>
+      {{ role_label }} · <a href="{{ path('user.logout') }}">{{ 'odhlásit'|t }}</a>
+    {% endif %}
+  </div>
+</aside>

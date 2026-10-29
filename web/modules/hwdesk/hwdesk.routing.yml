@@ -15,13 +15,18 @@ hwdesk.my:
     _permission: 'view own hwdesk assets'
 
 hwdesk.handover.confirm:
-  path: '/hwdesk/confirm/{token}'
+  # Odkaz z e-mailu. Totožnost dokládá sám odkaz: v databázi je jen jeho
+  # kontrolní součet, platí jednou a jen do data vypršení. Přihlašovat se
+  # kvůli potvrzení nikdo nemusí.
+  path: '/hvd/{token}'
   defaults:
     _form: '\Drupal\hwdesk\Form\ConfirmHandoverForm'
     _title: 'Potvrzení převzetí'
   requirements:
-    _permission: 'confirm own hwdesk handovers'
-    token: '[A-Za-z0-9_.-]+'
+    _access: 'TRUE'
+    token: '[A-Za-z0-9_-]{16,128}'
+  options:
+    no_cache: TRUE
 
 hwdesk.asset.handover:
   path: '/hwdesk/asset/{hwdesk_asset}/handover'
@@ -103,7 +108,7 @@ hwdesk.export:
     _permission: 'administer hwdesk'
 
 hwdesk.settings:
-  path: '/admin/config/hwdesk'
+  path: '/hwdesk/settings'
   defaults:
     _form: '\Drupal\hwdesk\Form\SettingsForm'
     _title: 'HW Desk'
@@ -121,3 +126,91 @@ hwdesk.handover.cancel:
     parameters:
       hwdesk_handover:
         type: entity:hwdesk_handover
+
+hwdesk.assets:
+  path: '/hwdesk/assets'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\AssetsController::page'
+    _title: 'Zařízení'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.assets.bulk:
+  path: '/hwdesk/assets/hromadne'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\BulkAssetsForm'
+    _title: 'Hromadná úprava'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.asset.status:
+  path: '/hwdesk/asset/{hwdesk_asset}/stav'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\AssetStatusForm'
+    _title: 'Změna stavu'
+  requirements:
+    _permission: 'administer hwdesk'
+  options:
+    parameters:
+      hwdesk_asset:
+        type: entity:hwdesk_asset
+
+hwdesk.handovers:
+  path: '/hwdesk/handovers'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\HandoversController::page'
+    _title: 'Předání a vrácení'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.employees:
+  path: '/hwdesk/employees'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\EmployeesController::page'
+    _title: 'Zaměstnanci'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.employee:
+  path: '/hwdesk/employees/{user}'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\EmployeesController::detail'
+    _title_callback: '\Drupal\hwdesk\Controller\EmployeesController::title'
+  requirements:
+    _permission: 'administer hwdesk'
+  options:
+    parameters:
+      user:
+        type: entity:user
+
+hwdesk.audit:
+  path: '/hwdesk/audit'
+  defaults:
+    _controller: '\Drupal\hwdesk\Controller\AuditController::page'
+    _title: 'Audit'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.settings.email:
+  path: '/hwdesk/settings/email'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\MailSettingsForm'
+    _title: 'E-mail (SMTP)'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.settings.handover:
+  path: '/hwdesk/settings/protokol'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\HandoverTermsForm'
+    _title: 'Předávací protokol'
+  requirements:
+    _permission: 'administer hwdesk'
+
+hwdesk.settings.labels:
+  path: '/hwdesk/settings/stitky'
+  defaults:
+    _form: '\Drupal\hwdesk\Form\LabelSettingsForm'
+    _title: 'Inventární čísla a štítky'
+  requirements:
+    _permission: 'administer hwdesk'

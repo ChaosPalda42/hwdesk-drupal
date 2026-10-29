@@ -1,0 +1,54 @@
+{#
+/**
+ * Faktury — jedna faktura může pokrývat mnoho zařízení.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  title: 'Faktury'|t,
+  subtitle: 'Jedna faktura může pokrývat mnoho zařízení'|t,
+} %}
+  {% block actions %}
+    <a class="btn" href="{{ links.add }}">{{ m.icon('plus') }} {{ 'Nová faktura'|t }}</a>
+  {% endblock %}
+{% endembed %}
+
+<form method="get" class="filters" action="{{ links.reset }}">
+  <div class="field grow">
+    <label for="i-q">{{ 'Hledat'|t }}</label>
+    <input id="i-q" type="search" name="q" value="{{ query }}" placeholder="{{ 'číslo faktury nebo dodavatel'|t }}">
+  </div>
+  <button class="btn secondary" type="submit">{{ m.icon('search') }} {{ 'Hledat'|t }}</button>
+  {% if query %}<a class="btn ghost" href="{{ links.reset }}">{{ 'Zrušit hledání'|t }}</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>{{ 'Číslo'|t }}</th>
+        <th>{{ 'Dodavatel'|t }}</th>
+        <th>{{ 'Vystaveno'|t }}</th>
+        <th class="right">{{ 'Částka'|t }}</th>
+        <th class="right">{{ 'Zařízení'|t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in rows %}
+        <tr>
+          <td><a href="{{ i.url }}"><b class="mono">{{ i.number }}</b></a></td>
+          <td>{{ i.supplier ?: '—' }}</td>
+          <td class="nowrap">{{ i.issued_label ?: '—' }}</td>
+          <td class="right num">{{ i.total is null ? '—' : (i.total|number_format(2, ',', ' ') ~ ' ' ~ i.currency) }}</td>
+          <td class="right num"><a class="quiet" href="{{ path('hwdesk.assets') }}?q={{ i.number }}">{{ i.assets }}</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">{{ m.empty('Žádné faktury.'|t, 'invoice') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="table-foot">
+    <span>{{ '@total faktur'|t({'@total': total}) }}</span>
+    <span class="num">{{ 'celkem'|t }} {{ sum|number_format(2, ',', ' ') }} Kč</span>
+  </div>
+</div>

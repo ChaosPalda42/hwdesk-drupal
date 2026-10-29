@@ -1,0 +1,22 @@
+{#
+/**
+ * Stránka HW Desku. Drupalí lišta se vykresluje z page_top, takže zůstává
+ * úplně nahoře; vlastní aplikace je pod ní.
+ */
+#}
+<!DOCTYPE html>
+<html{{ html_attributes }}>
+  <head>
+    <head-placeholder token="{{ placeholder_token }}">
+    <title>{{ head_title|safe_join(' · ') }}</title>
+    <css-placeholder token="{{ placeholder_token }}">
+    <js-placeholder token="{{ placeholder_token }}">
+  </head>
+  <body{{ attributes }}>
+    <a href="#hwdesk-obsah" class="visually-hidden focusable skip-link">{{ 'Přejít na obsah'|t }}</a>
+    {{ page_top }}
+    {{ page }}
+    {{ page_bottom }}
+    <js-bottom-placeholder token="{{ placeholder_token }}">
+  </body>
+</html>

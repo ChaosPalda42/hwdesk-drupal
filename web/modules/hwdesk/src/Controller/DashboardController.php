@@ -24,14 +24,14 @@ final class DashboardController extends ControllerBase {
   }
 
   public function page(): array {
-    $list = static fn(array $query): Url => Url::fromRoute('view.hwdesk_assets.page', [], ['query' => $query]);
+    $list = static fn(array $query): Url => Url::fromRoute('hwdesk.assets', [], ['query' => $query]);
     $types = (array) $this->config('hwdesk.settings')->get('asset_types');
 
     $tiles = [];
     foreach ($this->stats->byStatus() as $status => $count) {
       $tiles[] = ['label' => AssetStatus::from($status)->label(), 'count' => $count, 'url' => $list(['status' => $status]), 'key' => $status];
     }
-    $tiles[] = ['label' => $this->t('Čeká na potvrzení'), 'count' => $this->stats->pendingHandovers(), 'url' => Url::fromRoute('view.hwdesk_handovers.page', [], ['query' => ['status' => HandoverStatus::Pending->value]]), 'key' => 'pending'];
+    $tiles[] = ['label' => $this->t('Čeká na potvrzení'), 'count' => $this->stats->pendingHandovers(), 'url' => Url::fromRoute('hwdesk.handovers', [], ['query' => ['status' => HandoverStatus::Pending->value]]), 'key' => 'pending'];
     $tiles[] = ['label' => $this->t('Záruka končí do 90 dnů'), 'count' => $this->stats->warrantyExpiring(), 'url' => $list(['warranty_until' => ['min' => date('Y-m-d'), 'max' => date('Y-m-d', strtotime('+90 days'))]]), 'key' => 'warranty'];
     $tiles[] = ['label' => $this->t('Držitelů'), 'count' => $this->stats->holders(), 'url' => $list(['status' => AssetStatus::Assigned->value]), 'key' => 'holders'];
 

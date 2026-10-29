@@ -1,0 +1,80 @@
+{#
+/**
+ * Předání a vrácení — každý řádek je jeden protokol.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  title: 'Předání a vrácení'|t,
+  subtitle: 'Každý záznam je protokol; potvrzuje ho zaměstnanec odkazem z e-mailu'|t,
+} %}{% endembed %}
+
+<div class="btn-row" style="margin-bottom:12px">
+  {% for key, label in options.statuses %}
+    <a href="{{ path('hwdesk.handovers') }}?status={{ key }}">{{ m.status(key, label) }} <b>{{ counts[key]|default(0) }}</b></a>
+  {% endfor %}
+</div>
+
+<form method="get" class="filters" action="{{ path('hwdesk.handovers') }}">
+  <div class="field grow">
+    <label for="h-q">{{ 'Hledat'|t }}</label>
+    <input id="h-q" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="{{ 'číslo protokolu, inventární nebo sériové číslo'|t }}">
+  </div>
+  <div class="field">
+    <label for="h-status">{{ 'Stav'|t }}</label>
+    <select id="h-status" name="status"><option value="">{{ 'Vše'|t }}</option>
+      {% for key, label in options.statuses %}<option value="{{ key }}" {{ filters.status|default('') == key ? 'selected' }}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="h-kind">{{ 'Druh'|t }}</label>
+    <select id="h-kind" name="kind"><option value="">{{ 'Vše'|t }}</option>
+      {% for key, label in options.kinds %}<option value="{{ key }}" {{ filters.kind|default('') == key ? 'selected' }}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="btn secondary" type="submit">{{ m.icon('search') }} {{ 'Filtrovat'|t }}</button>
+  {% if filters %}<a class="btn ghost" href="{{ path('hwdesk.handovers') }}">{{ 'Zrušit filtry'|t }}</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>{{ 'Číslo'|t }}</th>
+        <th>{{ 'Druh'|t }}</th>
+        <th>{{ 'Zařízení'|t }}</th>
+        <th>{{ 'Zaměstnanec'|t }}</th>
+        <th>{{ 'Stav'|t }}</th>
+        <th>{{ 'Vytvořeno'|t }}</th>
+        <th>{{ 'Rozhodnuto'|t }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in rows %}
+        <tr>
+          <td class="mono">{{ h.protocol_number ?: '—' }}</td>
+          <td>{{ h.kind_label }}</td>
+          <td>{% if h.asset %}{{ m.asset_cell(h.asset) }}{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>{% if h.user %}<a href="{{ h.user.url }}">{{ h.user.name }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>{{ m.status(h.status, h.status_label) }}
+            {%- if h.status == 'pending' and h.expires %}<div class="small muted">{{ 'platí do'|t }} {{ h.expires }}</div>{% endif %}
+            {%- if h.reason %}<div class="small muted">{{ h.reason }}</div>{% endif %}</td>
+          <td class="nowrap">{{ h.created }}</td>
+          <td class="nowrap">{{ h.decided ?: '—' }}
+            {%- if h.consented %}<div class="small muted" title="{{ 'Souhlas s předávacími podmínkami'|t }}">{{ 'souhlas'|t }} {{ h.consented }}</div>{% endif %}</td>
+          <td class="actions">
+            {% if h.is_open %}<a class="btn ghost sm" href="{{ h.cancel_url }}">{{ 'Zrušit výzvu'|t }}</a>{% endif %}
+            {% if h.protocol_url %}<a class="btn ghost sm" href="{{ h.protocol_url }}">{{ m.icon('download') }} PDF</a>{% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8">{{ m.empty('Žádné protokoly neodpovídají filtru.'|t, 'handover') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="table-foot">
+    <span>{{ 'Stránka @page z @pages · @total protokolů'|t({'@page': page, '@pages': pages, '@total': total}) }}</span>
+    {{ m.pagination(page, pages, base) }}
+  </div>
+</div>

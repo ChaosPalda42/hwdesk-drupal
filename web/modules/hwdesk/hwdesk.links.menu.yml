@@ -5,7 +5,7 @@ hwdesk.dashboard:
   weight: 10
 hwdesk.assets:
   title: 'Zařízení'
-  route_name: view.hwdesk_assets.page
+  route_name: hwdesk.assets
   parent: hwdesk.dashboard
   weight: 1
 hwdesk.intake:
@@ -20,12 +20,12 @@ hwdesk.invoices:
   weight: 3
 hwdesk.handovers:
   title: 'Předání a vrácení'
-  route_name: view.hwdesk_handovers.page
+  route_name: hwdesk.handovers
   parent: hwdesk.dashboard
   weight: 4
 hwdesk.audit:
   title: 'Audit'
-  route_name: view.hwdesk_audit.page
+  route_name: hwdesk.audit
   parent: hwdesk.dashboard
   weight: 5
 hwdesk.my:

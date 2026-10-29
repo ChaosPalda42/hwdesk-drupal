@@ -1,0 +1,9 @@
+global:
+  version: 1.0
+  css:
+    theme:
+      css/hwdesk.css: {}
+  js:
+    js/hwdesk.js: {}
+  dependencies:
+    - core/drupal

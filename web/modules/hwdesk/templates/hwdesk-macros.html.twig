@@ -1,0 +1,80 @@
+{#
+/**
+ * Stavební kameny stránek HW Desku. Ikony jsou vložené SVG (mřížka 24),
+ * jmenná sada je stejná jako v původní předloze, aby se šablony daly
+ * porovnávat řádek po řádku.
+ */
+#}
+{% set ICONS = {
+  'home': '<path d="M3 11l9-8 9 8v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2z"/>',
+  'laptop': '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>',
+  'notebook': '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>',
+  'desktop': '<rect x="3" y="3" width="18" height="12" rx="2"/><path d="M8 21h8M12 15v6"/>',
+  'monitor': '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  'phone': '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  'tablet': '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M12 18h.01"/>',
+  'keyboard': '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+  'mouse': '<rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 7v4"/>',
+  'headset': '<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/>',
+  'dock': '<rect x="2" y="9" width="20" height="8" rx="2"/><path d="M6 13h.01M10 13h4"/>',
+  'other': '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8"/>',
+  'handover': '<path d="M4 12h12M12 6l6 6-6 6"/><path d="M4 4v16"/>',
+  'users': '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="9" r="3"/><path d="M22 20a5 5 0 0 0-6-4"/>',
+  'invoice': '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>',
+  'tag': '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  'pin': '<path d="M12 22s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  'audit': '<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  'settings': '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  'plus': '<path d="M12 5v14M5 12h14"/>',
+  'print': '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 15h12v6H6z"/>',
+  'download': '<path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/>',
+  'upload': '<path d="M12 21V9M6 13l6-6 6 6"/><path d="M4 3h16"/>',
+  'inbox': '<path d="M4 4h16v10H4z"/><path d="M4 14l3 6h10l3-6"/>',
+  'check': '<path d="M5 12l5 5L20 7"/>',
+  'x': '<path d="M6 6l12 12M18 6L6 18"/>',
+  'search': '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  'shield': '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  'box': '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>'
+} %}
+
+{% macro icon(name, cls='') -%}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ (ICONS[name]|default(ICONS['other']))|raw }}</svg>
+{%- endmacro %}
+
+{% macro status(value, label) -%}<span class="badge status-{{ value }}" data-status="{{ value }}">{{ label }}</span>{%- endmacro %}
+
+{% macro condition(value, label) -%}{% if value %}<span class="badge cond-{{ value }}">{{ label }}</span>{% endif %}{%- endmacro %}
+
+{% macro tags(list) -%}{% for t in list %}<a class="tag tag-{{ t.color }}" href="{{ path('hwdesk.assets') }}?tag={{ t.id }}" title="{{ 'Zařízení se štítkem'|t }} {{ t.name }}">{{ t.name }}</a>{% endfor %}{%- endmacro %}
+
+{% macro money(value) -%}{{ value is empty ? '—' : (value|number_format(0, ',', ' ') ~ ' Kč') }}{%- endmacro %}
+
+{% macro asset_cell(a) -%}
+<div class="asset-cell">
+  <span class="ico">{{ _self.icon(a.type) }}</span>
+  <div><div class="t"><a href="{{ a.url }}">{{ a.tag }}</a></div><div class="s">{{ a.name ?: (a.manufacturer ~ ' ' ~ a.model)|trim }}</div></div>
+</div>
+{%- endmacro %}
+
+{% macro pagination(page, pages, base) -%}
+{% if pages > 1 %}<div class="pages">
+  {%- for p in 1..pages -%}
+    {%- if p == page %}<span class="cur">{{ p }}</span>
+    {%- elseif p <= 2 or p >= pages - 1 or (p - page)|abs <= 2 %}<a href="{{ base }}&page={{ p }}">{{ p }}</a>
+    {%- elseif (p - page)|abs == 3 %}<span>…</span>
+    {%- endif -%}
+  {%- endfor -%}
+</div>{% endif %}
+{%- endmacro %}
+
+{% macro empty(text, ico='box') -%}<div class="empty">{{ _self.icon(ico) }}<div>{{ text }}</div></div>{%- endmacro %}
+
+{#
+ # Hlavička sloupce, kterým se dá řadit. Stejná úmluva jako v předloze:
+ # sort=klíč vzestupně, sort=-klíč klesajícně.
+ #}
+{% macro th(col, label, sort, base) -%}
+{%- set desc = sort == '-' ~ col -%}
+<th><a class="{{ sort in [col, '-' ~ col] ? 'sorted' }} {{ desc ? 'desc' }}" href="{{ base }}&sort={{ (desc or sort != col) ? col : '-' ~ col }}">{{ label }}</a></th>
+{%- endmacro %}

@@ -10,3 +10,5 @@ dependencies:
   - drupal:options
   - drupal:datetime
   - drupal:views
+  - drupal:toolbar
+  - key:key

@@ -1,0 +1,47 @@
+{#
+/**
+ * Zaměstnanci — jen ti, kdo mají hardware u sebe nebo na něj čekají.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  title: 'Zaměstnanci'|t,
+  subtitle: 'Kdo má co u sebe a komu se co chystá'|t,
+} %}{% endembed %}
+
+<form method="get" class="filters" action="{{ path('hwdesk.employees') }}">
+  <div class="field grow">
+    <label for="e-q">{{ 'Hledat'|t }}</label>
+    <input id="e-q" type="search" name="q" value="{{ query }}" placeholder="{{ 'jméno nebo e-mail'|t }}">
+  </div>
+  <button class="btn secondary" type="submit">{{ m.icon('search') }} {{ 'Hledat'|t }}</button>
+  {% if query %}<a class="btn ghost" href="{{ path('hwdesk.employees') }}">{{ 'Zrušit hledání'|t }}</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>{{ 'Jméno'|t }}</th>
+        <th>{{ 'E-mail'|t }}</th>
+        <th class="right">{{ 'U sebe'|t }}</th>
+        <th class="right">{{ 'Chystá se'|t }}</th>
+        <th class="right">{{ 'Čeká na potvrzení'|t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in rows %}
+        <tr>
+          <td><a href="{{ e.url }}"><b>{{ e.name }}</b></a></td>
+          <td>{{ e.mail ?: '—' }}</td>
+          <td class="right num"><a class="quiet" href="{{ path('hwdesk.assets') }}?holder={{ e.id }}">{{ e.assets }}</a></td>
+          <td class="right num">{{ e.prepared ?: '—' }}</td>
+          <td class="right num">{% if e.pending %}<span class="badge status-pending">{{ e.pending }}</span>{% else %}—{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">{{ m.empty(query ? 'Nikdo takový tu není.'|t : 'Nikdo zatím nemá přidělené zařízení.'|t, 'users') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="table-foot"><span>{{ '@total zaměstnanců'|t({'@total': total}) }}</span></div>
+</div>

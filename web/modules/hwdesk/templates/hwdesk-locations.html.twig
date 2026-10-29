@@ -1,0 +1,38 @@
+{#
+/**
+ * Nastavení · Lokality. Home office je taky lokalita.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  title: 'Nastavení · Lokality'|t,
+  subtitle: 'Kanceláře, sklady, pobočky i home office'|t,
+} %}
+  {% block actions %}
+    <a class="btn" href="{{ links.add }}">{{ m.icon('plus') }} {{ 'Nová lokalita'|t }}</a>
+  {% endblock %}
+{% endembed %}
+
+{{ subnav }}
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>{{ 'Lokalita'|t }}</th><th>{{ 'Poznámka'|t }}</th><th class="right">{{ 'Zařízení'|t }}</th><th></th></tr></thead>
+    <tbody>
+      {% for l in rows %}
+        <tr>
+          <td><a href="{{ l.edit_url }}"><b>{{ l.name }}</b></a></td>
+          <td class="muted">{{ l.note ?: '—' }}</td>
+          <td class="right num"><a class="quiet" href="{{ l.assets_url }}">{{ l.assets }}</a></td>
+          <td class="actions">
+            <a class="btn ghost sm" href="{{ l.edit_url }}">{{ 'Upravit'|t }}</a>
+            <a class="btn ghost sm" href="{{ l.delete_url }}">{{ 'Smazat'|t }}</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">{{ m.empty('Zatím žádné lokality.'|t, 'pin') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="table-foot"><span>{{ '@total lokalit'|t({'@total': total}) }}</span></div>
+</div>

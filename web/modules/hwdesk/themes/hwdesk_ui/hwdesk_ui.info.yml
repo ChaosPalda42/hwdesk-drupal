@@ -1,0 +1,9 @@
+name: HW Desk
+type: theme
+description: 'Vzhled HW Desku: tmavý sloupec vlevo, karty a tabulky. Používá se jen na stránkách modulu hwdesk, jinde se nic nemění.'
+core_version_requirement: ^11
+base theme: false
+libraries:
+  - hwdesk_ui/global
+regions:
+  content: 'Obsah'

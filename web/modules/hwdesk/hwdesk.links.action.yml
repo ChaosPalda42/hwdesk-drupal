@@ -2,18 +2,18 @@ hwdesk.asset.add:
   title: 'Přidat zařízení'
   route_name: entity.hwdesk_asset.add_form
   appears_on:
-    - view.hwdesk_assets.page
+    - hwdesk.assets
     - hwdesk.dashboard
 hwdesk.intake:
   title: 'Příjem zboží'
   route_name: hwdesk.intake
   appears_on:
-    - view.hwdesk_assets.page
+    - hwdesk.assets
 hwdesk.import:
   title: 'Import CSV'
   route_name: hwdesk.import
   appears_on:
-    - view.hwdesk_assets.page
+    - hwdesk.assets
 hwdesk.tag.add:
   title: 'Přidat štítek'
   route_name: entity.hwdesk_tag.add_form

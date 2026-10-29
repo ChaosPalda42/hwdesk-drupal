@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\user\UserInterface;
@@ -75,15 +76,74 @@ function hwdesk_handover_status_options(): array {
 function hwdesk_theme(): array {
   return [
     'hwdesk_protocol' => [
-      'variables' => ['handover' => NULL, 'asset' => NULL, 'employee' => NULL, 'admin' => NULL, 'company' => '', 'confirmed_at' => ''],
+      'variables' => ['handover' => NULL, 'asset' => NULL, 'employee' => NULL, 'admin' => NULL, 'company' => '', 'confirmed_at' => '', 'terms' => NULL],
     ],
     'hwdesk_label_sheet' => [
       'variables' => ['labels' => []],
     ],
+    'hwdesk_subnav' => [
+      'variables' => ['items' => []],
+    ],
+    'hwdesk_nav' => [
+      'variables' => ['items' => [], 'groups' => [], 'is_admin' => FALSE, 'account' => NULL, 'role_label' => '', 'company' => ''],
+    ],
     'hwdesk_dashboard' => [
-      'variables' => ['tiles' => [], 'by_type' => [], 'by_location' => [], 'pending' => [], 'warranty' => []],
+      'variables' => ['tiles' => [], 'by_type' => [], 'by_location' => [], 'pending' => [], 'warranty' => [], 'attention' => [], 'links' => []],
+    ],
+    'hwdesk_my' => [
+      'variables' => ['assets' => [], 'pending' => [], 'handovers' => [], 'account' => ''],
+    ],
+    'hwdesk_assets' => [
+      'variables' => ['rows' => [], 'filters' => [], 'options' => [], 'sort' => 'tag', 'base' => '', 'page' => 1, 'pages' => 1, 'total' => 0, 'bulk_form' => NULL, 'links' => []],
+    ],
+    'hwdesk_asset' => [
+      'variables' => ['asset' => [], 'handovers' => [], 'history' => [], 'files' => [], 'status_form' => NULL, 'handover_form' => NULL, 'links' => [], 'open_handover' => NULL],
+    ],
+    'hwdesk_handovers' => [
+      'variables' => ['rows' => [], 'filters' => [], 'options' => [], 'base' => '', 'page' => 1, 'pages' => 1, 'total' => 0, 'counts' => []],
+    ],
+    'hwdesk_employees' => [
+      'variables' => ['rows' => [], 'query' => '', 'total' => 0],
+    ],
+    'hwdesk_employee' => [
+      'variables' => ['employee' => [], 'assets' => [], 'handovers' => []],
+    ],
+    'hwdesk_invoices' => [
+      'variables' => ['rows' => [], 'query' => '', 'total' => 0, 'sum' => 0, 'links' => []],
+    ],
+    'hwdesk_invoice' => [
+      'variables' => ['invoice' => [], 'assets' => [], 'files' => [], 'links' => []],
+    ],
+    'hwdesk_audit' => [
+      'variables' => ['rows' => [], 'filters' => [], 'options' => [], 'base' => '', 'page' => 1, 'pages' => 1, 'total' => 0],
+    ],
+    'hwdesk_locations' => [
+      'variables' => ['rows' => [], 'total' => 0, 'links' => []],
+    ],
+    'hwdesk_tags' => [
+      'variables' => ['rows' => [], 'total' => 0, 'links' => []],
     ],
   ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page templates.
+ *
+ * Sloupec vlevo nekreslí vzhled sám — sestavuje ho modul, protože ví, co je
+ * v nabídce a kam se smí kdo podívat. Mimo vzhled HW Desku se nic nepřidává.
+ */
+function hwdesk_preprocess_page(array &$variables): void {
+  if (\Drupal::theme()->getActiveTheme()->getName() !== \Drupal\hwdesk\Theme\HwdeskNegotiator::THEME) {
+    return;
+  }
+  $nav = \Drupal::service('hwdesk.navigation')->build(\Drupal::routeMatch());
+  $nav['company'] = (string) (\Drupal::config('hwdesk.settings')->get('company_name') ?? '');
+  $variables['hwdesk_nav'] = ['#theme' => 'hwdesk_nav'];
+  foreach ($nav as $key => $value) {
+    $variables['hwdesk_nav']['#' . $key] = $value;
+  }
+  $variables['#cache']['contexts'][] = 'user.permissions';
+  $variables['#cache']['contexts'][] = 'route.name';
 }
 
 /**
@@ -97,6 +157,23 @@ function hwdesk_mail(string $key, array &$message, array $params): void {
   $message['body'] = array_values((array) ($params['body'] ?? []));
   if (!empty($params['attachment'])) {
     $message['params']['attachment'] = $params['attachment'];
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Stránky nastavení jsou formuláře Drupalu; řada záložek se jim přidá tady,
+ * aby ji nemusel každý formulář skládat sám.
+ */
+function hwdesk_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  $settings_forms = ['hwdesk_settings', 'hwdesk_mail_settings', 'hwdesk_handover_terms', 'hwdesk_label_settings'];
+  if (in_array($form_id, $settings_forms, TRUE)) {
+    $form['hwdesk_subnav'] = [
+      '#theme' => 'hwdesk_subnav',
+      '#items' => \Drupal::service('hwdesk.navigation')->settingsTabs((string) \Drupal::routeMatch()->getRouteName()),
+      '#weight' => -100,
+    ];
   }
 }
 

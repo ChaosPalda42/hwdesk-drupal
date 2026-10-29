@@ -1,0 +1,77 @@
+{#
+/**
+ * Jeden zaměstnanec: co má u sebe a jeho protokoly.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  crumbs: [{ route: 'hwdesk.employees', title: 'Zaměstnanci'|t }],
+  title: employee.name,
+  subtitle: employee.mail ~ (employee.active ? '' : ' · ' ~ 'neaktivní'|t),
+} %}
+  {% block actions %}
+    <a class="btn secondary" href="{{ path('hwdesk.assets') }}?holder={{ employee.id }}">{{ 'Zařízení v evidenci'|t }}</a>
+  {% endblock %}
+{% endembed %}
+
+{% set pending = handovers|filter(h => h.is_open) %}
+{% if pending %}
+  <div class="attention">
+    <h2>{{ 'Čeká na potvrzení'|t }}</h2>
+    {% for h in pending %}
+      <div class="item">
+        {{ m.icon('clock') }}
+        <div>
+          <b>{{ h.asset.tag|default('') }}</b> {{ h.asset.name|default('') }} · {{ h.kind_label }}
+          <div class="small muted">{{ 'odesláno'|t }} {{ h.created }}{% if h.expires %} · {{ 'platí do'|t }} {{ h.expires }}{% endif %}</div>
+        </div>
+        <a class="btn secondary sm" href="{{ h.cancel_url }}">{{ 'Zrušit výzvu'|t }}</a>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="card">
+  <h2>{{ 'Přidělená zařízení'|t }}</h2>
+  <div class="table-wrap plain">
+    <table>
+      <thead><tr><th>{{ 'Zařízení'|t }}</th><th>{{ 'Sériové číslo'|t }}</th><th>{{ 'Stav'|t }}</th><th>{{ 'Lokalita'|t }}</th><th>{{ 'Štítky'|t }}</th></tr></thead>
+      <tbody>
+        {% for a in assets %}
+          <tr>
+            <td>{{ m.asset_cell(a) }}</td>
+            <td class="mono">{{ a.serial_number ?: '—' }}</td>
+            <td>{{ m.status(a.status, a.status_label) }}</td>
+            <td>{{ a.location ? a.location.name : '—' }}</td>
+            <td>{{ m.tags(a.tags) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">{{ m.empty('Nemá u sebe žádné zařízení.'|t) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>{{ 'Předávací protokoly'|t }}</h2>
+  <div class="table-wrap plain">
+    <table>
+      <thead><tr><th>{{ 'Číslo'|t }}</th><th>{{ 'Druh'|t }}</th><th>{{ 'Zařízení'|t }}</th><th>{{ 'Stav'|t }}</th><th>{{ 'Rozhodnuto'|t }}</th><th></th></tr></thead>
+      <tbody>
+        {% for h in handovers %}
+          <tr>
+            <td class="mono">{{ h.protocol_number ?: '—' }}</td>
+            <td>{{ h.kind_label }}</td>
+            <td>{{ h.asset ? h.asset.tag : '—' }}</td>
+            <td>{{ m.status(h.status, h.status_label) }}</td>
+            <td class="nowrap">{{ h.decided ?: '—' }}</td>
+            <td class="actions">{% if h.protocol_url %}<a class="btn ghost sm" href="{{ h.protocol_url }}">PDF</a>{% endif %}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="muted">{{ 'Zatím nic.'|t }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -34,7 +34,7 @@ final class CancelHandoverForm extends ConfirmFormBase {
   }
 
   public function getCancelUrl(): Url {
-    return Url::fromRoute('view.hwdesk_handovers.page');
+    return Url::fromRoute('hwdesk.handovers');
   }
 
   public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {

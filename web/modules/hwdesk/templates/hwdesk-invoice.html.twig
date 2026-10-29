@@ -1,0 +1,72 @@
+{#
+/**
+ * Jedna faktura: údaje, soubory a zařízení, která se z ní pořídila.
+ */
+#}
+{% import '@hwdesk/hwdesk-macros.html.twig' as m %}
+{% embed '@hwdesk/hwdesk-topbar.html.twig' with {
+  crumbs: [{ route: 'entity.hwdesk_invoice.collection', title: 'Faktury'|t }],
+  title: invoice.number,
+  subtitle: (invoice.supplier ?: 'bez dodavatele'|t) ~ ' · ' ~ (invoice.issued_label ?: 'bez data'|t),
+} %}
+  {% block actions %}
+    <a class="btn secondary" href="{{ path('hwdesk.intake') }}?invoice={{ invoice.id }}">{{ m.icon('inbox') }} {{ 'Přijmout zařízení'|t }}</a>
+    <a class="btn" href="{{ links.edit }}">{{ 'Upravit'|t }}</a>
+  {% endblock %}
+{% endembed %}
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="card">
+      <h2>{{ 'Údaje'|t }}</h2>
+      <dl class="kv">
+        <dt>{{ 'Číslo'|t }}</dt><dd class="mono">{{ invoice.number }}</dd>
+        <dt>{{ 'Dodavatel'|t }}</dt><dd>{{ invoice.supplier ?: '—' }}</dd>
+        <dt>{{ 'Vystaveno'|t }}</dt><dd>{{ invoice.issued_label ?: '—' }}</dd>
+        <dt>{{ 'Částka'|t }}</dt><dd class="num">{{ invoice.total is null ? '—' : (invoice.total|number_format(2, ',', ' ') ~ ' ' ~ invoice.currency) }}</dd>
+        {% if invoice.notes %}<dt>{{ 'Poznámka'|t }}</dt><dd>{{ invoice.notes }}</dd>{% endif %}
+      </dl>
+    </div>
+    <div class="card">
+      <h2>{{ 'Soubory faktury'|t }}</h2>
+      <ul class="files">
+        {% for f in files %}
+          <li>
+            {{ m.icon('invoice') }}
+            <div>
+              <div class="name"><a href="{{ f.url }}">{{ f.name }}</a></div>
+              <div class="meta">{{ f.size }} · {{ f.when }}</div>
+            </div>
+          </li>
+        {% else %}
+          <li class="muted">{{ 'Zatím nic nenahráno. PDF faktury se přikládá při úpravě.'|t }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h2>{{ 'Zařízení na faktuře (@count)'|t({'@count': assets|length}) }}</h2>
+    <div class="table-wrap plain">
+      <table>
+        <thead><tr><th>{{ 'Zařízení'|t }}</th><th>{{ 'Sériové číslo'|t }}</th><th>{{ 'Stav'|t }}</th><th class="right">{{ 'Cena'|t }}</th></tr></thead>
+        <tbody>
+          {% for a in assets %}
+            <tr>
+              <td>{{ m.asset_cell(a) }}</td>
+              <td class="mono">{{ a.serial_number ?: '—' }}</td>
+              <td>{{ m.status(a.status, a.status_label) }}</td>
+              <td class="right num">{{ m.money(a.price) }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="muted">{{ 'Žádné zařízení. Použijte Příjem zařízení.'|t }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if assets %}
+      <div class="btn-row" style="margin-top:10px">
+        <a class="btn ghost sm" href="{{ path('hwdesk.labels') }}?ids={{ assets|map(a => a.id)|join(',') }}">{{ m.icon('print') }} {{ 'Štítky pro všechna'|t }}</a>
+      </div>
+    {% endif %}
+  </div>
+</div>

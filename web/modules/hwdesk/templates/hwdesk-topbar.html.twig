@@ -1,0 +1,21 @@
+{#
+/**
+ * Hlava stránky: cesta, název a tlačítka vpravo. Vkládá se do každé stránky
+ * HW Desku, aby měly stejný rytmus.
+ */
+#}
+<div class="topbar">
+  <div>
+    {% if crumbs %}
+      <div class="crumbs">
+        {%- for c in crumbs -%}
+          {%- if c.route %}<a href="{{ path(c.route, c.params|default({})) }}">{{ c.title }}</a>{% else %}{{ c.title }}{% endif %}
+          {%- if not loop.last %} / {% endif -%}
+        {%- endfor -%}
+      </div>
+    {% endif %}
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<div class="muted small">{{ subtitle }}</div>{% endif %}
+  </div>
+  <div class="actions">{% block actions %}{% endblock %}</div>
+</div>
