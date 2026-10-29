@@ -7,11 +7,14 @@ namespace Drupal\hwdesk\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\hwdesk\Entity\Asset;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * /a/<tag> from the QR on the label: admin → detail, holder → my devices.
+ *
+ * A tag that does not exist and a tag that belongs to somebody else (or to
+ * nobody) must be indistinguishable from outside, so both answers are the
+ * same 404 — a 403 would leak which inventory numbers the company uses.
  */
 final class QrController extends ControllerBase {
 
@@ -29,7 +32,7 @@ final class QrController extends ControllerBase {
     if ($holder !== NULL && (int) $holder->id() === (int) $this->currentUser()->id()) {
       return $this->redirect('hwdesk.my');
     }
-    throw new AccessDeniedHttpException();
+    throw new NotFoundHttpException();
   }
 
 }
