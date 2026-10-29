@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace Drupal\hwdesk\Service;
 
-use Drupal\Core\Render\RendererInterface;
-use Drupal\file\FileRepositoryInterface;
-use Drupal\Core\File\FileSystemInterface;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\File\FileExists;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\file\FileInterface;
+use Drupal\file\FileRepositoryInterface;
 use Drupal\hwdesk\Entity\Handover;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Drupal\file\FileInterface;
 
 /**
  * Service to generate and store protocol PDFs.
  */
 final class ProtocolPdf {
+
   public function __construct(
     private readonly RendererInterface $renderer,
     private readonly FileRepositoryInterface $fileRepository,
@@ -27,9 +30,13 @@ final class ProtocolPdf {
   ) {}
 
   /**
-   * Render the PDF bytes for a handover.
+   * Render the protocol HTML for a handover.
+   *
+   * The terms are taken from the handover itself, not from the current
+   * configuration: the paper must show the text the employee actually agreed
+   * to, even if the settings changed since.
    */
-  public function render(Handover $handover): string {
+  public function renderHtml(Handover $handover): string {
     $asset = $handover->getAsset();
     $employee = $handover->getUser();
     $admin = $handover->getRequestedBy();
@@ -44,6 +51,16 @@ final class ProtocolPdf {
       'j. n. Y H:i'
     );
 
+    $termsValue = $handover->get('terms')->value;
+    $terms = $termsValue === NULL || $termsValue === ''
+      ? NULL
+      : ['#markup' => Xss::filterAdmin((string) $termsValue)];
+
+    $consentedValue = $handover->get('consented')->value;
+    $consentedAt = $consentedValue === NULL || $consentedValue === ''
+      ? ''
+      : $this->dateFormatter->format((int) $consentedValue, 'custom', 'j. n. Y H:i');
+
     $build = [
       '#theme' => 'hwdesk_protocol',
       '#handover' => $handover,
@@ -52,9 +69,18 @@ final class ProtocolPdf {
       '#admin' => $admin,
       '#company' => $company,
       '#confirmed_at' => $confirmedAt,
+      '#terms' => $terms,
+      '#consented_at' => $consentedAt,
     ];
 
-    $html = (string) $this->renderer->renderInIsolation($build);
+    return (string) $this->renderer->renderInIsolation($build);
+  }
+
+  /**
+   * Render the PDF bytes for a handover.
+   */
+  public function render(Handover $handover): string {
+    $html = $this->renderHtml($handover);
 
     $options = new Options([
       'isRemoteEnabled' => FALSE,
@@ -83,11 +109,12 @@ final class ProtocolPdf {
     $file = $this->fileRepository->writeData(
       $data,
       $destination,
-      \Drupal\Core\File\FileExists::Replace
+      FileExists::Replace
     );
     $file->setPermanent();
     $file->setMimeType('application/pdf');
     $file->save();
     return $file;
   }
+
 }
