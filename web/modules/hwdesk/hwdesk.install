@@ -24,6 +24,9 @@ function hwdesk_install(): void {
   }
   hwdesk_mail_plugin_claim();
   hwdesk_seed_home_office();
+  // Lišta Drupalu se zaměstnanci bere v hook_page_top(); ten musí běžet až po
+  // modulu toolbar, a pořadí se řídí váhou (abecedně by šel hwdesk první).
+  module_set_weight('hwdesk', 10);
 }
 
 /**
@@ -114,6 +117,13 @@ function hwdesk_update_11004(): void {
  */
 function hwdesk_update_11005(): void {
   hwdesk_mail_plugin_claim();
+}
+
+/**
+ * Černá lišta Drupalu se bere tomu, kdo nesmí do administrace.
+ */
+function hwdesk_update_11006(): void {
+  module_set_weight('hwdesk', 10);
 }
 
 /**

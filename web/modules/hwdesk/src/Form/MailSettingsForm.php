@@ -122,11 +122,17 @@ final class MailSettingsForm extends ConfigFormBase {
       '#states' => $visible,
     ];
 
+    // Zkouška je pod tlačítkem „Uložit nastavení“ schválně, ze dvou důvodů:
+    // posílá se tím, co je uložené, a Enter v políčku spouští první tlačítko
+    // ve formuláři — má to být uložení, ne odeslání zkušební pošty.
     $form['test'] = [
       '#type' => 'details',
       '#title' => $this->t('Zkouška'),
-      '#description' => $this->t('Pošle zkušební e-mail na @mail s právě uloženým nastavením. Když se odeslání nepovede, vypíše se konkrétní důvod.', [
+      // Víc než 100, což je váha řádku s tlačítky (render element 'actions').
+      '#weight' => 110,
+      '#description' => $this->t('Pošle zkušební e-mail na @mail s právě uloženým nastavením. Když se odeslání nepovede, řekne to — konkrétní důvod i místo v kódu najdete v <a href="@log">záznamu chyb webu</a> (kanál hwdesk).', [
         '@mail' => $this->currentUser()->getEmail() ?: '(váš účet nemá e-mail)',
+        '@log' => '/admin/reports/dblog',
       ]),
     ];
     $form['test']['send'] = [

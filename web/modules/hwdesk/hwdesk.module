@@ -290,15 +290,23 @@ function hwdesk_file_download(string $uri): array|int|null {
 }
 
 /**
- * Implements hook_toolbar_alter().
+ * Implements hook_page_top().
  *
- * Kdo má HW Desk a ne administraci Drupalu, dostane v černé liště položku
- * „Manage" s prázdným panelem — na úzkém displeji zabere půl obrazovky a
- * neukáže nic, protože celé administrační menu je pro něj nepřístupné. Lišta
- * jako taková zůstává, bere se jen ta jedna položka.
+ * Černá lišta Drupalu patří tomu, kdo smí do administrace Drupalu. Zaměstnanci
+ * v ní nezbude nic než jeho vlastní účet — a lišta otevírá panel první položky
+ * sama od sebe, takže by mu na každé stránce visel nad obsahem pruh „Zobrazit
+ * profil / Upravit profil / Odhlásit se“; na mobilu přes půl obrazovky. Účet
+ * i odhlášení má v levém sloupci modulu, tam patří.
+ *
+ * Bere se celá lišta, ne jen její položky: javascript jádra počítá s tím, že
+ * aspoň jeden panel existuje (ToolbarVisualView::updateTrayOrientation), takže
+ * lišta bez panelů skončí chybou v konzoli na každé stránce.
+ *
+ * Aby se stihla vzít, musí mít modul větší váhu než toolbar — nastavuje se při
+ * instalaci (hwdesk_install(), hwdesk_update_11006()).
  */
-function hwdesk_toolbar_alter(&$items): void {
-  if (!\Drupal::currentUser()->hasPermission('access administration pages')) {
-    unset($items['administration']);
+function hwdesk_page_top(array &$page_top): void {
+  if (isset($page_top['toolbar']) && !\Drupal::currentUser()->hasPermission('access administration pages')) {
+    $page_top['toolbar']['#access'] = FALSE;
   }
 }

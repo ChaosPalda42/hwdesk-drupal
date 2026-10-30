@@ -86,7 +86,7 @@ Všechno je pod `/hwdesk/settings` (potřebuje oprávnění *Spravovat HW Desk*)
 | Kde | Co nastavit |
 |---|---|
 | `/hwdesk/settings` | Název firmy na protokolech, základní URL webu (jde do odkazů v e-mailu), kopie protokolů na e-mail, platnost výzvy k potvrzení v hodinách |
-| `/hwdesk/settings/email` | Odesílatel (např. asistentka@…), odpovídat na, SMTP server, port, šifrování, uživatel a **klíč s heslem** (vybírá se z modulu Key, ne se píše). Je tam i tlačítko „Zkouška“, které pošle testovací zprávu a při chybě napíše konkrétní důvod i místo. |
+| `/hwdesk/settings/email` | Odesílatel (např. asistentka@…), odpovídat na, SMTP server, port, šifrování, uživatel a **klíč s heslem** (vybírá se z modulu Key, ne se píše). Je tam i zkouška (tlačítko „Poslat zkušební e-mail“): zprávu pošle, a když se to nepovede, napíše to a konkrétní důvod i místo v kódu zapíše do záznamu chyb webu (`/admin/reports/dblog`, kanál hwdesk) — bez hesla. |
 | `/hwdesk/settings/protokol` | Text podmínek převzetí a vrácení (to, s čím zaměstnanec souhlasí), a text zaškrtávacího políčka |
 | `/hwdesk/settings/stitky` | Typy zařízení a jejich předpony v inventárním čísle, minimální počet číslic, síťová tiskárna štítků (Zebra, port 9100) |
 
@@ -152,6 +152,11 @@ Nastavení je v konfiguraci `hwdesk.settings` (bez hesel).
   (typicky „You are not authorized to access this page." na stránce, kam
   uživatel nesmí). Řeší to modul **Interface Translation** a čeština jako jazyk
   webu.
+- **Černá lišta Drupalu nemá pro zaměstnance žádný panel.** Vyklápěcí panely
+  se v ní berou každému, kdo nemá přístup do administrace: celé administrační
+  menu je pro něj nepřístupné a panel účtu by se mu otevíral přes obsah na
+  každé stránce (na mobilu přes půl obrazovky). Svůj účet i odhlášení má v
+  levém sloupci. Správce má lištu celou.
 - **Nepřihlášený člověk nevidí v levém sloupci žádné odkazy.** Je to schválně:
   stránku `/hvd/{token}` otevírá zaměstnanec z e-mailu, do zbytku aplikace
   nemusí mít přístup, a nabídka, která vede jen na „nemáte oprávnění", je

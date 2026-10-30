@@ -135,7 +135,7 @@ form.row-edit { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .tabs a.active { color: var(--accent); border-color: var(--accent); } .tabs a:hover { text-decoration: none; color: var(--ink); }
 .tab-panel { display: none; } .tab-panel.active { display: block; }
 .timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--rule); }
-.timeline li { position: relative; padding: 0 0 14px 14px; } .timeline li::before { content: ""; position: absolute; left: -24px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--rule-2); }
+.timeline li { position: relative; padding: 0 0 14px 14px; overflow-wrap: anywhere; } .timeline li::before { content: ""; position: absolute; left: -24px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--rule-2); }
 .timeline li.ok::before { background: var(--ok); } .timeline li.warn::before { background: var(--warn); } .timeline li.bad::before { background: var(--bad); }
 .timeline .when { font-size: 12px; color: var(--ink-3); }
 .hero { display: flex; align-items: center; gap: 16px; }
