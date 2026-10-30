@@ -296,8 +296,11 @@ final class ConfirmHandoverFormTest extends KernelTestBase {
     $this->submit($druhy, 'confirm', ['consent' => 1]);
     $zpravy = array_map('strval', $this->container->get('messenger')->messagesByType('status'));
     $this->assertCount(1, $zpravy);
-    $this->assertStringContainsString('vám přišel e-mailem', $zpravy[0]);
     $this->assertStringStartsWith('Potvrzeno. Protokol ', $zpravy[0]);
+    // Odeslání se nikde nečte, takže se doručení nesmí tvrdit.
+    $this->assertStringContainsString('posíláme e-mailem', $zpravy[0]);
+    $this->assertStringContainsString('ozvěte se IT', $zpravy[0]);
+    $this->assertStringNotContainsString('přišel', $zpravy[0]);
   }
 
 }
