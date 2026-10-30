@@ -152,11 +152,16 @@ Nastavení je v konfiguraci `hwdesk.settings` (bez hesel).
   (typicky „You are not authorized to access this page." na stránce, kam
   uživatel nesmí). Řeší to modul **Interface Translation** a čeština jako jazyk
   webu.
-- **Černá lišta Drupalu nemá pro zaměstnance žádný panel.** Vyklápěcí panely
-  se v ní berou každému, kdo nemá přístup do administrace: celé administrační
-  menu je pro něj nepřístupné a panel účtu by se mu otevíral přes obsah na
-  každé stránce (na mobilu přes půl obrazovky). Svůj účet i odhlášení má v
-  levém sloupci. Správce má lištu celou.
+- **Černá lišta Drupalu se kreslí jen tomu, kdo má oprávnění „Access
+  administration pages“.** Komu chybí, tomu se nekreslí vůbec — a to je
+  zaměstnanec, ale i váš správce HW Desku, jestli mu Drupalí administraci
+  nedáte. Důvod: celé administrační menu je pro takového člověka nepřístupné,
+  zbyl by mu v liště panel vlastního účtu, a ten se otevírá přes obsah na
+  každé stránce (na mobilu přes půl obrazovky). O nic nepřijde, účet
+  i odhlášení má v levém sloupci HW Desku. Kdyby lištu chtěl, přidejte jeho
+  roli právě „Access administration pages“. Platí to pro lištu z modulu
+  Toolbar; pokud web používá novější modul Navigation, řídí se jeho sloupec
+  oprávněním `access navigation` a zaměstnancům se nedává.
 - **Nepřihlášený člověk nevidí v levém sloupci žádné odkazy.** Je to schválně:
   stránku `/hvd/{token}` otevírá zaměstnanec z e-mailu, do zbytku aplikace
   nemusí mít přístup, a nabídka, která vede jen na „nemáte oprávnění", je
