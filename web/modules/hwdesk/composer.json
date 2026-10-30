@@ -1,0 +1,13 @@
+{
+    "name": "bypalda/hwdesk",
+    "description": "HW Desk: evidence firemního hardwaru, předávací protokoly s potvrzením odkazem, štítky s QR a příjem zboží.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.3",
+        "drupal/core": "^11.4",
+        "drupal/key": "^1.22",
+        "dompdf/dompdf": "^3.1",
+        "chillerlan/php-qrcode": "^6.0"
+    }
+}

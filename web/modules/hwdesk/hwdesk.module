@@ -11,6 +11,7 @@ use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\user\UserInterface;
@@ -127,6 +128,19 @@ function hwdesk_theme(): array {
 }
 
 /**
+ * Komu se staví nabídka v levém sloupci.
+ *
+ * Potvrzení z e-mailu (/hvd/{token}) otevírá člověk, který do aplikace jinak
+ * nepatří — často ani není přihlášený. Nabízet mu „HW Desk“ a „Moje zařízení“
+ * znamená nabízet dvě cesty k hlášce „nemáte oprávnění“. Sloupec zůstává, aby
+ * stránka vypadala jako zbytek aplikace, ale odkazy dostane jen ten, kdo je má
+ * kam použít.
+ */
+function hwdesk_navigation_visible(AccountInterface $account): bool {
+  return $account->hasPermission('administer hwdesk') || $account->hasPermission('view own hwdesk assets');
+}
+
+/**
  * Implements hook_preprocess_HOOK() for page templates.
  *
  * Sloupec vlevo nekreslí vzhled sám — sestavuje ho modul, protože ví, co je
@@ -137,6 +151,10 @@ function hwdesk_preprocess_page(array &$variables): void {
     return;
   }
   $nav = \Drupal::service('hwdesk.navigation')->build(\Drupal::routeMatch());
+  if (!hwdesk_navigation_visible(\Drupal::currentUser())) {
+    $nav['items'] = [];
+    $nav['groups'] = [];
+  }
   $nav['company'] = (string) (\Drupal::config('hwdesk.settings')->get('company_name') ?? '');
   $variables['hwdesk_nav'] = ['#theme' => 'hwdesk_nav'];
   foreach ($nav as $key => $value) {

@@ -6,10 +6,17 @@
 #}
 {% import '@hwdesk/hwdesk-macros.html.twig' as m %}
 <aside class="side">
-  <a class="brand" href="{{ path('hwdesk.my') }}">
+  {% set znacka %}
     <span class="logo">{{ m.icon('box') }}</span>
     <span>HW Desk{% if company %}<small>{{ company }}</small>{% endif %}</span>
-  </a>
+  {% endset %}
+  {# Kdo nemá kam jít (potvrzení z e-mailu otevírá i nepřihlášený), tomu
+     hlavička neslibuje odkaz, který by skončil na „nemáte oprávnění“. #}
+  {% if items or groups %}
+    <a class="brand" href="{{ path('hwdesk.my') }}">{{ znacka }}</a>
+  {% else %}
+    <span class="brand">{{ znacka }}</span>
+  {% endif %}
   <nav>
     {% for item in items %}
       <a href="{{ path(item.route) }}" class="{{ item.active ? 'active' }}">{{ m.icon(item.icon) }} {{ item.label }}</a>
