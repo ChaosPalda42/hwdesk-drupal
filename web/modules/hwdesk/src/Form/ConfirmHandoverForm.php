@@ -45,7 +45,7 @@ final class ConfirmHandoverForm extends FormBase {
     );
     // FormBase already declares an untyped, read-write $configFactory; a
     // typed redeclaration would be a fatal error, so the inherited property
-    // is assigned here.
+    // is assigned here from the same service the constructor would take.
     $form->configFactory = $container->get('config.factory');
     return $form;
   }
@@ -112,6 +112,7 @@ final class ConfirmHandoverForm extends FormBase {
 
     if ($terms !== '') {
       $form['terms'] = ['#markup' => '<div class="hwdesk-terms">' . Xss::filterAdmin($terms) . '</div>'];
+      // No '#required': rejecting must stay possible without ticking it.
       $form['consent'] = [
         '#type' => 'checkbox',
         '#title' => (string) $config->get('handover_consent_label'),
@@ -159,7 +160,7 @@ final class ConfirmHandoverForm extends FormBase {
       return;
     }
     // The identified employee is what the service checks; the visitor is
-    // usually anonymous here.
+    // usually anonymous here, so never the current user.
     $actor = $handover->getUser();
     if ($actor === NULL) {
       return;
@@ -176,7 +177,9 @@ final class ConfirmHandoverForm extends FormBase {
         $terms = (string) $form_state->get('terms');
         $handover->set('terms', $terms)->set('consented', $this->time->getRequestTime())->save();
         $confirmed = $this->handovers->confirm($handover, $actor);
-        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vám přišel e-mailem.', ['@number' => $confirmed->getProtocolNumber()]));
+        // The e-mail is only sent, never read back: say what was done and
+        // what to do if nothing comes, never that it was delivered.
+        $this->messenger()->addStatus($this->t('Potvrzeno. Protokol @number vám posíláme e-mailem. Kdyby nedorazil, ozvěte se IT.', ['@number' => $confirmed->getProtocolNumber()]));
       }
     }
     catch (\DomainException | \InvalidArgumentException $e) {
@@ -189,6 +192,7 @@ final class ConfirmHandoverForm extends FormBase {
     if ($t !== '') {
       $this->tokens->consume($t);
     }
+    // An anonymous visitor cannot open the employee page.
     $form_state->setRedirect($this->currentUser()->isAuthenticated() ? 'hwdesk.my' : '<front>');
   }
 
